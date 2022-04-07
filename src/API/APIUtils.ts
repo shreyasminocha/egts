@@ -1,4 +1,4 @@
-import {add_q, ElementModP, ElementModQ} from "../group";
+import {add_q, ElementModP, ElementModQ, rand_q} from "../group";
 import { encrypt_ballot } from "../simple_elections";
 import {
     CiphertextBallot,
@@ -39,7 +39,7 @@ export function encryptBallot_ballotOut(inputBallot: Ballot,
   const ballot = ballot2PlainTextBallot(inputBallot);
   const internalManifest: InternalManifest = new InternalManifest(manifest);
   const context = ballot2Context(inputBallot, internalManifest);
-  const seed_nonce:ElementModQ =  new ElementModQ(BigInt("40358"));
+  const seed_nonce:ElementModQ =  rand_q();
   const encryption_seed: ElementModQ = new ElementModQ(BigInt("88136692332113344175662474900446441286169260372780056734314948839391938984061"));
   const encrypted_ballot: CiphertextBallot = get_optional(encrypt_ballot(ballot, internalManifest, context, encryption_seed, seed_nonce));
   return encrypted_ballot;
@@ -61,7 +61,7 @@ export function encryptBallot(inputBallot: Ballot, manifest: Manifest): EncryptB
     const encryption_seed: ElementModQ = new ElementModQ(BigInt("88136692332113344175662474900446441286169260372780056734314948839391938984061"));
 
     const encrypted_ballot: CiphertextBallot = get_optional(encrypt_ballot(ballot, internalManifest, context, encryption_seed, seed_nonce));
-    return new EncryptBallotOutput(seed_nonce.elem.toString(), encrypted_ballot.crypto_hash.to_hex().toString());
+    return new EncryptBallotOutput(seed_nonce.to_hex().toString(), encrypted_ballot.crypto_hash.to_hex().toString());
 }
 
 /**
