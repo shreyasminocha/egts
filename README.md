@@ -66,6 +66,6 @@ Therefore, this is a project that has already benefited and will continue to ben
 
 
 ## Authors
-Shreyas Minocha <shreyasminocha@rice.edu>
-Dan S. Wallach <dwallach@rice.edu> or <dwallach@gmail.com>
-Arthur Wu <wuwenqin200613@gmail.com>
+- Shreyas Minocha <shreyasminocha@rice.edu>
+- Dan S. Wallach <dwallach@rice.edu> or <dwallach@gmail.com>
+- Arthur Wu <wuwenqin200613@gmail.com>
