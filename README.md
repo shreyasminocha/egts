@@ -65,3 +65,7 @@ Therefore, this is a project that has already benefited and will continue to ben
 
 
 
+## Authors
+
+Dan S. Wallach <dwallach@rice.edu> or <dwallach@gmail.com>
+Arthur Wu <wuwenqin200613@gmail.com>
