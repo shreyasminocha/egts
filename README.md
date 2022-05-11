@@ -66,8 +66,8 @@ Therefore, this is a project that has already benefited and will continue to ben
 
 
 ## Authors
-- Han Guo<alexiland@outlook.com>
-- Xin Hao <xh23@rice.edu>
+- Han Guo <alexiland@outlook.com>
+- Xin Hao <xinhaofighting@gmail.com>
 - Shreyas Minocha <shreyasminocha@rice.edu>
 - Dan S. Wallach <dwallach@rice.edu> or <dwallach@gmail.com>
 - Arthur Wu <wuwenqin200613@gmail.com>
