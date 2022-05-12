@@ -54,7 +54,7 @@ describe("TestDeserialization", () => {
 
   // Test encryption with given test vectors
   test('testTestVectors', () => {
-    const testFolder = `generated_test_inputs_ts`;
+    const testFolder = `test/generated_test_inputs_ts`;
     if (!fs.existsSync(testFolder)){
       fs.mkdirSync(testFolder);
     }
@@ -73,7 +73,7 @@ describe("TestDeserialization", () => {
           new ElementModQ(2),
           internal_manifest.manifest.crypto_hash(),
           undefined);
-//           console.log("manifest hash in ts is ", internal_manifest.manifest.crypto_hash());
+          console.log("manifest hash in ts is ", internal_manifest.manifest.crypto_hash());
           const encryption_seed = new ElementModQ(BigInt('88136692332113344175662474900446441286169260372780056734314948839391938984061'));
           const encrypted_ballot = get_optional(encrypt_ballot(input.plaintextBallot, internal_manifest, context, encryption_seed, get_optional(inputs.nonce)));
           expect(encrypted_ballot.crypto_hash.equals(input.output)).toBe(true);

@@ -71,5 +71,5 @@ Therefore, this is a project that has already benefited and will continue to ben
 - Shreyas Minocha <shreyasminocha@rice.edu>
 - Dan S. Wallach <dwallach@rice.edu> or <dwallach@gmail.com>
 - Arthur Wu <wuwenqin200613@gmail.com>
-- Yanyu Zhong <yz133@rice.edu>
+- Yanyu Zhong <yanyuzhongzyy@gmail.com>
 - Zihe Zhao <zz83@rice.edu>
