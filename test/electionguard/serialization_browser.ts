@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/**
+ * Compared to serialization.ts, this is a browser friendly edition where node module like fs are not required
+ * Thus, it also lack some of the fs supported features.
+ */
 import {CiphertextBallot,
-  PlaintextBallot} from "./simple_election_data";
+  PlaintextBallot} from "../src/simple_election_data";
 import {plainToClass} from "class-transformer";
-import {Manifest} from "./manifest";
-import fs from 'fs';
-import { ElementModQ } from "./group";
+import {Manifest} from "../src/manifest";
+import { ElementModQ } from "../src/group";
 
 const json_string = "{\n" +
   "    \"object_id\": \"some-external-id-string-123\",\n" +
@@ -239,47 +242,19 @@ export function from_file_to_PlaintextBallot(jsonString: string): PlaintextBallo
   return plainToClass(PlaintextBallot, result as PlaintextBallot);
 }
 
-export function from_file_to_PlaintextBallots(path: string): PlaintextBallot[] {
-  const ballots: PlaintextBallot[] = [];
-  const dataJson = fs.readFileSync(path, "utf8");
-  const data = JSON.parse(dataJson);
-  for (const ballot of data) {
-    ballots.push(from_file_to_PlaintextBallot(JSON.stringify(ballot)));
-  }
-  return ballots;
-}
-
-export function from_file_to_class_manifest(manifest_JSON: string):Manifest {
-  const data = fs.readFileSync(manifest_JSON, "utf8");
-  const result = JSON.parse(data);
-  return plainToClass(Manifest, result as Manifest);
-}
-
-export function from_test_file_to_valid_inputs(path: string): EncryptInput[] {
-  const data = fs.readFileSync(path, "utf8");
-  const result = JSON.parse(data);
-  const encryptInputs = [];
-  for (const res of result) {
-    const manifest = plainToClass(Manifest, res.input.manifest as Manifest);
-    const ballot = plainToClass(PlaintextBallot, res.input.ballot as PlaintextBallot);
-    encryptInputs.push({plaintextBallot: ballot, manifest: manifest, output: new ElementModQ(res.output)});
-  }
-  return encryptInputs;
-}
-
 export function hex_to_bigint(numstr: string): bigint {
   return BigInt("0x" + numstr);
 }
 
 export const deserialize_toHex_banlist:string[] = ["timestamp"];
 
-export function encrypt_compatible_testing_demo(encrypted_ballot: CiphertextBallot): string{
+export function serialize_compatible_CiphertextBallot(encrypted_ballot: CiphertextBallot): string{
   return JSON.stringify(encrypted_ballot, (key, value) => {
     if (typeof value === "bigint") {
       return value.toString();
     }
     else if (typeof value === "number" && !deserialize_toHex_banlist.includes(key)) {
-      return value.toString(16);
+      return value.toString(10);
     } else if (typeof value === "boolean") {
       return value == false ? "00" : "01";
     }
