@@ -21,8 +21,8 @@ import {
   production4096P,
   production4096Q,
 } from './constants';
-import {PowRadix} from './powradix';
 import {UInt256} from './uint256';
+import {PowRadix} from './powradix';
 
 // This file exports the symbol `bigIntContext`, which is an instance of the GroupContext
 // interface found in group-common.ts, and which implements all the ElementModP and ElementModQ

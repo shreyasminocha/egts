@@ -10,17 +10,12 @@
     "electionguard",
     "esbuild"
   ],
-  "main": "./dist/tsc/index.js",
-  "types": "./dist/tsc/main.d.ts",
   "browser": {
     "crypto": "crypto-browserify",
     "assert": "assert-browserify",
     "stream": "stream-browserify",
     "fs": "brfs",
     "path": "path-browserify"
-  },
-  "bin": {
-    "my-cli-tool": "./dist/esbuild/cli.js"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.17.12",
@@ -31,8 +26,8 @@
     "jest": "^28.1.0",
     "ts-jest": "^28.0.2",
     "ts-node": "^10.7.0",
-    "typescript": "^4.7.2",
-    "typedoc": "^0.22.16"
+    "typedoc": "^0.22.16",
+    "typescript": "^4.7.2"
   },
   "dependencies": {
     "bigint-mod-arith": "^3.0.2",
@@ -47,7 +42,7 @@
     "stream-browserify": "^3.0.0"
   },
   "scripts": {
-    "docs": "typedoc --entryPoints src/*/*.ts",
+    "docs": "typedoc",
     "lint": "gts lint",
     "clean": "gts clean",
     "compile": "tsc",
@@ -55,7 +50,8 @@
     "prepare": "npm run compile",
     "pretest": "npm run compile",
     "posttest": "npm run lint",
-    "test": "jest"
+    "test": "jest",
+    "elgamal-bench": "node build/bench/ElGamalBenchmark"
   },
   "engines": {
     "node": ">=10.4.0"
