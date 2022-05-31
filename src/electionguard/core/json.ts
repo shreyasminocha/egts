@@ -219,17 +219,22 @@ class Codecs {
       ConstantChaumPedersenProofKnownNonce
     > = pipe(
       D.struct({
-        a: elementModPDecoder,
-        b: elementModPDecoder,
-        c: elementModQDecoder,
-        r: elementModQDecoder,
-        plaintext: D.number,
+        pad: elementModPDecoder,
+        data: elementModPDecoder,
+        challenge: elementModQDecoder,
+        response: elementModQDecoder,
+        constant: D.number,
       }),
       D.map(
         s =>
           new ConstantChaumPedersenProofKnownNonce(
-            new ExpandedGenericChaumPedersenProof(s.a, s.b, s.c, s.r),
-            s.plaintext
+            new ExpandedGenericChaumPedersenProof(
+              s.pad,
+              s.data,
+              s.challenge,
+              s.response
+            ),
+            s.constant
           )
       )
     );
@@ -240,11 +245,11 @@ class Codecs {
     > = {
       encode: input => {
         return {
-          a: elementModPEncoder.encode(input.proof.a),
-          b: elementModPEncoder.encode(input.proof.b),
-          c: elementModQEncoder.encode(input.proof.c),
-          r: elementModQEncoder.encode(input.proof.r),
-          plaintext: input.constant,
+          pad: elementModPEncoder.encode(input.proof.a),
+          data: elementModPEncoder.encode(input.proof.b),
+          challenge: elementModQEncoder.encode(input.proof.c),
+          response: elementModQEncoder.encode(input.proof.r),
+          constant: input.constant,
         };
       },
     };
@@ -259,17 +264,22 @@ class Codecs {
       ConstantChaumPedersenProofKnownSecretKey
     > = pipe(
       D.struct({
-        a: elementModPDecoder,
-        b: elementModPDecoder,
-        c: elementModQDecoder,
-        r: elementModQDecoder,
-        plaintext: D.number,
+        pad: elementModPDecoder,
+        data: elementModPDecoder,
+        challenge: elementModQDecoder,
+        response: elementModQDecoder,
+        constant: D.number,
       }),
       D.map(
         s =>
           new ConstantChaumPedersenProofKnownSecretKey(
-            new ExpandedGenericChaumPedersenProof(s.a, s.b, s.c, s.r),
-            s.plaintext
+            new ExpandedGenericChaumPedersenProof(
+              s.pad,
+              s.data,
+              s.challenge,
+              s.response
+            ),
+            s.constant
           )
       )
     );
@@ -280,11 +290,11 @@ class Codecs {
     > = {
       encode: input => {
         return {
-          a: elementModPEncoder.encode(input.proof.a),
-          b: elementModPEncoder.encode(input.proof.b),
-          c: elementModQEncoder.encode(input.proof.c),
-          r: elementModQEncoder.encode(input.proof.r),
-          plaintext: input.constant,
+          pad: elementModPEncoder.encode(input.proof.a),
+          data: elementModPEncoder.encode(input.proof.b),
+          challenge: elementModQEncoder.encode(input.proof.c),
+          response: elementModQEncoder.encode(input.proof.r),
+          constant: input.constant,
         };
       },
     };
@@ -299,22 +309,32 @@ class Codecs {
       DisjunctiveChaumPedersenProofKnownNonce
     > = pipe(
       D.struct({
-        a0: elementModPDecoder,
-        b0: elementModPDecoder,
-        c0: elementModQDecoder,
-        r0: elementModQDecoder,
-        a1: elementModPDecoder,
-        b1: elementModPDecoder,
-        c1: elementModQDecoder,
-        r1: elementModQDecoder,
-        c: elementModQDecoder,
+        proof_zero_pad: elementModPDecoder,
+        proof_zero_data: elementModPDecoder,
+        proof_zero_challenge: elementModQDecoder,
+        proof_zero_response: elementModQDecoder,
+        proof_one_pad: elementModPDecoder,
+        proof_one_data: elementModPDecoder,
+        proof_one_challenge: elementModQDecoder,
+        proof_one_response: elementModQDecoder,
+        challenge: elementModQDecoder,
       }),
       D.map(
         s =>
           new DisjunctiveChaumPedersenProofKnownNonce(
-            new ExpandedGenericChaumPedersenProof(s.a0, s.b0, s.c0, s.r0),
-            new ExpandedGenericChaumPedersenProof(s.a1, s.b1, s.c1, s.r1),
-            s.c
+            new ExpandedGenericChaumPedersenProof(
+              s.proof_zero_pad,
+              s.proof_zero_data,
+              s.proof_zero_challenge,
+              s.proof_zero_response
+            ),
+            new ExpandedGenericChaumPedersenProof(
+              s.proof_one_pad,
+              s.proof_one_data,
+              s.proof_one_challenge,
+              s.proof_one_response
+            ),
+            s.challenge
           )
       )
     );
@@ -325,15 +345,15 @@ class Codecs {
     > = {
       encode: input => {
         return {
-          a0: elementModPEncoder.encode(input.proof0.a),
-          b0: elementModPEncoder.encode(input.proof0.b),
-          c0: elementModQEncoder.encode(input.proof0.c),
-          r0: elementModQEncoder.encode(input.proof0.r),
-          a1: elementModPEncoder.encode(input.proof1.a),
-          b1: elementModPEncoder.encode(input.proof1.b),
-          c1: elementModQEncoder.encode(input.proof1.c),
-          r1: elementModQEncoder.encode(input.proof1.r),
-          c: elementModQEncoder.encode(input.c),
+          proof_zero_pad: elementModPEncoder.encode(input.proof0.a),
+          proof_zero_data: elementModPEncoder.encode(input.proof0.b),
+          proof_zero_challenge: elementModQEncoder.encode(input.proof0.c),
+          proof_zero_response: elementModQEncoder.encode(input.proof0.r),
+          proof_one_pad: elementModPEncoder.encode(input.proof1.a),
+          proof_one_data: elementModPEncoder.encode(input.proof1.b),
+          proof_one_challenge: elementModQEncoder.encode(input.proof1.c),
+          proof_one_response: elementModQEncoder.encode(input.proof1.r),
+          challenge: elementModQEncoder.encode(input.c),
         };
       },
     };
@@ -348,13 +368,13 @@ class Codecs {
       HashedElGamalCiphertext
     > = pipe(
       D.struct({
-        c0: elementModPDecoder,
-        c1: uInt8ArrayDecoder,
-        c2: uInt256Decoder,
+        pad: elementModPDecoder,
+        data: uInt8ArrayDecoder,
+        mac: uInt256Decoder,
         numBytes: D.number,
       }),
       D.map(s => {
-        return new HashedElGamalCiphertext(s.c0, s.c1, s.c2, s.numBytes);
+        return new HashedElGamalCiphertext(s.pad, s.data, s.mac, s.numBytes);
       })
     );
 
@@ -369,9 +389,9 @@ class Codecs {
     > = {
       encode: input => {
         return {
-          c0: elementModPEncoder.encode(input.c0),
-          c1: uInt8ArrayEncoder.encode(input.c1),
-          c2: uInt256Encoder.encode(input.c2),
+          pad: elementModPEncoder.encode(input.c0),
+          data: uInt8ArrayEncoder.encode(input.c1),
+          mac: uInt256Encoder.encode(input.c2),
           numBytes: input.numBytes,
         };
       },
