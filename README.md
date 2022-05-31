@@ -31,11 +31,16 @@ Data pipeline:
 # Install dependencies
 npm install
 
-# Now you can run various yarn commands:
-npm test
+# Now you can run various npm commands:
+npm run test
 npm run elgamal-bench
 ...
+
+# Auto-indenter and linter (uses gts)
+npm run fix
 ```
+
+
 ### Documentation, published with CI
 
 You can auto-generate API documentation from the TypeScript source files using [TypeDoc](https://typedoc.org/guides/doccomments/). The generated documentation can be published to GitHub / GitLab pages through the CI.
