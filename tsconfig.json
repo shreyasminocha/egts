@@ -1,25 +1,20 @@
 {
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "ts-node": {
+    // these options are overrides used only by ts-node
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
   "compilerOptions": {
-    "target": "es2020",
+    "target": "es6",
     "module": "commonjs",
-    "moduleResolution": "node",
-    "declaration": true,
-    "strict": false,
-    "noImplicitAny": true /* Raise error on expressions and declarations with an implied 'any' type. */,
-    "strictNullChecks": true /* Enable strict null checks. */,
-    "strictFunctionTypes": true /* Enable strict checking of function types. */,
-    "noUnusedLocals": true /* Report errors on unused locals. */,
-    "noUnusedParameters": true /* Report errors on unused parameters. */,
-    "noImplicitReturns": false /* Report error when not all code paths in function return a value. */,
-    "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */,
-    "importHelpers": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "sourceMap": true,
-    "outDir": "./dist/tsc/",
+    "rootDir": ".",
+    "outDir": "build",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "resolveJsonModule": true,
     "types": [
       "node",
       "jest"
@@ -30,8 +25,9 @@
     ]
   },
   "include": [
-    "src/**/*.ts"
-  ],  // "test/serialization_browser.ts", "test/serialization.ts", "test/simpleElectionsUtil.ts"  ],
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     "**/*.test.ts"
