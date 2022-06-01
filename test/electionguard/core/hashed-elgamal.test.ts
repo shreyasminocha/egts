@@ -11,7 +11,7 @@ function testHashedElGamalEncryption(context: GroupContext) {
       fc.assert(
         fc.property(
           elGamalKeypair(context),
-          elementModQ(context),
+          elementModQ(context, 2),
           fc.uint8Array({min: 0, max: 255, minLength: 4, maxLength: 128}),
           (kp, nonce, plaintext) => {
             const ciphertext =
