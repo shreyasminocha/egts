@@ -33,8 +33,7 @@ function benchmarkElGamal(context: GroupContext) {
   const min = 0;
   console.log(`Initializing benchmark for ${N} attempts.`);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const messages = Array.from({length: N}, (_x, _i) => getRandomInt(min, max));
+  const messages = Array.from({length: N}, () => getRandomInt(min, max));
   const keypair = ElGamalKeypair.createRandom(context);
   const nonce = context.randQ();
 

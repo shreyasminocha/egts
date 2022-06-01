@@ -47,8 +47,7 @@ export class CiphertextBallot {
       this.manifestHash,
       this.codeSeed,
       this.code,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      this.contests.map((v, _i, _a) => v.submit()),
+      this.contests.map(v => v.submit()),
       this.timestamp,
       this.cryptoHash,
       state
@@ -77,8 +76,7 @@ export class CiphertextContest implements CryptoHashableElement {
       this.contestId,
       this.sequenceOrder,
       this.contestHash,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      this.selections.map((v, _i, _a) => v.submit()),
+      this.selections.map(v => v.submit()),
       this.ciphertextAccumulation,
       this.cryptoHash,
       this.proof

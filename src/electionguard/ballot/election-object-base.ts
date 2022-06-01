@@ -1,12 +1,13 @@
+export interface Eq<T> {
+  /* Compares the other object to this one. */
+  equals(other: T): boolean;
+}
 /**
  * A base object to derive other election objects identifiable by object_id
  */
-export interface ElectionObjectBase {
+export interface ElectionObjectBase extends Eq<ElectionObjectBase> {
   /** The object_id, should be a unique string. */
   objectId: string;
-
-  /* Compares the other object to this one. */
-  equals(other: ElectionObjectBase): boolean;
 }
 
 /**
@@ -76,5 +77,54 @@ export function matchingArraysOfAnyElectionObjects<
       return false;
     }
   }
+  return true;
+}
+
+/**
+ * Given two arrays of a type that supports equals(), ({@link Eq}),
+ * returns whether their contents are indeed equal. Arrays that might
+ * include undefined are also supported.
+ */
+export function matchingArraysWithEquals<T extends Eq<T>>(
+  a: (T | undefined)[] | undefined,
+  b: (T | undefined)[] | undefined
+): boolean {
+  // having some fun here with union types!
+  if (a === undefined && b === undefined) {
+    return true;
+  }
+
+  if (a === undefined || b === undefined) {
+    return false;
+  }
+
+  if (a.length !== b.length) {
+    return false;
+  } else {
+    for (let i = 0; i < a.length; i++) {
+      if (!objEqualsOrUndefEquals(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+
+/** Helper function: compares objects for equality, but also deals with `undefined` values.  */
+export function objEqualsOrUndefEquals<T extends Eq<T>>(
+  a: T | undefined,
+  b: T | undefined
+): boolean {
+  const aUndef = a === undefined;
+  const bUndef = b === undefined;
+
+  if (aUndef && bUndef) {
+    return true;
+  }
+
+  if (aUndef || bUndef || !a.equals(b)) {
+    return false;
+  }
+
   return true;
 }

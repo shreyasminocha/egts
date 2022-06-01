@@ -66,14 +66,14 @@ export function bigIntToUint8Array(bi: bigint): Uint8Array {
   return u8;
 }
 
-/** Compare two arrays for equality. */
+/** Compare two arrays of primitive types (using ===) for equality. */
 export function arraysEqual<T>(
-  a: Array<T> | Uint8Array,
-  b: Array<T> | Uint8Array
+  a: Array<T> | Uint8Array | undefined,
+  b: Array<T> | Uint8Array | undefined
 ): boolean {
   // https://stackoverflow.com/a/16436975
   if (a === b) return true;
-  if (a === null || b === null) return false;
+  if (a === undefined || b === undefined) return false;
   if (a.length !== b.length) return false;
 
   for (let i = 0; i < a.length; ++i) {

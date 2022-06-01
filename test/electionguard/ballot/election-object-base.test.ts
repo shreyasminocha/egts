@@ -28,14 +28,14 @@ describe('ElectionObjectBase: basics', () => {
   test('array contents equality', () => {
     fc.assert(
       fc.property(fc.array(fc.string()), strArray => {
-        const testObjects: TestElectionObject[] =
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          strArray.map((s, _i, _a) => new TestElectionObject(s));
+        const testObjects: TestElectionObject[] = strArray.map(
+          s => new TestElectionObject(s)
+        );
 
         // identical values, but different objects
-        const testObjects2: TestElectionObject[] =
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          strArray.map((s, _i, _a) => new TestElectionObject(s));
+        const testObjects2: TestElectionObject[] = strArray.map(
+          s => new TestElectionObject(s)
+        );
 
         expect(
           matchingArraysOfAnyElectionObjects(testObjects, testObjects2)
@@ -55,9 +55,9 @@ describe('ElectionObjectBase: basics', () => {
   test('sorting by objectId', () => {
     fc.assert(
       fc.property(fc.array(fc.string()), strArray => {
-        const testObjects: TestElectionObject[] =
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          strArray.map((s, _i, _a) => new TestElectionObject(s));
+        const testObjects: TestElectionObject[] = strArray.map(
+          s => new TestElectionObject(s)
+        );
 
         const sortedTestObjects = sortedArrayOfAnyElectionObjects(testObjects);
 

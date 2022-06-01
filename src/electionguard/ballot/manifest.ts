@@ -1,82 +1,14 @@
 import {ElementModQ, GroupContext} from '../core/group-common';
 import {CryptoHashableElement, hashElements} from '../core/hash';
-
-function manifestCryptoHash(
-  context: GroupContext,
-  electionScopeId: string,
-  electionType: ManifestElectionType,
-  startDate: string, // LocalDateTime,
-  endDate: string, // LocalDateTime,
-  geopoliticalUnits: Array<ManifestGeopoliticalUnit>,
-  parties: Array<ManifestParty>,
-  candidates: Array<ManifestCandidate>,
-  contests: Array<ManifestContestDescription>,
-  ballotStyles: Array<ManifestBallotStyle>,
-  name?: ManifestInternationalizedText,
-  contactInformation?: ManifestContactInformation
-): ElementModQ {
-  return hashElements(
-    // follows the python code
-    context,
-    electionScopeId,
-    ManifestElectionType[electionType], // gets string name from enum
-    startDate,
-    endDate,
-    name,
-    contactInformation,
-    geopoliticalUnits,
-    parties,
-    // candidates,
-    contests,
-    ballotStyles
-  );
-}
-
-function contestDescriptionCryptoHash(
-  context: GroupContext,
-  contestId: string,
-  sequenceOrder: number,
-  geopoliticalUnitId: string,
-  voteVariation: ManifestVoteVariationType,
-  numberElected: number,
-  votesAllowed: number,
-  name: string,
-  selections: Array<ManifestSelectionDescription>,
-  ballotTitle?: ManifestInternationalizedText,
-  ballotSubtitle?: ManifestInternationalizedText
-  // primaryPartyIds: Array<string>
-): ElementModQ {
-  return hashElements(
-    context,
-    contestId,
-    sequenceOrder,
-    geopoliticalUnitId,
-    ManifestVoteVariationType[voteVariation], // gets string name from enum
-    ballotTitle,
-    ballotSubtitle,
-    name,
-    numberElected,
-    votesAllowed,
-    selections
-    // primaryPartyIds,
-  );
-}
-
-export function selectionDescriptionCryptoHash(
-  context: GroupContext,
-  selectionId: string,
-  sequenceOrder: number,
-  candidateId: string
-): ElementModQ {
-  return hashElements(context, selectionId, sequenceOrder, candidateId);
-}
-
-export function internationalizedTextUnknown(
-  context: GroupContext
-): ManifestInternationalizedText {
-  const text = [new ManifestLanguage(context, 'unknown', 'en')];
-  return new ManifestInternationalizedText(context, text);
-}
+import {arraysEqual} from '../core/utils';
+import {
+  ElectionObjectBase,
+  Eq,
+  matchingArraysOfAnyElectionObjects,
+  matchingArraysWithEquals,
+  objEqualsOrUndefEquals,
+  OrderedObjectBase,
+} from './election-object-base';
 
 /**
  * The Election Manifest: defines the candidates, contests, and associated information for a
@@ -100,10 +32,10 @@ export class Manifest implements CryptoHashableElement {
     readonly candidates: Array<ManifestCandidate>,
     readonly contests: Array<ManifestContestDescription>,
     readonly ballotStyles: Array<ManifestBallotStyle>,
-    readonly name?: ManifestInternationalizedText,
-    readonly contactInformation?: ManifestContactInformation
+    readonly name: ManifestInternationalizedText | undefined,
+    readonly contactInformation: ManifestContactInformation | undefined
   ) {
-    this.cryptoHashElement = manifestCryptoHash(
+    this.cryptoHashElement = Manifest.manifestCryptoHash(
       context,
       electionScopeId,
       electionType,
@@ -119,13 +51,43 @@ export class Manifest implements CryptoHashableElement {
     );
   }
 
+  static manifestCryptoHash(
+    context: GroupContext,
+    electionScopeId: string,
+    electionType: ManifestElectionType,
+    startDate: string, // LocalDateTime,
+    endDate: string, // LocalDateTime,
+    geopoliticalUnits: Array<ManifestGeopoliticalUnit>,
+    parties: Array<ManifestParty>,
+    candidates: Array<ManifestCandidate>,
+    contests: Array<ManifestContestDescription>,
+    ballotStyles: Array<ManifestBallotStyle>,
+    name: ManifestInternationalizedText | undefined,
+    contactInformation: ManifestContactInformation | undefined
+  ): ElementModQ {
+    return hashElements(
+      // follows the python code
+      context,
+      electionScopeId,
+      ManifestElectionType[electionType], // gets string name from enum
+      startDate,
+      endDate,
+      name,
+      contactInformation,
+      geopoliticalUnits,
+      parties,
+      // candidates,
+      contests,
+      ballotStyles
+    );
+  }
+
   /**
    * Returns the {@link ManifestContestDescription} in the manifest having the given `contestId` string, or
    * `undefined` if absent.
    */
   getContest(contestId: string): ManifestContestDescription | undefined {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return this.contests.find((v, _i, _o) => v.contestId === contestId);
+    return this.contests.find(v => v.contestId === contestId);
   }
 
   /**
@@ -133,15 +95,12 @@ export class Manifest implements CryptoHashableElement {
    * `undefined` if absent.
    */
   getBallotStyle(ballotStyleId: string): ManifestBallotStyle | undefined {
-    return this.ballotStyles.find(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      (v, _i, _o) => v.ballotStyleId === ballotStyleId
-    );
+    return this.ballotStyles.find(v => v.ballotStyleId === ballotStyleId);
   }
 
   /**
-   * Returns all [Manifest.ContestDescription] instances having the given [ballotStyleId] style.
-   * Returns [emptyList] if nothing matches.
+   * Returns all {@link ManifestContestDescription} instances having the given `ballotStyleId` style.
+   * Returns [] if nothing matches.
    */
   getContests(ballotStyleId: string): Array<ManifestContestDescription> {
     const mbs = this.getBallotStyle(ballotStyleId);
@@ -150,10 +109,7 @@ export class Manifest implements CryptoHashableElement {
     }
 
     const gpIds = mbs.geopoliticalUnitIds;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return this.contests.filter((c, _i, _a) =>
-      gpIds.includes(c.geopoliticalUnitId)
-    );
+    return this.contests.filter(c => gpIds.includes(c.geopoliticalUnitId));
   }
 }
 
@@ -391,7 +347,9 @@ export enum ManifestVoteVariationType {
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/annotated-string)
  */
-export class ManifestAnnotatedString implements CryptoHashableElement {
+export class ManifestAnnotatedString
+  implements CryptoHashableElement, Eq<ManifestAnnotatedString>
+{
   cryptoHashElement: ElementModQ;
 
   constructor(
@@ -401,10 +359,20 @@ export class ManifestAnnotatedString implements CryptoHashableElement {
   ) {
     this.cryptoHashElement = hashElements(context, annotation, value);
   }
+
+  equals(other: ManifestAnnotatedString): boolean {
+    return (
+      other instanceof ManifestAnnotatedString &&
+      this.annotation === other.annotation &&
+      this.value === other.value
+    );
+  }
 }
 
 /** Classifies a set of contests by their set of parties and geopolitical units */
-export class ManifestBallotStyle implements CryptoHashableElement {
+export class ManifestBallotStyle
+  implements CryptoHashableElement, ElectionObjectBase
+{
   cryptoHashElement: ElementModQ;
 
   constructor(
@@ -412,7 +380,7 @@ export class ManifestBallotStyle implements CryptoHashableElement {
     readonly ballotStyleId: string,
     readonly geopoliticalUnitIds: Array<string>,
     readonly partyIds: Array<string>,
-    readonly imageUri?: string
+    readonly imageUri: string | undefined
   ) {
     this.cryptoHashElement = hashElements(
       context,
@@ -420,6 +388,20 @@ export class ManifestBallotStyle implements CryptoHashableElement {
       geopoliticalUnitIds,
       partyIds,
       imageUri
+    );
+  }
+
+  get objectId(): string {
+    return this.ballotStyleId;
+  }
+
+  equals(other: ManifestBallotStyle): boolean {
+    return (
+      other instanceof ManifestBallotStyle &&
+      arraysEqual(this.geopoliticalUnitIds, other.geopoliticalUnitIds) &&
+      arraysEqual(this.partyIds, other.partyIds) &&
+      this.ballotStyleId === other.ballotStyleId &&
+      this.imageUri === other.imageUri
     );
   }
 }
@@ -433,7 +415,9 @@ export class ManifestBallotStyle implements CryptoHashableElement {
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/candidate)
  */
-export class ManifestCandidate implements CryptoHashableElement {
+export class ManifestCandidate
+  implements CryptoHashableElement, ElectionObjectBase
+{
   cryptoHashElement: ElementModQ;
 
   constructor(
@@ -452,6 +436,21 @@ export class ManifestCandidate implements CryptoHashableElement {
       imageUri
     );
   }
+
+  get objectId(): string {
+    return this.candidateId;
+  }
+
+  equals(other: ManifestCandidate): boolean {
+    return (
+      other instanceof ManifestCandidate &&
+      this.candidateId === other.candidateId &&
+      this.name.equals(other.name) &&
+      this.partyId === other.partyId &&
+      this.imageUri === other.imageUri &&
+      this.isWriteIn === other.isWriteIn
+    );
+  }
 }
 
 /**
@@ -460,7 +459,9 @@ export class ManifestCandidate implements CryptoHashableElement {
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contact-information)
  */
-export class ManifestContactInformation implements CryptoHashableElement {
+export class ManifestContactInformation
+  implements CryptoHashableElement, Eq<ManifestContactInformation>
+{
   cryptoHashElement: ElementModQ;
 
   constructor(
@@ -468,7 +469,7 @@ export class ManifestContactInformation implements CryptoHashableElement {
     readonly addressLine: Array<string>,
     readonly email: Array<ManifestAnnotatedString>,
     readonly phone: Array<ManifestAnnotatedString>,
-    readonly name?: string
+    readonly name: string | undefined
   ) {
     this.cryptoHashElement = hashElements(
       context,
@@ -476,6 +477,16 @@ export class ManifestContactInformation implements CryptoHashableElement {
       addressLine,
       email,
       phone
+    );
+  }
+
+  equals(other: ManifestContactInformation): boolean {
+    return (
+      other instanceof ManifestContactInformation &&
+      arraysEqual(other.addressLine, this.addressLine) &&
+      matchingArraysWithEquals(other.email, this.email) &&
+      matchingArraysWithEquals(other.phone, this.phone) &&
+      other.name === this.name
     );
   }
 }
@@ -488,7 +499,9 @@ export class ManifestContactInformation implements CryptoHashableElement {
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/gp-unit)
  */
-export class ManifestGeopoliticalUnit implements CryptoHashableElement {
+export class ManifestGeopoliticalUnit
+  implements CryptoHashableElement, ElectionObjectBase
+{
   cryptoHashElement: ElementModQ;
 
   constructor(
@@ -496,7 +509,7 @@ export class ManifestGeopoliticalUnit implements CryptoHashableElement {
     readonly geopoliticalUnitId: string,
     readonly name: string,
     readonly type: ManifestReportingUnitType,
-    readonly contactInformation?: ManifestContactInformation
+    readonly contactInformation: ManifestContactInformation | undefined
   ) {
     this.cryptoHashElement = hashElements(
       context,
@@ -504,6 +517,20 @@ export class ManifestGeopoliticalUnit implements CryptoHashableElement {
       name,
       ManifestReportingUnitType[type], // gets string name from enum
       contactInformation
+    );
+  }
+
+  get objectId(): string {
+    return this.geopoliticalUnitId;
+  }
+
+  equals(other: ManifestGeopoliticalUnit): boolean {
+    return (
+      other instanceof ManifestGeopoliticalUnit &&
+      other.geopoliticalUnitId === this.geopoliticalUnitId &&
+      other.name === this.name &&
+      other.type === this.type &&
+      objEqualsOrUndefEquals(other.contactInformation, this.contactInformation)
     );
   }
 }
@@ -514,11 +541,20 @@ export class ManifestGeopoliticalUnit implements CryptoHashableElement {
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/internationalized-text)
  */
-export class ManifestInternationalizedText implements CryptoHashableElement {
+export class ManifestInternationalizedText
+  implements CryptoHashableElement, Eq<ManifestInternationalizedText>
+{
   cryptoHashElement: ElementModQ;
 
   constructor(context: GroupContext, readonly text: Array<ManifestLanguage>) {
     this.cryptoHashElement = hashElements(context, text);
+  }
+
+  equals(other: ManifestInternationalizedText): boolean {
+    return (
+      other instanceof ManifestInternationalizedText &&
+      matchingArraysWithEquals(this.text, other.text)
+    );
   }
 }
 
@@ -527,7 +563,9 @@ export class ManifestInternationalizedText implements CryptoHashableElement {
  *
  * @see [ISO 639](https://en.wikipedia.org/wiki/ISO_639)
  */
-export class ManifestLanguage implements CryptoHashableElement {
+export class ManifestLanguage
+  implements CryptoHashableElement, Eq<ManifestLanguage>
+{
   cryptoHashElement: ElementModQ;
 
   constructor(
@@ -537,6 +575,14 @@ export class ManifestLanguage implements CryptoHashableElement {
   ) {
     this.cryptoHashElement = hashElements(context, value, language);
   }
+
+  equals(other: ManifestLanguage): boolean {
+    return (
+      other instanceof ManifestLanguage &&
+      this.value === other.value &&
+      this.language === other.language
+    );
+  }
 }
 
 /**
@@ -545,16 +591,18 @@ export class ManifestLanguage implements CryptoHashableElement {
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/party)
  */
-export class ManifestParty implements CryptoHashableElement {
+export class ManifestParty
+  implements CryptoHashableElement, ElectionObjectBase
+{
   cryptoHashElement: ElementModQ;
 
   constructor(
     context: GroupContext,
     readonly partyId: string,
     readonly name: ManifestInternationalizedText,
-    readonly abbreviation?: string,
-    readonly color?: string,
-    readonly logoUri?: string
+    readonly abbreviation: string | undefined,
+    readonly color: string | undefined,
+    readonly logoUri: string | undefined
   ) {
     this.cryptoHashElement = hashElements(
       context,
@@ -565,22 +613,33 @@ export class ManifestParty implements CryptoHashableElement {
       logoUri
     );
   }
+
+  get objectId(): string {
+    return this.partyId;
+  }
+
+  equals(other: ManifestParty): boolean {
+    return (
+      other instanceof ManifestParty &&
+      other.partyId === this.partyId &&
+      other.name.equals(this.name) &&
+      other.abbreviation === this.abbreviation &&
+      other.color === this.color &&
+      other.logoUri === this.logoUri
+    );
+  }
 }
 
-export type ManifestContestDescription = ManifestCandidateContestDescription; // or ManifestReferendumContestDescription
-export type ManifestSelectionDescription =
-  ManifestCandidateSelectionDescription; // or ManifestReferendumSelectionDescription
 /**
  * The metadata that describes the structure and type of one contest in the election.
  *
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contest)
  */
-export class ManifestCandidateContestDescription
-  implements CryptoHashableElement
+export class ManifestContestDescription
+  implements CryptoHashableElement, OrderedObjectBase
 {
   cryptoHashElement: ElementModQ;
-  primaryPartyIds: Array<string>;
 
   constructor(
     context: GroupContext,
@@ -591,24 +650,78 @@ export class ManifestCandidateContestDescription
     readonly numberElected: number,
     readonly votesAllowed: number,
     readonly name: string,
-    readonly selections: Array<ManifestCandidateSelectionDescription>,
-    readonly ballotTitle?: ManifestInternationalizedText,
-    readonly ballotSubtitle?: ManifestInternationalizedText,
-    primaryPartyIds?: Array<string>
+    readonly selections: Array<ManifestSelectionDescription>,
+    readonly ballotTitle: ManifestInternationalizedText | undefined,
+    readonly ballotSubtitle: ManifestInternationalizedText | undefined
   ) {
-    this.primaryPartyIds = primaryPartyIds === undefined ? [] : primaryPartyIds;
-    this.cryptoHashElement = contestDescriptionCryptoHash(
+    this.cryptoHashElement =
+      ManifestContestDescription.contestDescriptionCryptoHash(
+        context,
+        contestId,
+        sequenceOrder,
+        geopoliticalUnitId,
+        voteVariation,
+        numberElected,
+        votesAllowed,
+        name,
+        selections,
+        ballotTitle,
+        ballotSubtitle
+      );
+  }
+
+  static contestDescriptionCryptoHash(
+    context: GroupContext,
+    contestId: string,
+    sequenceOrder: number,
+    geopoliticalUnitId: string,
+    voteVariation: ManifestVoteVariationType,
+    numberElected: number,
+    votesAllowed: number,
+    name: string,
+    selections: Array<ManifestSelectionDescription>,
+    ballotTitle: ManifestInternationalizedText | undefined,
+    ballotSubtitle: ManifestInternationalizedText | undefined
+    // primaryPartyIds: Array<string>
+  ): ElementModQ {
+    return hashElements(
       context,
       contestId,
       sequenceOrder,
       geopoliticalUnitId,
-      voteVariation,
+      ManifestVoteVariationType[voteVariation], // gets string name from enum
+      ballotTitle,
+      ballotSubtitle,
+      name,
       numberElected,
       votesAllowed,
-      name,
-      selections,
-      ballotTitle,
-      ballotSubtitle
+      selections
+      // primaryPartyIds,
+    );
+  }
+
+  get objectId(): string {
+    return this.contestId;
+  }
+
+  equals(other: ManifestContestDescription): boolean {
+    return (
+      other instanceof ManifestContestDescription &&
+      this.contestId === other.contestId &&
+      this.sequenceOrder === other.sequenceOrder &&
+      this.geopoliticalUnitId === other.geopoliticalUnitId &&
+      this.voteVariation === other.voteVariation &&
+      this.numberElected === other.numberElected &&
+      this.votesAllowed === other.votesAllowed &&
+      this.name === other.name &&
+      matchingArraysOfAnyElectionObjects(this.selections, other.selections) &&
+      ((this.ballotTitle === undefined && other.ballotTitle === undefined) ||
+        (this.ballotTitle !== undefined &&
+          objEqualsOrUndefEquals(this.ballotTitle, other.ballotTitle))) &&
+      ((this.ballotSubtitle === undefined &&
+        other.ballotSubtitle === undefined) ||
+        (this.ballotSubtitle !== undefined &&
+          objEqualsOrUndefEquals(this.ballotSubtitle, other.ballotSubtitle)))
     );
   }
 
@@ -648,13 +761,117 @@ export class ManifestCandidateContestDescription
 }
 
 /**
+ * The metadata that describes the structure and type of a referendum contest in the election.
+ * (Only thing that's different is that candidates can have political parties, while
+ * referenda don't.)
+ *
+ * @see
+ *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contest)
+ */
+export class ManifestReferendumContestDescription extends ManifestContestDescription {
+  constructor(
+    context: GroupContext,
+    contestId: string,
+    sequenceOrder: number,
+    geopoliticalUnitId: string,
+    voteVariation: ManifestVoteVariationType,
+    numberElected: number,
+    votesAllowed: number,
+    name: string,
+    selections: Array<ManifestSelectionDescription>,
+    ballotTitle: ManifestInternationalizedText | undefined,
+    ballotSubtitle: ManifestInternationalizedText | undefined
+  ) {
+    super(
+      context,
+      contestId,
+      sequenceOrder,
+      geopoliticalUnitId,
+      voteVariation,
+      numberElected,
+      votesAllowed,
+      name,
+      selections,
+      ballotTitle,
+      ballotSubtitle
+    );
+  }
+}
+
+/**
+ * The metadata that describes the structure and type of a candidate contest in the election.
+ * (Only thing that's different is that candidates can have political parties, while
+ * referenda don't.)
+ *
+ * @see
+ *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contest)
+ */
+export class ManifestCandidateContestDescription extends ManifestContestDescription {
+  primaryPartyIds: Array<string> | undefined;
+
+  constructor(
+    context: GroupContext,
+    contestId: string,
+    sequenceOrder: number,
+    geopoliticalUnitId: string,
+    voteVariation: ManifestVoteVariationType,
+    numberElected: number,
+    votesAllowed: number,
+    name: string,
+    selections: Array<ManifestSelectionDescription>,
+    ballotTitle: ManifestInternationalizedText | undefined,
+    ballotSubtitle: ManifestInternationalizedText | undefined,
+    primaryPartyIds: Array<string> | undefined
+  ) {
+    super(
+      context,
+      contestId,
+      sequenceOrder,
+      geopoliticalUnitId,
+      voteVariation,
+      numberElected,
+      votesAllowed,
+      name,
+      selections,
+      ballotTitle,
+      ballotSubtitle
+    );
+    this.primaryPartyIds = primaryPartyIds;
+  }
+
+  isValid(): boolean {
+    const superValid = super.isValid();
+    if (this.primaryPartyIds === undefined) {
+      return superValid;
+    } else {
+      if (this.primaryPartyIds.length !== this.selections.length) {
+        console.warn(
+          `incorrect number of primaryPartyIds: ${this.primaryPartyIds.length} vs ${this.selections.length}`
+        );
+        return false;
+      } else {
+        return superValid;
+      }
+    }
+  }
+
+  equals(other: ManifestCandidateContestDescription): boolean {
+    return (
+      other instanceof ManifestCandidateContestDescription &&
+      super.equals(other) &&
+      arraysEqual(other.primaryPartyIds, this.primaryPartyIds)
+    );
+  }
+}
+
+/**
  * A ballot selection for a specific candidate in a contest.
  *
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/ballot-selection)
  */
-export class ManifestCandidateSelectionDescription
-  implements CryptoHashableElement
+export class ManifestSelectionDescription
+  implements CryptoHashableElement, OrderedObjectBase
 {
   cryptoHashElement: ElementModQ;
 
@@ -664,11 +881,24 @@ export class ManifestCandidateSelectionDescription
     readonly sequenceOrder: number,
     readonly candidateId: string
   ) {
-    this.cryptoHashElement = selectionDescriptionCryptoHash(
+    this.cryptoHashElement = hashElements(
       context,
       selectionId,
       sequenceOrder,
       candidateId
+    );
+  }
+
+  get objectId(): string {
+    return this.selectionId;
+  }
+
+  equals(other: ElectionObjectBase): boolean {
+    return (
+      other instanceof ManifestSelectionDescription &&
+      other.selectionId === this.selectionId &&
+      other.sequenceOrder === this.sequenceOrder &&
+      other.candidateId === this.candidateId
     );
   }
 }
@@ -725,4 +955,12 @@ export function emptyInternationalizedText(
   context: GroupContext
 ): ManifestInternationalizedText {
   return new ManifestInternationalizedText(context, []);
+}
+
+/** Constructs an empty {@link ManifestInternationalizedTest} object with an "unknown" language. */
+export function internationalizedTextUnknown(
+  context: GroupContext
+): ManifestInternationalizedText {
+  const text = [new ManifestLanguage(context, 'unknown', 'en')];
+  return new ManifestInternationalizedText(context, text);
 }

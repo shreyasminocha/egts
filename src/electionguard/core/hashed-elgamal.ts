@@ -64,12 +64,10 @@ export class HashedElGamalCiphertext {
     }
 
     const ciphertextBlocks: Array<UInt256> = uint8ArrayChunked(this.c1, 32).map(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      (v, _i, _a) => UInt256.createFromBytesRightPad(v)
+      v => UInt256.createFromBytesRightPad(v)
     );
     const plaintextBytes: Array<Uint8Array> = ciphertextBlocks.map(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      (v, i, _a) => v.xor(kdf.get(i + 1)).bytes
+      (v, i) => v.xor(kdf.get(i + 1)).bytes
     );
     const plaintext: Uint8Array = uint8ArrayConcat(...plaintextBytes);
 
@@ -101,9 +99,8 @@ export class HashedElGamalCiphertext {
       compatibleContextOrFail(pk.element, nonce);
     }
 
-    const messageBlocks: Array<UInt256> = uint8ArrayChunked(input, 32).map(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      (v, _i, _a) => UInt256.createFromBytesRightPad(v)
+    const messageBlocks: Array<UInt256> = uint8ArrayChunked(input, 32).map(v =>
+      UInt256.createFromBytesRightPad(v)
     );
 
     // ElectionGuard spec: (alpha, beta) = (g^R mod p, K^R mod p)
@@ -121,8 +118,7 @@ export class HashedElGamalCiphertext {
     // console.log(`encryption k0: ${k0.toString()}`);
     const c0 = alpha.toBytes();
     const encryptedBlocks: Array<Uint8Array> = messageBlocks.map(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      (v, i, _a) => v.xor(kdf.get(i + 1)).bytes
+      (v, i) => v.xor(kdf.get(i + 1)).bytes
     );
 
     // messageBlocks.mapIndexed { i, p -> (p xor kdf[i + 1]).bytes }.toTypedArray()
