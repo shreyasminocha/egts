@@ -51,7 +51,7 @@
     "pretest": "npm run compile",
     "posttest": "npm run lint",
     "test": "jest",
-    "elgamal-bench": "node build/bench/ElGamalBenchmark"
+    "elgamal-bench": "node build/bench/elgamal-benchmark"
   },
   "engines": {
     "node": ">=10.4.0"
