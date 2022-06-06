@@ -10,8 +10,10 @@ import {
   uInt256,
   uint8ArrayReasonable,
 } from './generators';
-import {getCodecsForContext} from '../../../src/electionguard/core/json';
-import * as Either from 'fp-ts/lib/Either';
+import {
+  eitherRightOrFail,
+  getCodecsForContext,
+} from '../../../src/electionguard/core/json';
 import {GroupContext} from '../../../src/electionguard/core/group-common';
 import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
 import {HashedElGamalCiphertext} from '../../../src/electionguard/core/hashed-elgamal';
@@ -30,19 +32,14 @@ function testCodecLaws<T>(
         fc.property(generator, (value: T) => {
           const serialized = codec.encode(value);
           const deserialized = codec.decode(serialized);
-          const success = Either.isRight(deserialized);
-          expect(success).toBe(true);
-          const unpacked = (deserialized as Either.Right<T>).right;
+          const unpacked = eitherRightOrFail(deserialized);
           expect(equality(value, unpacked)).toBe(true);
 
           // now we'll make sure we can go to strings and back
           const serializedStr = JSON.stringify(serialized);
           const backToObject = JSON.parse(serializedStr);
           const deserialized2 = codec.decode(backToObject);
-          expect(Either.isRight(deserialized2)).toBe(true);
-          expect(
-            equality(value, (deserialized2 as Either.Right<T>).right)
-          ).toBe(true);
+          expect(equality(value, eitherRightOrFail(deserialized2))).toBe(true);
         }),
         fcFastConfig
       );

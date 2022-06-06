@@ -15,9 +15,20 @@ import {
   DisjunctiveChaumPedersenProofKnownNonce,
   ExpandedGenericChaumPedersenProof,
 } from './chaum-pedersen';
-import {hexToUint8Array, uint8ArrayToHex} from './utils';
+import {
+  ElectionConstants,
+  ElectionContext,
+  EncryptionDevice,
+} from './constants';
+import {
+  bigIntToUint8Array,
+  hexToUint8Array,
+  uint8ArrayToBigInt,
+  uint8ArrayToHex,
+} from './utils';
 import {HashedElGamalCiphertext} from './hashed-elgamal';
 import {UInt256} from './uint256';
+import * as Either from 'fp-ts/lib/Either';
 
 // These JSON importer/exporter things are using the io-ts package:
 // https://github.com/gcanti/io-ts/
@@ -70,6 +81,9 @@ class Codecs {
     unknown,
     HashedElGamalCiphertext
   >;
+  readonly electionConstantsCodec: C.Codec<unknown, unknown, ElectionConstants>;
+  readonly electionContextCodec: C.Codec<unknown, unknown, ElectionContext>;
+  readonly encryptionDeviceCodec: C.Codec<unknown, unknown, EncryptionDevice>;
 
   constructor(readonly context: GroupContext) {
     const uInt8ArrayDecoder: D.Decoder<unknown, Uint8Array> = pipe(
@@ -134,6 +148,149 @@ class Codecs {
     };
 
     this.elementModQCodec = C.make(elementModQDecoder, elementModQEncoder);
+
+    const electionConstantsDecoder: D.Decoder<unknown, ElectionConstants> =
+      pipe(
+        // D.record(D.string),
+        // D.map(s => {
+        // const empty = hexToUint8Array("0000") as Uint8Array;
+        // const result = {
+        // large_prime: hexToUint8Array(s.large_prime) || empty,
+        // small_prime: hexToUint8Array(s.small_prime) || empty,
+        // cofactor: hexToUint8Array(s.cofactor) || empty,
+        // generator: hexToUint8Array(s.generator) || empty,
+        // }
+        // console.log(`Decoding: ${JSON.stringify(result)}`)
+        // return result
+        // }),
+        D.struct({
+          large_prime: uInt8ArrayDecoder,
+          small_prime: uInt8ArrayDecoder,
+          cofactor: uInt8ArrayDecoder,
+          generator: uInt8ArrayDecoder,
+        }),
+        D.withMessage((i, e) => {
+          console.log(`value: ${i}`);
+          console.log(`error: ${e}`);
+          return 'Hmm';
+        }),
+        D.map(
+          s =>
+            new ElectionConstants(
+              uint8ArrayToBigInt(s.large_prime),
+              uint8ArrayToBigInt(s.small_prime),
+              uint8ArrayToBigInt(s.cofactor),
+              uint8ArrayToBigInt(s.generator)
+            )
+        )
+      );
+
+    const electionConstantsEncoder: E.Encoder<unknown, ElectionConstants> = {
+      encode: e => {
+        return {
+          large_prime: uInt8ArrayEncoder.encode(
+            bigIntToUint8Array(e.largePrime)
+          ),
+          small_prime: uInt8ArrayEncoder.encode(
+            bigIntToUint8Array(e.smallPrime)
+          ),
+          cofactor: uInt8ArrayEncoder.encode(bigIntToUint8Array(e.cofactor)),
+          generator: uInt8ArrayEncoder.encode(bigIntToUint8Array(e.generator)),
+        };
+      },
+    };
+
+    this.electionConstantsCodec = C.make(
+      electionConstantsDecoder,
+      electionConstantsEncoder
+    );
+
+    const electionContextDecoder: D.Decoder<unknown, ElectionContext> = pipe(
+      D.struct({
+        number_of_guardians: D.number,
+        quorum: D.number,
+        joint_public_key: elementModPDecoder,
+        manifest_hash: elementModQDecoder,
+        crypto_base_hash: elementModQDecoder,
+        crypto_extended_base_hash: elementModQDecoder,
+        commitmentHash: elementModQDecoder,
+        extended_data: D.nullable(D.record(D.string)),
+      }),
+      D.map(
+        s =>
+          new ElectionContext(
+            s.number_of_guardians,
+            s.quorum,
+            s.joint_public_key,
+            s.manifest_hash,
+            s.crypto_base_hash,
+            s.crypto_extended_base_hash,
+            s.commitmentHash,
+            // TODO: verify this is the way handle an optional record field
+            s.extended_data === null || s.extended_data === undefined
+              ? undefined
+              : s.extended_data
+          )
+      )
+    );
+
+    const electionContextEncoder: E.Encoder<unknown, ElectionContext> = {
+      encode: e => {
+        return {
+          number_of_guardians: e.numberOfGuardians,
+          quorum: e.quorum,
+          joint_public_key: elementModPEncoder.encode(e.jointPublicKey),
+          manifest_hash: elementModQEncoder.encode(e.manifestHash),
+          crypto_base_hash: elementModQEncoder.encode(e.cryptoBaseHash),
+          crypto_extended_base_hash: elementModQEncoder.encode(
+            e.cryptoExtendedBaseHash
+          ),
+          commitmentHash: elementModQEncoder.encode(e.commitmentHash),
+          // TODO: verify this is the way to handle an optional record field
+          extended_data: e.extendedData,
+        };
+      },
+    };
+
+    this.electionContextCodec = C.make(
+      electionContextDecoder,
+      electionContextEncoder
+    );
+
+    const encryptionDeviceDecoder: D.Decoder<unknown, EncryptionDevice> = pipe(
+      D.struct({
+        device_id: D.number,
+        session_id: D.number,
+        launch_code: D.number,
+        location: D.string,
+      }),
+      D.map(
+        s =>
+          new EncryptionDevice(
+            s.device_id,
+            s.session_id,
+            s.launch_code,
+            s.location
+          )
+      )
+    );
+
+    const encryptionDeviceEncoder: E.Encoder<unknown, EncryptionDevice> = {
+      encode: e => {
+        return {
+          device_id: e.deviceId,
+          session_id: e.sessionId,
+          launch_code: e.launchCode,
+          location: e.location,
+        };
+      },
+    };
+
+    this.encryptionDeviceCodec = C.make(
+      encryptionDeviceDecoder,
+      encryptionDeviceEncoder
+    );
+
     const elGamalPublicKeyDecoder: D.Decoder<unknown, ElGamalPublicKey> = pipe(
       D.struct({public_key: elementModPDecoder}),
       D.map(s => new ElGamalPublicKey(s.public_key))
@@ -406,6 +563,7 @@ class Codecs {
 
 const codecs = new Map<string, Codecs>();
 
+/** Given a context, returns all the codecs for that context.  */
 export function getCodecsForContext(context: GroupContext): Codecs {
   let result = codecs.get(context.name);
   if (result === undefined) {
@@ -413,4 +571,16 @@ export function getCodecsForContext(context: GroupContext): Codecs {
     codecs.set(context.name, new Codecs(context));
   }
   return result;
+}
+
+/**
+ * Breaks the beautiful functional aspects of using a codec decoder and
+ * either gives us the actual value or throws an error. Useful for tests.
+ * DON'T USE THIS IN PRODUCTION CODE WHEN FAILURES NEED TO BE HANDLED.
+ */
+export function eitherRightOrFail<E, T>(input: Either.Either<E, T>): T {
+  if (Either.isLeft(input)) {
+    throw new Error(`${input.left}`);
+  }
+  return input.right;
 }

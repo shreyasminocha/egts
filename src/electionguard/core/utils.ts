@@ -1,8 +1,6 @@
 // source for useful functions to and from uint8Array:
 // https://coolaj86.com/articles/convert-js-bigints-to-typedarrays/
 
-import {TextEncoder} from 'util';
-
 /** Returns upper-case hexadecimal version of the input. */
 export function uint8ArrayToHex(u8: Uint8Array): string {
   const hex: Array<string> = [];
@@ -118,9 +116,43 @@ export function uint8ArrayConcat(...input: Uint8Array[]): Uint8Array {
 }
 
 /** Converts a string from its internal (UTF-16?) representation to UTF-8. */
-export function stringToUtf8(input: string): Uint8Array {
-  // https://stackoverflow.com/a/46241050
-  const result = new TextEncoder().encode(input);
+export function stringToUtf8(str: string): Uint8Array {
+  // Adapted from:
+  // https://stackoverflow.com/a/28227607
+
+  // We're not doing this often enough to be too worried about speed.
+
+  const out = [];
+  let p = 0;
+  for (let i = 0; i < str.length; i++) {
+    let c = str.charCodeAt(i);
+    if (c < 128) {
+      out[p++] = c;
+    } else if (c < 2048) {
+      out[p++] = (c >> 6) | 192;
+      out[p++] = (c & 63) | 128;
+    } else if (
+      (c & 0xfc00) === 0xd800 &&
+      i + 1 < str.length &&
+      (str.charCodeAt(i + 1) & 0xfc00) === 0xdc00
+    ) {
+      // Surrogate Pair
+      c = 0x10000 + ((c & 0x03ff) << 10) + (str.charCodeAt(++i) & 0x03ff);
+      out[p++] = (c >> 18) | 240;
+      out[p++] = ((c >> 12) & 63) | 128;
+      out[p++] = ((c >> 6) & 63) | 128;
+      out[p++] = (c & 63) | 128;
+    } else {
+      out[p++] = (c >> 12) | 224;
+      out[p++] = ((c >> 6) & 63) | 128;
+      out[p++] = (c & 63) | 128;
+    }
+  }
+
+  const result = new Uint8Array(out.length);
+  for (let j = 0; j < out.length; j++) {
+    result[j] = out[j];
+  }
   return result;
 }
 

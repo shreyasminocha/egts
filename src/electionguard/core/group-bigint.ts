@@ -14,12 +14,15 @@ import {
   multInvP,
 } from './group-common';
 import {
+  ElectionConstants,
   production3072G,
   production3072P,
   production3072Q,
+  production3072R,
   production4096G,
   production4096P,
   production4096Q,
+  production4096R,
 } from './constants';
 import {UInt256} from './uint256';
 import {PowRadix} from './powradix';
@@ -292,13 +295,15 @@ class BigIntProductionContext implements GroupContext {
   readonly G_SQUARED_MOD_P: ElementModP;
   readonly G_INVERSE_MOD_P: ElementModP;
   private readonly dLogger: DLogger;
+  readonly electionConstants: ElectionConstants;
 
   constructor(
     readonly name: string,
     readonly numBits: number,
     readonly P: bigint,
     readonly Q: bigint,
-    readonly G: bigint
+    readonly G: bigint,
+    readonly R: bigint
   ) {
     this.ZERO_MOD_Q = new ElementModQImpl(BIG_ZERO, this);
     this.ONE_MOD_Q = new ElementModQImpl(BIG_ONE, this);
@@ -310,6 +315,7 @@ class BigIntProductionContext implements GroupContext {
     this.G_SQUARED_MOD_P = multP(this.G_MOD_P, this.G_MOD_P);
     this.G_INVERSE_MOD_P = multInvP(this.G_MOD_P);
     this.dLogger = new DLogger(this.G_MOD_P);
+    this.electionConstants = new ElectionConstants(P, Q, R, G);
   }
 
   createElementModQFromHex(value: string): ElementModQ | undefined {
@@ -468,7 +474,8 @@ export function bigIntContext4096(): GroupContext {
       4096,
       production4096P,
       production4096Q,
-      production4096G
+      production4096G,
+      production4096R
     );
   }
   return bigIntContext4096Val;
@@ -488,8 +495,35 @@ export function bigIntContext3072(): GroupContext {
       3072,
       production3072P,
       production3072Q,
-      production3072G
+      production3072G,
+      production3072R
     );
   }
   return bigIntContext3072Val;
+}
+
+/**
+ * Given some externally-provided ElectionConstants, either returns a suitable
+ * GroupContext, or undefined to indicate an error.
+ */
+export function bigIntContextFromConstants(
+  constants: ElectionConstants
+): GroupContext | undefined {
+  if (
+    constants.largePrime === production4096P &&
+    constants.smallPrime === production4096Q &&
+    constants.cofactor === production4096R &&
+    constants.generator === production4096G
+  ) {
+    return bigIntContext4096();
+  } else if (
+    constants.largePrime === production3072P &&
+    constants.smallPrime === production3072Q &&
+    constants.cofactor === production3072R &&
+    constants.generator === production3072G
+  ) {
+    return bigIntContext3072();
+  } else {
+    return undefined;
+  }
 }

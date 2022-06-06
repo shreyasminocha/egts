@@ -1,3 +1,4 @@
+import {ElectionConstants} from './constants';
 import {CryptoHashableString} from './hash';
 import {UInt256} from './uint256';
 
@@ -175,6 +176,8 @@ export interface GroupContext {
    * to [0, P).
    */
   createElementModPSafe: (value: bigint | string | number) => ElementModP;
+
+  electionConstants: ElectionConstants;
 
   ZERO_MOD_Q: ElementModQ;
   ONE_MOD_Q: ElementModQ;

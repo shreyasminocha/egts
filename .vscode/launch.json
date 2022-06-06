@@ -19,5 +19,35 @@
       ],
       "type": "node"
     },
+    {
+      "name": "NPM debug hashed-elgamal",
+      "request": "launch",
+      "runtimeArgs": [
+        "run",
+        "test",
+        "--",
+        "test/electionguard/core/hashed-elgamal.test.ts"
+      ],
+      "runtimeExecutable": "npm",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node"
+    },
+    {
+      "name": "NPM debug constants",
+      "request": "launch",
+      "runtimeArgs": [
+        "run",
+        "test",
+        "--",
+        "test/electionguard/core/constants.test.ts"
+      ],
+      "runtimeExecutable": "npm",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node"
+    },
   ]
 }
