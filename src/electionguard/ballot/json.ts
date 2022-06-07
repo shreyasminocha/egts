@@ -4,13 +4,12 @@ import * as C from 'io-ts/Codec';
 import {pipe} from 'fp-ts/function';
 import {GroupContext} from '../core/group-common';
 import * as Manifest from './manifest';
-import {SubmittedBallot, SubmittedSelection} from './submitted-ballot';
-import {CiphertextContest} from './ciphertext-ballot';
+import {
+  SubmittedContest,
+  SubmittedBallot,
+  SubmittedSelection,
+} from './submitted-ballot';
 import {getCodecsForContext as getCoreCodecsForContext} from '../core/json';
-import {hexToUint8Array, uint8ArrayToHex} from '../core/utils';
-import {UInt256} from '../core/uint256';
-import {DisjunctiveChaumPedersenProofKnownNonce} from '../core/chaum-pedersen';
-import {unknown} from 'io-ts';
 
 // These JSON importer/exporter things are using the io-ts package:
 // https://github.com/gcanti/io-ts/
@@ -35,18 +34,45 @@ import {unknown} from 'io-ts';
  * be correct.
  */
 class Codecs {
-  readonly ManifestGeopoliticalUnitCodec: C.Codec<unknown, string, Manifest.ManifestGeopoliticalUnit>;
-  readonly ManifestCandidateCodec: C.Codec<unknown, string, Manifest.ManifestCandidate>;
-  readonly ManifestPartyCodec: C.Codec<unknown, string, Manifest.ManifestParty>;
-  readonly ManifestBallotStyleCodec: C.Codec<unknown, string, Manifest.ManifestBallotStyle>;
-  readonly ManifestCodec: C.Codec<unknown, string, Manifest.Manifest>;
-  readonly ManifestContestDescriptionCodec: C.Codec<unknown, string, Manifest.ManifestContestDescription>;
-  readonly SubmittedSelectionCodec: C.Codec<unknown, string, SubmittedSelection>;
-  readonly CiphertextContestCodec: C.Codec<unknown, string, CiphertextContest>;
-  readonly SubmittedBallotCodec: C.Codec<unknown, string, SubmittedBallot>;
+  readonly ManifestGeopoliticalUnitCodec: C.Codec<
+    unknown,
+    unknown,
+    Manifest.ManifestGeopoliticalUnit
+  >;
+  readonly ManifestCandidateCodec: C.Codec<
+    unknown,
+    unknown,
+    Manifest.ManifestCandidate
+  >;
+  readonly ManifestPartyCodec: C.Codec<
+    unknown,
+    unknown,
+    Manifest.ManifestParty
+  >;
+  readonly ManifestBallotStyleCodec: C.Codec<
+    unknown,
+    unknown,
+    Manifest.ManifestBallotStyle
+  >;
+  readonly ManifestCodec: C.Codec<unknown, unknown, Manifest.Manifest>;
+  readonly ManifestContestDescriptionCodec: C.Codec<
+    unknown,
+    unknown,
+    Manifest.ManifestContestDescription
+  >;
+  readonly SubmittedContestCodec: C.Codec<unknown, unknown, SubmittedContest>;
+  readonly SubmittedSelectionCodec: C.Codec<
+    unknown,
+    unknown,
+    SubmittedSelection
+  >;
+  readonly SubmittedBallotCodec: C.Codec<unknown, unknown, SubmittedBallot>;
 
   constructor(readonly context: GroupContext) {
-    const ManifestLanguageDecoder: D.Decoder<unknown, Manifest.ManifestLanguage> = pipe(
+    const ManifestLanguageDecoder: D.Decoder<
+      unknown,
+      Manifest.ManifestLanguage
+    > = pipe(
       D.struct({
         value: D.string,
         language: D.string,
@@ -59,30 +85,125 @@ class Codecs {
       Manifest.ManifestInternationalizedText
     > = pipe(
       D.struct({
-        text: D.array(ManifestLanguageDecoder)
+        text: D.array(ManifestLanguageDecoder),
       }),
       D.map(s => new Manifest.ManifestInternationalizedText(context, s.text))
     );
 
-    const ManifestGeopoliticalUnitDecoder: D.Decoder<unknown, Manifest.ManifestGeopoliticalUnit> = pipe(
+    const ManifestInternationalizedTextEncoder: E.Encoder<
+      unknown,
+      Manifest.ManifestInternationalizedText
+    > = {
+      encode: input => ({
+        text: input.text,
+      }),
+    };
+
+    const ManifestSelectionDescriptionDecoder: D.Decoder<
+      unknown,
+      Manifest.ManifestSelectionDescription
+    > = pipe(
       D.struct({
         object_id: D.string,
-        name: D.string,
-        type: D.string,
-        contact_information: D.string,
+        sequence_order: D.number,
+        candidate_id: D.string,
       }),
-      D.map(s =>
-        new Manifest.ManifestGeopoliticalUnit(
-          context,
-          s.object_id,
-          s.name,
-          s.type as ManifestReportingUnitType,
-          s.contact_information
-        )
+      D.map(
+        s =>
+          new Manifest.ManifestSelectionDescription(
+            context,
+            s.object_id,
+            s.sequence_order,
+            s.candidate_id
+          )
       )
     );
 
-    const ManifestGeopoliticalUnitEncoder: E.Encoder<unknown, Manifest.ManifestGeopoliticalUnit> = {
+    const ManifestSelectionDescriptionEncoder: E.Encoder<
+      unknown,
+      Manifest.ManifestSelectionDescription
+    > = {
+      encode: input => ({
+        object_id: input.selectionId,
+        sequence_order: input.sequenceOrder,
+        candidate_id: input.candidateId,
+      }),
+    };
+
+    const ManifestAnnotatedStringDecoder: D.Decoder<
+      unknown,
+      Manifest.ManifestAnnotatedString
+    > = pipe(
+      D.struct({
+        annotation: D.string,
+        value: D.string,
+      }),
+      D.map(
+        s =>
+          new Manifest.ManifestAnnotatedString(context, s.annotation, s.value)
+      )
+    );
+
+    const ManifestContactInformationDecoder: D.Decoder<
+      unknown,
+      Manifest.ManifestContactInformation
+    > = pipe(
+      D.struct({
+        address_line: D.array(D.string),
+        email: D.array(ManifestAnnotatedStringDecoder),
+        phone: D.array(ManifestAnnotatedStringDecoder),
+        name: D.string,
+      }),
+      D.map(
+        s =>
+          new Manifest.ManifestContactInformation(
+            context,
+            s.address_line,
+            s.email,
+            s.phone,
+            s.name
+          )
+      )
+    );
+
+    const ManifestContactInformationEncoder: E.Encoder<
+      unknown,
+      Manifest.ManifestContactInformation
+    > = {
+      encode: input => ({
+        address_line: input.addressLine,
+        email: input.email,
+        phone: input.phone,
+        name: input.name,
+      }),
+    };
+
+    const ManifestGeopoliticalUnitDecoder: D.Decoder<
+      unknown,
+      Manifest.ManifestGeopoliticalUnit
+    > = pipe(
+      D.struct({
+        object_id: D.string,
+        name: D.string,
+        type: D.number,
+        contact_information: ManifestContactInformationDecoder,
+      }),
+      D.map(
+        s =>
+          new Manifest.ManifestGeopoliticalUnit(
+            context,
+            s.object_id,
+            s.name,
+            s.type as Manifest.ManifestReportingUnitType,
+            s.contact_information
+          )
+      )
+    );
+
+    const ManifestGeopoliticalUnitEncoder: E.Encoder<
+      unknown,
+      Manifest.ManifestGeopoliticalUnit
+    > = {
       encode: input => ({
         object_id: input.objectId,
         name: input.name,
@@ -96,7 +217,10 @@ class Codecs {
       ManifestGeopoliticalUnitEncoder
     );
 
-    const ManifestCandidateDecoder: D.Decoder<unknown, Manifest.ManifestCandidate> = pipe(
+    const ManifestCandidateDecoder: D.Decoder<
+      unknown,
+      Manifest.ManifestCandidate
+    > = pipe(
       D.struct({
         object_id: D.string,
         name: ManifestInternationalizedTextDecoder,
@@ -104,19 +228,23 @@ class Codecs {
         image_uri: D.string,
         is_write_in: D.boolean,
       }),
-      D.map(s =>
-        new Manifest.ManifestCandidate(
-          context,
-          s.object_id,
-          s.name,
-          s.party_id,
-          s.image_uri,
-          s.is_write_in
-        )
+      D.map(
+        s =>
+          new Manifest.ManifestCandidate(
+            context,
+            s.object_id,
+            s.name,
+            s.party_id,
+            s.image_uri,
+            s.is_write_in
+          )
       )
     );
 
-    const ManifestCandidateEncoder: E.Encoder<unknown, Manifest.ManifestCandidate> = {
+    const ManifestCandidateEncoder: E.Encoder<
+      unknown,
+      Manifest.ManifestCandidate
+    > = {
       encode: input => ({
         object_id: input.candidateId,
         name: input.name,
@@ -131,54 +259,73 @@ class Codecs {
       ManifestCandidateEncoder
     );
 
-    const ManifestPartyDecoder: D.Decoder<unknown, Manifest.ManifestParty> = pipe(
-      D.struct({
-        object_id: D.string,
-        name: ManifestInternationalizedTextDecoder,
-        abbreviation: D.string,
-        color: D.string,
-        logo_uri: D.string,
-      }),
-      D.map(s =>
-        new Manifest.ManifestParty(
-          context,
-          s.object_id,
-          s.name,
-          s.abbreviation,
-          s.color,
-          s.logo_uri
+    const ManifestPartyDecoder: D.Decoder<unknown, Manifest.ManifestParty> =
+      pipe(
+        D.struct({
+          object_id: D.string,
+          name: ManifestInternationalizedTextDecoder,
+          abbreviation: D.string,
+          color: D.string,
+          logo_uri: D.string,
+        }),
+        D.map(
+          s =>
+            new Manifest.ManifestParty(
+              context,
+              s.object_id,
+              s.name,
+              s.abbreviation,
+              s.color,
+              s.logo_uri
+            )
         )
-      )
-    );
+      );
+
+    const ManifestPartyEncoder: E.Encoder<unknown, Manifest.ManifestParty> = {
+      encode: input => ({
+        object_id: input.partyId,
+        name: input.name,
+        abbreviation: input.abbreviation,
+        color: input.color,
+        logo_uri: input.logoUri,
+      }),
+    };
 
     this.ManifestPartyCodec = C.make(
       ManifestPartyDecoder,
       ManifestPartyEncoder
     );
 
-    const ManifestBallotStyleDecoder: D.Decoder<unknown, Manifest.ManifestBallotStyle> = pipe(
+    const ManifestBallotStyleDecoder: D.Decoder<
+      unknown,
+      Manifest.ManifestBallotStyle
+    > = pipe(
       D.struct({
         object_id: D.string,
         geopolitical_unit_ids: D.array(D.string),
         party_ids: D.array(D.string),
         image_uri: D.string,
       }),
-      D.map(s =>
-        new Manifest.ManifestBallotStyle(
-          context,
-          s.object_id,
-          s.geopolitical_unit_ids,
-          s.party_ids,
-          s.image_uri
-        )
+      D.map(
+        s =>
+          new Manifest.ManifestBallotStyle(
+            context,
+            s.object_id,
+            s.geopolitical_unit_ids,
+            s.party_ids,
+            s.image_uri
+          )
       )
     );
 
-    const ManifestBallotStyleEncoder: E.Encoder<unknown, Manifest.ManifestBallotStyle> = {
+    const ManifestBallotStyleEncoder: E.Encoder<
+      unknown,
+      Manifest.ManifestBallotStyle
+    > = {
       encode: input => ({
         object_id: input.ballotStyleId,
-        geopolitical_unit_ids: JSON.stringify(input.geopoliticalUnitIds.map(ManifestGeopoliticalUnitEncoder.encode)),
-        party_ids: JSON.stringify(input.partyIds.map(ManifestPartyEncoder.encode)),
+        geopolitical_unit_ids: JSON.stringify(input.geopoliticalUnitIds),
+        party_ids: JSON.stringify(input.partyIds),
         image_uri: input.imageUri,
       }),
     };
@@ -186,76 +333,6 @@ class Codecs {
     this.ManifestBallotStyleCodec = C.make(
       ManifestBallotStyleDecoder,
       ManifestBallotStyleEncoder
-    );
-
-    const ManifestDecoder: D.Decoder<unknown, Manifest.Manifest> = pipe(
-      D.struct({
-        election_scope_id: D.string,
-        spec_version: D.string,
-        type: D.string,
-        start_date: D.string,
-        end_date: D.string,
-        geopolitical_units: ManifestGeopoliticalUnitDecoder,
-        parties: ManifestPartyDecoder,
-        candidates: ManifestCandidateDecoder,
-        contests: ManifestContestDescriptionDecoder,
-        ballots: ManifestBallotStyleDecoder,
-        name: ManifestInternationalizedTextDecoder,
-        contact_information: D.string,
-      }),
-      D.map(s =>
-        new Manifest.Manifest(
-          s.election_scope_id,
-          s.spec_version,
-          s.type,
-          s.start_date,
-          s.end_date,
-          s.geopolitical_units,
-          s.parties,
-          s.candidates,
-          s.contests,
-          s.ballots,
-          s.name,
-          s.contact_information
-        )
-      )
-    );
-
-    const ManifestEncoder: E.Encoder<unknown, Manifest.Manifest> = {
-      encode: input => ({
-        election_scope_id: input.electionScopeId,
-        spec_version: input.specVersion,
-        type: (input.electionType),
-        start_date: input.startDate,
-        end_date: input.endDate,
-        geopolitical_units: JSON.stringify(ManifestGeopoliticalUnitEncoder.encode),
-        parties: JSON.stringify(input.parties.map(ManifestPartyEncoder)),
-        candidates: JSON.stringify(input.candidates.map(ManifestCandidate)),
-        contests: JSON.stringify(input.contests.map(ManifestContestDescriptionEncoder)),
-        ballots: JSON.stringify(input.ballotStyles.map(ManifestBallotStyleEncoder)),
-        name: ManifestInternationalizedTextEncoder.encode(input.name),
-        contact_information: ManifestContactInformationEncoder.encode(input.contactInformation),
-      }),
-    };
-
-    this.ManifestCodec = C.make(ManifestDecoder, ManifestEncoder);
-
-    const ManifestSelectionDescriptionDecoder: D.Decoder<
-      unknown,
-      Manifest.ManifestSelectionDescription
-    > = pipe(
-      D.struct({
-        object_id: D.string,
-        sequence_order: D.number,
-        candidate_id: D.string,
-      }),
-      D.map(s =>
-        new Manifest.ManifestSelectionDescription(
-          s.object_id,
-          s.sequence_order,
-          s.candidate_id
-        )
-      )
     );
 
     const ManifestContestDescriptionDecoder: D.Decoder<
@@ -266,32 +343,36 @@ class Codecs {
         object_id: D.string,
         sequence_order: D.number,
         electoral_district_id: D.string,
-        vote_variation: D.string,
+        vote_variation: D.number,
         number_elected: D.number,
-        votes_allowed: D.string,
-        name: D.number,
-        ballot_selections: ManifestSelectionDescriptionDecoder,
-        ballot_title: D.string,
-        ballot_subtitle: D.string,
+        votes_allowed: D.number,
+        name: D.string,
+        ballot_selections: D.array(ManifestSelectionDescriptionDecoder),
+        ballot_title: ManifestInternationalizedTextDecoder,
+        ballot_subtitle: ManifestInternationalizedTextDecoder,
       }),
-      D.map(s =>
-        new Manifest.ManifestContestDescription(
-          context,
-          s.object_id,
-          s.sequence_order,
-          s.electoral_district_id,
-          s.vote_variation,
-          s.number_elected,
-          s.votes_allowed,
-          s.name,
-          s.ballot_selections,
-          s.ballot_title,
-          s.ballot_subtitle
-        )
+      D.map(
+        s =>
+          new Manifest.ManifestContestDescription(
+            context,
+            s.object_id,
+            s.sequence_order,
+            s.electoral_district_id,
+            s.vote_variation as Manifest.ManifestVoteVariationType,
+            s.number_elected,
+            s.votes_allowed,
+            s.name,
+            s.ballot_selections,
+            s.ballot_title,
+            s.ballot_subtitle
+          )
       )
     );
 
-    const ManifestContestDescriptionEncoder: E.Encoder<unknown, Manifest.ManifestContestDescription> = {
+    const ManifestContestDescriptionEncoder: E.Encoder<
+      unknown,
+      Manifest.ManifestContestDescription
+    > = {
       encode: input => ({
         object_id: input.contestId,
         sequence_order: input.sequenceOrder,
@@ -300,9 +381,15 @@ class Codecs {
         number_elected: input.numberElected,
         votes_allowed: input.votesAllowed,
         name: input.name,
-        ballot_selections: ManifestSelectionDescriptionEncoder.encode(input.selections),
-        ballot_title: ManifestInternationalizedTextEncoder.encode(input.ballotTitle),
-        ballot_subtitle: ManifestInternationalizedTextEncoder.encode(input.ballotSubtitle),
+        ballot_selections: JSON.stringify(
+          input.selections.map(ManifestSelectionDescriptionEncoder.encode)
+        ),
+        ballot_title:
+          input.ballotTitle &&
+          ManifestInternationalizedTextEncoder.encode(input.ballotTitle),
+        ballot_subtitle:
+          input.ballotSubtitle &&
+          ManifestInternationalizedTextEncoder.encode(input.ballotSubtitle),
       }),
     };
 
@@ -311,45 +398,123 @@ class Codecs {
       ManifestContestDescriptionEncoder
     );
 
-    const SubmittedSelectionDecoder: D.Decoder<unknown, SubmittedSelection> = pipe(
+    const ManifestDecoder: D.Decoder<unknown, Manifest.Manifest> = pipe(
       D.struct({
-        object_id: D.string,
-        sequence_order: D.number,
-        description_hash: UInt256ArrayDecoder,
-        ciphertext: ElGamalCiphertextDecoder,
-        crypto_hash: UInt256ArrayDecoder,
-        nonce: D.string,
-        is_placeholder_selection: D.boolean,
-        proof: DisjunctiveChaumPedersenProofKnownNonceDecoder,
-        extended_data: D.string,
+        election_scope_id: D.string,
+        spec_version: D.string,
+        type: D.number,
+        start_date: D.string,
+        end_date: D.string,
+        geopolitical_units: D.array(ManifestGeopoliticalUnitDecoder),
+        parties: D.array(ManifestPartyDecoder),
+        candidates: D.array(ManifestCandidateDecoder),
+        contests: D.array(ManifestContestDescriptionDecoder),
+        ballots: D.array(ManifestBallotStyleDecoder),
+        name: ManifestInternationalizedTextDecoder,
+        contact_information: ManifestContactInformationDecoder,
       }),
       D.map(
         s =>
-          new SubmittedSelection(
-            s.object_id,
-            s.sequence_order,
-            s.description_hash,
-            s.ciphertext,
-            s.crypto_hash,
-            s.nonce,
-            s.is_placeholder_selection,
-            s.proof,
-            s.extended_data
+          new Manifest.Manifest(
+            context,
+            s.election_scope_id,
+            s.spec_version,
+            s.type,
+            s.start_date,
+            s.end_date,
+            s.geopolitical_units,
+            s.parties,
+            s.candidates,
+            s.contests,
+            s.ballots,
+            s.name,
+            s.contact_information
           )
       )
     );
+
+    const ManifestEncoder: E.Encoder<unknown, Manifest.Manifest> = {
+      encode: input => ({
+        election_scope_id: input.electionScopeId,
+        spec_version: input.specVersion,
+        type: input.electionType,
+        start_date: input.startDate,
+        end_date: input.endDate,
+        geopolitical_units: JSON.stringify(
+          ManifestGeopoliticalUnitEncoder.encode
+        ),
+        parties: JSON.stringify(input.parties.map(ManifestPartyEncoder.encode)),
+        candidates: JSON.stringify(
+          input.candidates.map(ManifestCandidateEncoder.encode)
+        ),
+        contests: JSON.stringify(
+          input.contests.map(ManifestContestDescriptionEncoder.encode)
+        ),
+        ballots: JSON.stringify(
+          input.ballotStyles.map(ManifestBallotStyleEncoder.encode)
+        ),
+        name:
+          input.name && ManifestInternationalizedTextEncoder.encode(input.name),
+        contact_information:
+          input.contactInformation &&
+          ManifestContactInformationEncoder.encode(input.contactInformation),
+      }),
+    };
+
+    this.ManifestCodec = C.make(ManifestDecoder, ManifestEncoder);
+
+    const SubmittedSelectionDecoder: D.Decoder<unknown, SubmittedSelection> =
+      pipe(
+        D.struct({
+          object_id: D.string,
+          sequence_order: D.number,
+          description_hash: getCoreCodecsForContext(context).elementModQCodec,
+          ciphertext: getCoreCodecsForContext(context).elGamalCiphertextCodec,
+          crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
+          nonce: D.string,
+          is_placeholder_selection: D.boolean,
+          proof:
+            getCoreCodecsForContext(context)
+              .disjunctiveChaumPedersenProofKnownNonceCodec,
+          extended_data: D.string,
+        }),
+        D.map(
+          s =>
+            new SubmittedSelection(
+              s.object_id,
+              s.sequence_order,
+              s.description_hash,
+              s.ciphertext,
+              s.crypto_hash,
+              s.is_placeholder_selection,
+              s.proof
+            )
+        )
+      );
 
     const SubmittedSelectionEncoder: E.Encoder<unknown, SubmittedSelection> = {
       encode: input => ({
         object_id: input.selectionId,
         sequence_order: input.sequenceOrder,
-        description_hash: elementModQEncoder.encode(input.selectionHash),
-        ciphertext: ElGamalCiphertextEncoder.encode(input.ciphertext),
-        crypto_hash: elementModQEncoder.encode(input.cryptoHash),
-        nonce: input.nonce,
+        description_hash: getCoreCodecsForContext(
+          context
+        ).elementModQCodec.encode(input.selectionHash),
+        ciphertext: getCoreCodecsForContext(
+          context
+        ).elGamalCiphertextCodec.encode(input.ciphertext),
+        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+          input.cryptoHash
+        ),
+        nonce: undefined,
         is_placeholder_selection: input.isPlaceholderSelection,
-        proof: DisjunctiveChaumPedersenProofKnownNonceEncoder.encode(input.proof),
-        extended_data: HashedElGamalCiphertextEncoder.encode(input.extendedData),
+        proof: getCoreCodecsForContext(
+          context
+        ).disjunctiveChaumPedersenProofKnownNonceCodec.encode(input.proof),
+        extended_data:
+          input.extendedData &&
+          getCoreCodecsForContext(context).hashedElGamalCiphertextCodec.encode(
+            input.extendedData
+          ),
       }),
     };
 
@@ -358,74 +523,85 @@ class Codecs {
       SubmittedSelectionEncoder
     );
 
-    const CiphertextContestDecoder: D.Decoder<unknown, CiphertextContest> = pipe(
+    const SubmittedContestDecoder: D.Decoder<unknown, SubmittedContest> = pipe(
       D.struct({
         object_id: D.string,
         sequence_order: D.number,
-        description_hash: getCoreCodecsForContext(context).elementModQCodec.decoer,
+        description_hash: getCoreCodecsForContext(context).elementModQCodec,
         ballot_selections: D.array(SubmittedSelectionDecoder),
-        ciphertext_extended_data: D.string,
-        ciphertext_accumulation: ElGamalCiphertextDecoder,
-        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.decoer,
-        nonce: getCoreCodecsForContext(context).elementModQCodec.decoer,
-        proof: ConstantChaumPedersenProofKnownNonceDecoder,
+        ciphertext_accumulation:
+          getCoreCodecsForContext(context).elGamalCiphertextCodec,
+        crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
+        proof:
+          getCoreCodecsForContext(context)
+            .constantChaumPedersenProofKnownNonceCodec,
       }),
-      D.map(s =>
-        new CiphertextContest(
-          context,
-          s.object_id,
-          s.sequence_order,
-          s.description_hash,
-          s.ballot_selections,
-          s.crypto_hash,
-          s.proof,
-        )
+      D.map(
+        s =>
+          new SubmittedContest(
+            s.object_id,
+            s.sequence_order,
+            s.description_hash,
+            s.ballot_selections,
+            s.ciphertext_accumulation,
+            s.crypto_hash,
+            s.proof
+          )
       )
     );
 
-    const CiphertextContestEncoder: E.Encoder<unknown, CiphertextContest> = {
+    const SubmittedContestEncoder: E.Encoder<unknown, SubmittedContest> = {
       encode: input => ({
         object_id: input.contestId,
         sequence_order: input.sequenceOrder,
-        description_hash: elementModQEncoder.encode(input.contestHash),
-        ballot_selections: input.selections,
-        ciphertext_extended_data: input.undefined,
-        ciphertext_accumulation: input.ciphertextAccumulation,
-        crypto_hash: elementModQEncoder.encode(input.cryptoHash),
-        nonce: elementModQEncoder.encode(input.contestNonce),
-        proof: input.proof,
+        description_hash: getCoreCodecsForContext(
+          context
+        ).elementModQCodec.encode(input.contestHash),
+        ballot_selections: JSON.stringify(
+          input.selections.map(SubmittedSelectionEncoder.encode)
+        ),
+        ciphertext_accumulation: getCoreCodecsForContext(
+          context
+        ).elGamalCiphertextCodec.encode(input.ciphertextAccumulation),
+        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+          input.cryptoHash
+        ),
+        proof: getCoreCodecsForContext(
+          context
+        ).constantChaumPedersenProofKnownNonceCodec.encode(input.proof),
       }),
     };
 
-    this.CiphertextContestCodec = C.make(
-      CiphertextContestDecoder,
-      CiphertextContestEncoder
+    this.SubmittedContestCodec = C.make(
+      SubmittedContestDecoder,
+      SubmittedContestEncoder
     );
 
     const SubmittedBallotDecoder: D.Decoder<unknown, SubmittedBallot> = pipe(
       D.struct({
         object_id: D.string,
         style_id: D.string,
-        manifest_hash: getCoreCodecsForContext(context).elementModQCodec.decode,
-        code_hash: getCoreCodecsForContext(context).elementModQCodec.decode,
-        contests: D.array(ManifestContestDescriptionDecoder),
-        code: getCoreCodecsForContext(context).elementModQCodec.decode,
+        manifest_hash: getCoreCodecsForContext(context).elementModQCodec,
+        code_hash: getCoreCodecsForContext(context).elementModQCodec,
+        contests: D.array(SubmittedContestDecoder),
+        code: getCoreCodecsForContext(context).elementModQCodec,
         timestamp: D.number,
-        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.decode,
+        crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
         state: D.number,
       }),
-      D.map(s =>
-        new SubmittedBallot(
-          s.object_id,
-          s.style_id,
-          s.manifest_hash,
-          s.code_hash,
-          s.code,
-          s.contests,
-          s.timestamp,
-          s.crypto_hash,
-          s.state,
-        )
+      D.map(
+        s =>
+          new SubmittedBallot(
+            s.object_id,
+            s.style_id,
+            s.manifest_hash,
+            s.code_hash,
+            s.code,
+            s.contests,
+            s.timestamp,
+            s.crypto_hash,
+            s.state
+          )
       )
     );
 
@@ -433,12 +609,22 @@ class Codecs {
       encode: input => ({
         object_id: input.ballotId,
         style_id: input.ballotStyleId,
-        manifest_hash: elementModQEncoder.encode(input.manifestHash),
-        code_hash: elementModQEncoder.encode(input.codeSeed),
-        contests: elementModQEncoder.encode(input.code),
-        code: JSON.stringify(input.contests.map(SubmittedContestEncoder.encode)),
+        manifest_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+          input.manifestHash
+        ),
+        code_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+          input.codeSeed
+        ),
+        contests: getCoreCodecsForContext(context).elementModQCodec.encode(
+          input.code
+        ),
+        code: JSON.stringify(
+          input.contests.map(SubmittedContestEncoder.encode)
+        ),
         timestamp: input.timestamp,
-        crypto_hash: elementModQEncoder.encode(input.cryptoHash),
+        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+          input.cryptoHash
+        ),
         state: input.state,
       }),
     };
