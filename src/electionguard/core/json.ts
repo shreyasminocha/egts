@@ -151,18 +151,6 @@ class Codecs {
 
     const electionConstantsDecoder: D.Decoder<unknown, ElectionConstants> =
       pipe(
-        // D.record(D.string),
-        // D.map(s => {
-        // const empty = hexToUint8Array("0000") as Uint8Array;
-        // const result = {
-        // large_prime: hexToUint8Array(s.large_prime) || empty,
-        // small_prime: hexToUint8Array(s.small_prime) || empty,
-        // cofactor: hexToUint8Array(s.cofactor) || empty,
-        // generator: hexToUint8Array(s.generator) || empty,
-        // }
-        // console.log(`Decoding: ${JSON.stringify(result)}`)
-        // return result
-        // }),
         D.struct({
           large_prime: uInt8ArrayDecoder,
           small_prime: uInt8ArrayDecoder,

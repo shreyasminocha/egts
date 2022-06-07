@@ -18,7 +18,7 @@ export class CiphertextTallyContest {
     readonly contestId: string,
     readonly sequenceOrder: number,
     readonly contestDescriptionHash: ElementModQ, // matches ContestDescription.cryptoHash
-    readonly selections: Map<String, CiphertextTallySelection> // map<selectionId, selection>
+    readonly selections: Map<string, CiphertextTallySelection> // map<selectionId, selection>
   ) {}
 }
 

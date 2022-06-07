@@ -265,8 +265,15 @@ export function compatibleContextOrFail(...elements: Element[]): GroupContext {
 // desugar down to "addQ(a, b)", but alas, TypeScript doesn't have a feature like this.
 
 /** Computes the sum, mod q, of two {@link ElementModQ} values. */
-export function addQ(a: ElementModQ, b: ElementModQ): ElementModQ {
-  return compatibleContextOrFail(a, b).addQ(a, b);
+export function addQ(...elements: ElementModQ[]): ElementModQ {
+  if (elements.length === 0) {
+    throw new Error('addQ requires at least one argument');
+  }
+  const context = compatibleContextOrFail(...elements);
+  const sum = elements
+    .slice(1)
+    .reduce((prev, next) => context.addQ(prev, next), elements[0]);
+  return sum;
 }
 
 /** Computes the subtraction, mod q, of two {@link ElementModQ} values. */

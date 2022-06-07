@@ -171,3 +171,61 @@ export function numberToBytes(input: number): Uint8Array {
     throw new Error('no support for >32 bit integers');
   }
 }
+
+/**
+ * Finds the element of the input that maximizes the result of the lambda when
+ * applied to it. Empty array causes an error to be thrown.
+ */
+export function maxOf<T>(input: Array<T>, maxFn: (element: T) => number): T {
+  if (input.length === 0) {
+    throw new Error('maxOf only defined for non-empty input arrays');
+  } else {
+    let prevMax = input[0];
+    let prevMaxVal = maxFn(prevMax);
+
+    input.slice(1).forEach(v => {
+      const maybeNewMaxVal = maxFn(v);
+      if (maybeNewMaxVal > prevMaxVal) {
+        prevMaxVal = maybeNewMaxVal;
+        prevMax = v;
+      }
+    });
+
+    return prevMax;
+  }
+}
+
+/**
+ * Given an array of elements, produces a mapping from a string to each of
+ * those elements, with the strings computed by the given lambda.
+ */
+export function associateBy<T>(
+  input: Array<T>,
+  keyFn: (element: T) => string
+): Map<string, T> {
+  const result = new Map<string, T>();
+  input.forEach(v => {
+    result.set(keyFn(v), v);
+  });
+  return result;
+}
+
+/**
+ * Creates an array of numbers in the requested range, suitable for
+ * a variety of tasks. Starts at start and goes to end, inclusive.
+ */
+export function numberRange(start: number, end: number, delta = 1): number[] {
+  const result = new Array<number>();
+  let current = start;
+  if (end < start) {
+    const tmp = start;
+    start = end;
+    end = tmp;
+  }
+  while (current >= start && current <= end) {
+    result.push(current);
+    current += delta;
+  }
+
+  return result;
+}

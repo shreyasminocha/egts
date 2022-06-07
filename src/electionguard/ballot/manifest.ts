@@ -35,38 +35,7 @@ export class Manifest implements CryptoHashableElement {
     readonly name: ManifestInternationalizedText | undefined,
     readonly contactInformation: ManifestContactInformation | undefined
   ) {
-    this.cryptoHashElement = Manifest.manifestCryptoHash(
-      context,
-      electionScopeId,
-      electionType,
-      startDate,
-      endDate,
-      geopoliticalUnits,
-      parties,
-      candidates,
-      contests,
-      ballotStyles,
-      name,
-      contactInformation
-    );
-  }
-
-  static manifestCryptoHash(
-    context: GroupContext,
-    electionScopeId: string,
-    electionType: ManifestElectionType,
-    startDate: string, // LocalDateTime,
-    endDate: string, // LocalDateTime,
-    geopoliticalUnits: Array<ManifestGeopoliticalUnit>,
-    parties: Array<ManifestParty>,
-    candidates: Array<ManifestCandidate>,
-    contests: Array<ManifestContestDescription>,
-    ballotStyles: Array<ManifestBallotStyle>,
-    name: ManifestInternationalizedText | undefined,
-    contactInformation: ManifestContactInformation | undefined
-  ): ElementModQ {
-    return hashElements(
-      // follows the python code
+    this.cryptoHashElement = hashElements(
       context,
       electionScopeId,
       ManifestElectionType[electionType], // gets string name from enum
@@ -654,37 +623,7 @@ export class ManifestContestDescription
     readonly ballotTitle: ManifestInternationalizedText | undefined,
     readonly ballotSubtitle: ManifestInternationalizedText | undefined
   ) {
-    this.cryptoHashElement =
-      ManifestContestDescription.contestDescriptionCryptoHash(
-        context,
-        contestId,
-        sequenceOrder,
-        geopoliticalUnitId,
-        voteVariation,
-        numberElected,
-        votesAllowed,
-        name,
-        selections,
-        ballotTitle,
-        ballotSubtitle
-      );
-  }
-
-  static contestDescriptionCryptoHash(
-    context: GroupContext,
-    contestId: string,
-    sequenceOrder: number,
-    geopoliticalUnitId: string,
-    voteVariation: ManifestVoteVariationType,
-    numberElected: number,
-    votesAllowed: number,
-    name: string,
-    selections: Array<ManifestSelectionDescription>,
-    ballotTitle: ManifestInternationalizedText | undefined,
-    ballotSubtitle: ManifestInternationalizedText | undefined
-    // primaryPartyIds: Array<string>
-  ): ElementModQ {
-    return hashElements(
+    this.cryptoHashElement = hashElements(
       context,
       contestId,
       sequenceOrder,
@@ -696,7 +635,6 @@ export class ManifestContestDescription
       numberElected,
       votesAllowed,
       selections
-      // primaryPartyIds,
     );
   }
 
