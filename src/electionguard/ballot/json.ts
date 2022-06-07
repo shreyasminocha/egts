@@ -34,6 +34,31 @@ import {getCodecsForContext as getCoreCodecsForContext} from '../core/json';
  * be correct.
  */
 class Codecs {
+  readonly ManifestLanguageCodec: C.Codec<
+    unknown,
+    unknown,
+    Manifest.ManifestLanguage
+  >;
+  readonly ManifestInternationalizedTextCodec: C.Codec<
+    unknown,
+    unknown,
+    Manifest.ManifestInternationalizedText
+  >;
+  readonly ManifestSelectionDescriptionCodec: C.Codec<
+    unknown,
+    unknown,
+    Manifest.ManifestSelectionDescription
+  >;
+  readonly ManifestAnnotatedStringCodec: C.Codec<
+    unknown,
+    unknown,
+    Manifest.ManifestAnnotatedString
+  >;
+  readonly ManifestContactInformationCodec: C.Codec<
+    unknown,
+    unknown,
+    Manifest.ManifestContactInformation
+  >;
   readonly ManifestGeopoliticalUnitCodec: C.Codec<
     unknown,
     unknown,
@@ -80,6 +105,21 @@ class Codecs {
       D.map(s => new Manifest.ManifestLanguage(context, s.value, s.language))
     );
 
+    const ManifestLanguageEncoder: E.Encoder<
+      unknown,
+      Manifest.ManifestLanguage
+    > = {
+      encode: input => ({
+        value: input.value,
+        language: input.language,
+      }),
+    };
+
+    this.ManifestLanguageCodec = C.make(
+      ManifestLanguageDecoder,
+      ManifestLanguageEncoder
+    );
+
     const ManifestInternationalizedTextDecoder: D.Decoder<
       unknown,
       Manifest.ManifestInternationalizedText
@@ -98,6 +138,11 @@ class Codecs {
         text: input.text,
       }),
     };
+
+    this.ManifestInternationalizedTextCodec = C.make(
+      ManifestInternationalizedTextDecoder,
+      ManifestInternationalizedTextEncoder
+    );
 
     const ManifestSelectionDescriptionDecoder: D.Decoder<
       unknown,
@@ -130,6 +175,11 @@ class Codecs {
       }),
     };
 
+    this.ManifestSelectionDescriptionCodec = C.make(
+      ManifestSelectionDescriptionDecoder,
+      ManifestSelectionDescriptionEncoder
+    );
+
     const ManifestAnnotatedStringDecoder: D.Decoder<
       unknown,
       Manifest.ManifestAnnotatedString
@@ -142,6 +192,21 @@ class Codecs {
         s =>
           new Manifest.ManifestAnnotatedString(context, s.annotation, s.value)
       )
+    );
+
+    const ManifestAnnotatedStringEncoder: E.Encoder<
+      unknown,
+      Manifest.ManifestAnnotatedString
+    > = {
+      encode: input => ({
+        annotation: input.annotation,
+        value: input.value,
+      }),
+    };
+
+    this.ManifestAnnotatedStringCodec = C.make(
+      ManifestAnnotatedStringDecoder,
+      ManifestAnnotatedStringEncoder
     );
 
     const ManifestContactInformationDecoder: D.Decoder<
@@ -177,6 +242,11 @@ class Codecs {
         name: input.name,
       }),
     };
+
+    this.ManifestContactInformationCodec = C.make(
+      ManifestContactInformationDecoder,
+      ManifestContactInformationEncoder
+    );
 
     const ManifestGeopoliticalUnitDecoder: D.Decoder<
       unknown,
