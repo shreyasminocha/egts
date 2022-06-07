@@ -44,16 +44,30 @@ export class Encryptor {
     this.manifestHash = manifest.cryptoHashElement;
   }
 
+  /**
+   * Encrypts an array of ballots. The nonceSeed is used to create the
+   * nonces necessary to encrypt every ballot. These ballots will use
+   * ElectionGuard's hash chaining feature, so every encrypted ballot
+   * includes the hash of the previous encrypted ballot. The `initializationHash`
+   * parameter specifies what goes before the first ballot. By default,
+   * it's just ZERO_MOD_Q. If something else is used, it could be, for
+   * example, a "launch code" announced at the start of the election,
+   * which would make it that much harder for an attacker to compute
+   * a chain of encrypted ballots in advance.
+   */
   encryptBallotList(
     ballots: Array<PlaintextBallot>,
-    encryptionSeed: ElementModQ
+    nonceSeed: ElementModQ,
+    initializationHash?: ElementModQ
   ): Array<CiphertextBallot> {
-    let previousTrackingHash = encryptionSeed;
-    const encryptedBallots = ballots.map(ballot => {
+    let previousTrackingHash = initializationHash ?? this.group.ZERO_MOD_Q;
+    const encryptionNonces = new Nonces(nonceSeed);
+
+    const encryptedBallots = ballots.map((ballot, index) => {
       const encryptedBallot = this.encryptBallot(
         ballot,
         previousTrackingHash,
-        this.group.randQ()
+        encryptionNonces.get(index)
       );
 
       // Yes, we're doing side-effects inside the lambda of a map function.
@@ -79,16 +93,14 @@ export class Encryptor {
    * selections. It will fill missing contests with `false` selections and generate `placeholder`
    * selections that are marked `true`.
    *
-   * @param encryptionSeed: Hash from previous ballot or starting hash from device. python:
-   *     seed_hash
+   * @param previousTrackingHash: Hash from previous ballot or starting hash from device.
    * @param randomMasterNonce: the nonce used to encrypt this contest
    */
   encryptBallot(
     ballot: PlaintextBallot,
-    encryptionSeed: ElementModQ,
+    previousTrackingHash: ElementModQ,
     randomMasterNonce: ElementModQ
   ): CiphertextBallot {
-    // python nonce_seed
     const ballotNonce: ElementModQ = hashElements(
       this.group,
       this.manifestHash,
@@ -98,14 +110,15 @@ export class Encryptor {
 
     const pcontests = associateBy(ballot.contests, c => c.contestId);
 
-    const encryptedContests: Array<CiphertextContest> = [];
-
-    this.manifest.contests.forEach(mcontest => {
+    const encryptedContests = this.manifest.contests.map(mcontest => {
       const pcontest: PlaintextContest =
         pcontests.get(mcontest.contestId) ?? this.contestFrom(mcontest);
       // If no contest on the ballot, so create a placeholder
-      encryptedContests.push(
-        this.encryptContest(pcontest, ballot.ballotId, mcontest, ballotNonce)
+      return this.encryptContest(
+        pcontest,
+        ballot.ballotId,
+        mcontest,
+        ballotNonce
       );
     });
 
@@ -120,7 +133,7 @@ export class Encryptor {
     );
     const ballotCode = hashElements(
       this.group,
-      encryptionSeed,
+      previousTrackingHash,
       timestamp,
       cryptoHash
     );
@@ -129,7 +142,7 @@ export class Encryptor {
       ballot.ballotId,
       ballot.ballotStyleId,
       this.manifestHash,
-      encryptionSeed,
+      previousTrackingHash,
       ballotCode,
       encryptedContests,
       timestamp,
