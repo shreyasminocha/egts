@@ -1,6 +1,8 @@
 // source for useful functions to and from uint8Array:
 // https://coolaj86.com/articles/convert-js-bigints-to-typedarrays/
 
+import {string} from 'fp-ts';
+
 /** Returns upper-case hexadecimal version of the input. */
 export function uint8ArrayToHex(u8: Uint8Array): string {
   const hex: Array<string> = [];
@@ -228,4 +230,45 @@ export function numberRange(start: number, end: number, delta = 1): number[] {
   }
 
   return result;
+}
+
+/**
+ * Given an array of any type, builds a map from string to anything.
+ * @param input Arbitrary array of type T.
+ * @param keyFn Function from T to string (the key of the resulting map)
+ * @param valueFn Function from T to R (the value of the resulting map)
+ * @returns a map from string to R
+ */
+export function mapFrom<T, R>(
+  input: Array<T>,
+  keyFn: (input: T) => string,
+  valueFn: (input: T) => R
+): Map<string, R> {
+  const result = new Map<string, R>();
+  input.forEach(i => {
+    const key = keyFn(i);
+    const value = valueFn(i);
+    result.set(key, value);
+  });
+  return result;
+}
+
+/**
+ * Given a map and a key, returns the value in the map corresponding
+ * to the key. If it's missing, an Error is thrown with the optional
+ * error string included. DON'T USE UNLESS ERRORS INDICATE CODE BUGS.
+ * As in, only use when you really know the key is present and you
+ * just don't NEED to deal with error handling.
+ */
+export function getOrFail<T>(
+  map: Map<string, T>,
+  key: string,
+  err = 'missing key'
+): T {
+  const result = map.get(key);
+  if (result === undefined) {
+    throw new Error(err);
+  } else {
+    return result;
+  }
 }
