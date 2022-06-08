@@ -9,6 +9,17 @@ import {
   SubmittedBallot,
   SubmittedSelection,
 } from './submitted-ballot';
+import {
+  CiphertextContest,
+  CiphertextBallot,
+  CiphertextSelection,
+} from './ciphertext-ballot';
+import {
+  PlaintextContest,
+  PlaintextBallot,
+  PlaintextSelection,
+  ExtendedData,
+} from './plaintext-ballot';
 import {getCodecsForContext as getCoreCodecsForContext} from '../core/json';
 
 // These JSON importer/exporter things are using the io-ts package:
@@ -92,6 +103,21 @@ class Codecs {
     SubmittedSelection
   >;
   readonly SubmittedBallotCodec: C.Codec<unknown, unknown, SubmittedBallot>;
+  readonly CiphertextSelectionCodec: C.Codec<
+    unknown,
+    unknown,
+    CiphertextSelection
+  >;
+  readonly CiphertextContestCodec: C.Codec<unknown, unknown, CiphertextContest>;
+  readonly CiphertextBallotCodec: C.Codec<unknown, unknown, CiphertextBallot>;
+  readonly ExtendedDataCodec: C.Codec<unknown, unknown, ExtendedData>;
+  readonly PlaintextSelectionCodec: C.Codec<
+    unknown,
+    unknown,
+    PlaintextSelection
+  >;
+  readonly PlaintextContestCodec: C.Codec<unknown, unknown, PlaintextContest>;
+  readonly PlaintextBallotCodec: C.Codec<unknown, unknown, PlaintextBallot>;
 
   constructor(readonly context: GroupContext) {
     const ManifestLanguageDecoder: D.Decoder<
@@ -575,7 +601,6 @@ class Codecs {
         crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
           input.cryptoHash
         ),
-        nonce: undefined,
         is_placeholder_selection: input.isPlaceholderSelection,
         proof: getCoreCodecsForContext(
           context
@@ -702,6 +727,290 @@ class Codecs {
     this.SubmittedBallotCodec = C.make(
       SubmittedBallotDecoder,
       SubmittedBallotEncoder
+    );
+
+    const CiphertextSelectionDecoder: D.Decoder<unknown, CiphertextSelection> =
+      pipe(
+        D.struct({
+          object_id: D.string,
+          sequence_order: D.number,
+          description_hash: getCoreCodecsForContext(context).elementModQCodec,
+          ciphertext: getCoreCodecsForContext(context).elGamalCiphertextCodec,
+          crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
+          nonce: getCoreCodecsForContext(context).elementModQCodec,
+          is_placeholder_selection: D.boolean,
+          proof:
+            getCoreCodecsForContext(context)
+              .disjunctiveChaumPedersenProofKnownNonceCodec,
+          extended_data:
+            getCoreCodecsForContext(context).hashedElGamalCiphertextCodec,
+        }),
+        D.map(
+          s =>
+            new CiphertextSelection(
+              s.object_id,
+              s.sequence_order,
+              s.description_hash,
+              s.ciphertext,
+              s.crypto_hash,
+              s.is_placeholder_selection,
+              s.proof,
+              s.nonce,
+              s.extended_data
+            )
+        )
+      );
+
+    const CiphertextSelectionEncoder: E.Encoder<unknown, CiphertextSelection> =
+      {
+        encode: input => ({
+          object_id: input.selectionId,
+          sequence_order: input.sequenceOrder,
+          description_hash: getCoreCodecsForContext(
+            context
+          ).elementModQCodec.encode(input.selectionHash),
+          ciphertext: getCoreCodecsForContext(
+            context
+          ).elGamalCiphertextCodec.encode(input.ciphertext),
+          crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+            input.cryptoHash
+          ),
+          is_placeholder_selection: input.isPlaceholderSelection,
+          proof: getCoreCodecsForContext(
+            context
+          ).disjunctiveChaumPedersenProofKnownNonceCodec.encode(input.proof),
+          extended_data:
+            input.extendedData &&
+            getCoreCodecsForContext(
+              context
+            ).hashedElGamalCiphertextCodec.encode(input.extendedData),
+        }),
+      };
+
+    this.CiphertextSelectionCodec = C.make(
+      CiphertextSelectionDecoder,
+      CiphertextSelectionEncoder
+    );
+
+    const CiphertextContestDecoder: D.Decoder<unknown, CiphertextContest> =
+      pipe(
+        D.struct({
+          object_id: D.string,
+          sequence_order: D.number,
+          description_hash: getCoreCodecsForContext(context).elementModQCodec,
+          ballot_selections: D.array(CiphertextSelectionDecoder),
+          ciphertext_accumulation:
+            getCoreCodecsForContext(context).elGamalCiphertextCodec,
+          crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
+          nonce: getCoreCodecsForContext(context).elementModQCodec,
+          proof:
+            getCoreCodecsForContext(context)
+              .constantChaumPedersenProofKnownNonceCodec,
+        }),
+        D.map(
+          s =>
+            new CiphertextContest(
+              s.object_id,
+              s.sequence_order,
+              s.description_hash,
+              s.ballot_selections,
+              s.ciphertext_accumulation,
+              s.crypto_hash,
+              s.proof,
+              s.nonce
+            )
+        )
+      );
+
+    const CiphertextContestEncoder: E.Encoder<unknown, CiphertextContest> = {
+      encode: input => ({
+        object_id: input.contestId,
+        sequence_order: input.sequenceOrder,
+        description_hash: getCoreCodecsForContext(
+          context
+        ).elementModQCodec.encode(input.contestHash),
+        ballot_selections: JSON.stringify(
+          input.selections.map(CiphertextSelectionEncoder.encode)
+        ),
+        ciphertext_accumulation: getCoreCodecsForContext(
+          context
+        ).elGamalCiphertextCodec.encode(input.ciphertextAccumulation),
+        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+          input.cryptoHash
+        ),
+        proof: getCoreCodecsForContext(
+          context
+        ).constantChaumPedersenProofKnownNonceCodec.encode(input.proof),
+      }),
+    };
+
+    this.CiphertextContestCodec = C.make(
+      CiphertextContestDecoder,
+      CiphertextContestEncoder
+    );
+
+    const CiphertextBallotDecoder: D.Decoder<unknown, CiphertextBallot> = pipe(
+      D.struct({
+        object_id: D.string,
+        style_id: D.string,
+        manifest_hash: getCoreCodecsForContext(context).elementModQCodec,
+        code_hash: getCoreCodecsForContext(context).elementModQCodec,
+        contests: D.array(CiphertextContestDecoder),
+        code: getCoreCodecsForContext(context).elementModQCodec,
+        timestamp: D.number,
+        crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
+        nonce: getCoreCodecsForContext(context).elementModQCodec,
+        // state: D.number,
+      }),
+      D.map(
+        s =>
+          new CiphertextBallot(
+            s.object_id,
+            s.style_id,
+            s.manifest_hash,
+            s.code_hash,
+            s.code,
+            s.contests,
+            s.timestamp,
+            s.crypto_hash,
+            s.nonce
+          )
+      )
+    );
+
+    const CiphertextBallotEncoder: E.Encoder<unknown, CiphertextBallot> = {
+      encode: input => ({
+        object_id: input.ballotId,
+        style_id: input.ballotStyleId,
+        manifest_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+          input.manifestHash
+        ),
+        code_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+          input.codeSeed
+        ),
+        contests: getCoreCodecsForContext(context).elementModQCodec.encode(
+          input.code
+        ),
+        code: JSON.stringify(
+          input.contests.map(CiphertextContestEncoder.encode)
+        ),
+        timestamp: input.timestamp,
+        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+          input.cryptoHash
+        ),
+        // state: input.state,
+      }),
+    };
+
+    this.CiphertextBallotCodec = C.make(
+      CiphertextBallotDecoder,
+      CiphertextBallotEncoder
+    );
+
+    const ExtendedDataDecoder: D.Decoder<unknown, ExtendedData> = pipe(
+      D.struct({
+        value: D.string,
+        length: D.number,
+      }),
+      D.map(s => new ExtendedData(s.value, s.length))
+    );
+
+    const ExtendedDataEncoder: E.Encoder<unknown, ExtendedData> = {
+      encode: input => ({
+        value: input.value,
+        length: input.length,
+      }),
+    };
+
+    this.ExtendedDataCodec = C.make(ExtendedDataDecoder, ExtendedDataEncoder);
+
+    const PlaintextSelectionDecoder: D.Decoder<unknown, PlaintextSelection> =
+      pipe(
+        D.struct({
+          object_id: D.string,
+          sequence_order: D.number,
+          vote: D.number,
+          is_placeholder_selection: D.boolean,
+          extended_data: ExtendedDataDecoder,
+        }),
+        D.map(
+          s =>
+            new PlaintextSelection(
+              s.object_id,
+              s.sequence_order,
+              s.vote,
+              s.is_placeholder_selection,
+              s.extended_data
+            )
+        )
+      );
+
+    const PlaintextSelectionEncoder: E.Encoder<unknown, PlaintextSelection> = {
+      encode: input => ({
+        object_id: input.selectionId,
+        sequence_order: input.sequenceOrder,
+        vote: input.vote,
+        is_placeholder_selection: input.isPlaceholderSelection,
+        extended_data: input.extendedData && ExtendedDataEncoder,
+      }),
+    };
+
+    this.PlaintextSelectionCodec = C.make(
+      PlaintextSelectionDecoder,
+      PlaintextSelectionEncoder
+    );
+
+    const PlaintextContestDecoder: D.Decoder<unknown, PlaintextContest> = pipe(
+      D.struct({
+        object_id: D.string,
+        sequence_order: D.number,
+        ballot_selections: D.array(PlaintextSelectionDecoder),
+      }),
+      D.map(
+        s =>
+          new PlaintextContest(
+            s.object_id,
+            s.sequence_order,
+            s.ballot_selections
+          )
+      )
+    );
+
+    const PlaintextContestEncoder: E.Encoder<unknown, PlaintextContest> = {
+      encode: input => ({
+        object_id: input.contestId,
+        sequence_order: input.sequenceOrder,
+        ballot_selections: JSON.stringify(
+          input.selections.map(PlaintextSelectionEncoder.encode)
+        ),
+      }),
+    };
+
+    this.PlaintextContestCodec = C.make(
+      PlaintextContestDecoder,
+      PlaintextContestEncoder
+    );
+
+    const PlaintextBallotDecoder: D.Decoder<unknown, PlaintextBallot> = pipe(
+      D.struct({
+        object_id: D.string,
+        style_id: D.string,
+        contests: D.array(PlaintextContestDecoder),
+      }),
+      D.map(s => new PlaintextBallot(s.object_id, s.style_id, s.contests))
+    );
+
+    const PlaintextBallotEncoder: E.Encoder<unknown, PlaintextBallot> = {
+      encode: input => ({
+        object_id: input.ballotId,
+        style_id: input.ballotStyleId,
+        contests: input.contests.map(PlaintextContestEncoder.encode),
+      }),
+    };
+
+    this.PlaintextBallotCodec = C.make(
+      PlaintextBallotDecoder,
+      PlaintextBallotEncoder
     );
   }
 }
