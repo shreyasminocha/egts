@@ -599,7 +599,7 @@ class Codecs {
           context
         ).elGamalCiphertextCodec.encode(input.ciphertext),
         crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
-          input.cryptoHash
+          input.cryptoHashElement
         ),
         is_placeholder_selection: input.isPlaceholderSelection,
         proof: getCoreCodecsForContext(
@@ -659,7 +659,7 @@ class Codecs {
           context
         ).elGamalCiphertextCodec.encode(input.ciphertextAccumulation),
         crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
-          input.cryptoHash
+          input.cryptoHashElement
         ),
         proof: getCoreCodecsForContext(
           context
@@ -718,7 +718,7 @@ class Codecs {
         ),
         timestamp: input.timestamp,
         crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
-          input.cryptoHash
+          input.cryptoHashElement
         ),
         state: input.state,
       }),
