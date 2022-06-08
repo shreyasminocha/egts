@@ -7,6 +7,11 @@ import {ElementModQ} from '../core/group-common';
 import {CryptoHashableElement, hashElements} from '../core/hash';
 import {HashedElGamalCiphertext} from '../core/hashed-elgamal';
 import {
+  ElectionObjectBase,
+  OrderedObjectBase,
+  matchingArraysOfOrderedElectionObjects,
+} from './election-object-base';
+import {
   BallotState,
   SubmittedBallot,
   SubmittedContest,
@@ -18,7 +23,7 @@ import {
  * original encryption nonces. Use the submit() method to convert
  * to a {@link SubmittedBallot} suitable for serialization.
  */
-export class CiphertextBallot {
+export class CiphertextBallot implements ElectionObjectBase {
   constructor(
     readonly ballotId: string,
     readonly ballotStyleId: string,
@@ -30,6 +35,24 @@ export class CiphertextBallot {
     readonly cryptoHash: ElementModQ,
     readonly masterNonce: ElementModQ
   ) {}
+
+  get objectId(): string {
+    return this.ballotId;
+  }
+  equals(other: CiphertextBallot): boolean {
+    return (
+      other instanceof CiphertextBallot &&
+      other.ballotId === this.ballotId &&
+      other.ballotStyleId === this.ballotStyleId &&
+      other.manifestHash.equals(this.manifestHash) &&
+      other.codeSeed.equals(this.codeSeed) &&
+      other.code.equals(this.code) &&
+      matchingArraysOfOrderedElectionObjects(other.contests, this.contests) &&
+      other.timestamp === this.timestamp &&
+      other.cryptoHash.equals(this.cryptoHash) &&
+      other.masterNonce.equals(this.masterNonce)
+    );
+  }
 
   ballotNonce(): ElementModQ {
     return hashElements(
@@ -55,7 +78,9 @@ export class CiphertextBallot {
   }
 }
 
-export class CiphertextContest implements CryptoHashableElement {
+export class CiphertextContest
+  implements CryptoHashableElement, OrderedObjectBase
+{
   constructor(
     readonly contestId: string, // matches ContestDescription.contestIdd
     readonly sequenceOrder: number, // matches ContestDescription.sequenceOrder
@@ -66,6 +91,25 @@ export class CiphertextContest implements CryptoHashableElement {
     readonly proof: ConstantChaumPedersenProofKnownNonce,
     readonly contestNonce: ElementModQ
   ) {}
+
+  get objectId(): string {
+    return this.contestId;
+  }
+
+  equals(other: CiphertextContest): boolean {
+    return (
+      other instanceof CiphertextContest &&
+      other.contestId === this.contestId &&
+      other.contestHash.equals(this.contestHash) &&
+      matchingArraysOfOrderedElectionObjects(
+        other.selections,
+        this.selections
+      ) &&
+      other.ciphertextAccumulation.equals(this.ciphertextAccumulation) &&
+      other.proof.equals(this.proof) &&
+      other.contestNonce.equals(this.contestNonce)
+    );
+  }
 
   get cryptoHashElement(): ElementModQ {
     return this.cryptoHash;
@@ -84,7 +128,9 @@ export class CiphertextContest implements CryptoHashableElement {
   }
 }
 
-export class CiphertextSelection implements CryptoHashableElement {
+export class CiphertextSelection
+  implements CryptoHashableElement, OrderedObjectBase
+{
   constructor(
     readonly selectionId: string, // matches SelectionDescription.selectionId
     readonly sequenceOrder: number, // matches SelectionDescription.sequenceOrder
@@ -96,6 +142,25 @@ export class CiphertextSelection implements CryptoHashableElement {
     readonly selectionNonce: ElementModQ,
     readonly extendedData?: HashedElGamalCiphertext
   ) {}
+
+  get objectId(): string {
+    return this.selectionId;
+  }
+
+  equals(other: CiphertextSelection): boolean {
+    return (
+      other instanceof CiphertextSelection &&
+      other.selectionId === this.selectionId &&
+      other.sequenceOrder === this.sequenceOrder &&
+      other.selectionHash.equals(this.selectionHash) &&
+      other.ciphertext.equals(this.ciphertext) &&
+      other.cryptoHash.equals(this.cryptoHash) &&
+      other.isPlaceholderSelection === this.isPlaceholderSelection &&
+      other.proof.equals(this.proof) &&
+      other.selectionNonce.equals(this.selectionNonce)
+    );
+    // ignoring extended data
+  }
 
   get cryptoHashElement(): ElementModQ {
     return this.cryptoHash;

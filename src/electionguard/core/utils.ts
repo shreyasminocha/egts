@@ -1,8 +1,6 @@
 // source for useful functions to and from uint8Array:
 // https://coolaj86.com/articles/convert-js-bigints-to-typedarrays/
 
-import {string} from 'fp-ts';
-
 /** Returns upper-case hexadecimal version of the input. */
 export function uint8ArrayToHex(u8: Uint8Array): string {
   const hex: Array<string> = [];
@@ -79,6 +77,15 @@ export function arraysEqual<T>(
   for (let i = 0; i < a.length; ++i) {
     if (a[i] !== b[i]) return false;
   }
+  return true;
+}
+
+/** Checks that the two arrays contain the same set of strings, regardless of order. */
+export function stringSetsEqual(a: Array<string>, b: Array<string>): boolean {
+  const setA = new Set(a);
+  const setB = new Set(b);
+  if (setA.size !== setB.size) return false;
+  for (const a of setA) if (!setB.has(a)) return false;
   return true;
 }
 
