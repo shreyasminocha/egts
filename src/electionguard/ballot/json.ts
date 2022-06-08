@@ -21,6 +21,7 @@ import {
   ExtendedData,
 } from './plaintext-ballot';
 import {getCodecsForContext as getCoreCodecsForContext} from '../core/json';
+import {EncryptionState} from './encrypt';
 
 // These JSON importer/exporter things are using the io-ts package:
 // https://github.com/gcanti/io-ts/
@@ -96,6 +97,11 @@ class Codecs {
     unknown,
     Manifest.ManifestContestDescription
   >;
+  readonly ManifestCandidateContestDescriptionCodec: C.Codec<
+    unknown,
+    unknown,
+    Manifest.ManifestCandidateContestDescription
+  >;
   readonly SubmittedContestCodec: C.Codec<unknown, unknown, SubmittedContest>;
   readonly SubmittedSelectionCodec: C.Codec<
     unknown,
@@ -118,6 +124,7 @@ class Codecs {
   >;
   readonly PlaintextContestCodec: C.Codec<unknown, unknown, PlaintextContest>;
   readonly PlaintextBallotCodec: C.Codec<unknown, unknown, PlaintextBallot>;
+  readonly EncryptionStateCodec: C.Codec<unknown, unknown, EncryptionState>;
 
   constructor(readonly context: GroupContext) {
     const ManifestLanguageDecoder: D.Decoder<
@@ -492,6 +499,57 @@ class Codecs {
     this.ManifestContestDescriptionCodec = C.make(
       ManifestContestDescriptionDecoder,
       ManifestContestDescriptionEncoder
+    );
+
+    const ManifestCandidateContestDescriptionDecoder: D.Decoder<
+      unknown,
+      Manifest.ManifestCandidateContestDescription
+    > = pipe(
+      D.struct({
+        object_id: D.string,
+        sequence_order: D.number,
+        electoral_district_id: D.string,
+        vote_variation: D.number,
+        number_elected: D.number,
+        votes_allowed: D.number,
+        name: D.string,
+        ballot_selections: D.array(ManifestSelectionDescriptionDecoder),
+        ballot_title: ManifestInternationalizedTextDecoder,
+        ballot_subtitle: ManifestInternationalizedTextDecoder,
+        primary_party_ids: D.array(D.string),
+      }),
+      D.map(
+        s =>
+          new Manifest.ManifestCandidateContestDescription(
+            context,
+            s.object_id,
+            s.sequence_order,
+            s.electoral_district_id,
+            s.vote_variation as Manifest.ManifestVoteVariationType,
+            s.number_elected,
+            s.votes_allowed,
+            s.name,
+            s.ballot_selections,
+            s.ballot_title,
+            s.ballot_subtitle,
+            s.primary_party_ids
+          )
+      )
+    );
+
+    const ManifestCandidateContestDescriptionEncoder: E.Encoder<
+      unknown,
+      Manifest.ManifestCandidateContestDescription
+    > = {
+      encode: input => ({
+        ...(ManifestContestDescriptionEncoder.encode(input) as Object),
+        primary_party_ids: input.primaryPartyIds,
+      }),
+    };
+
+    this.ManifestCandidateContestDescriptionCodec = C.make(
+      ManifestCandidateContestDescriptionDecoder,
+      ManifestCandidateContestDescriptionEncoder
     );
 
     const ManifestDecoder: D.Decoder<unknown, Manifest.Manifest> = pipe(
@@ -1011,6 +1069,36 @@ class Codecs {
     this.PlaintextBallotCodec = C.make(
       PlaintextBallotDecoder,
       PlaintextBallotEncoder
+    );
+
+    const EncryptionStateDecoder: D.Decoder<unknown, EncryptionState> = pipe(
+      D.struct({
+        public_key: getCoreCodecsForContext(context).elGamalPublicKeyCodec,
+        extended_base_hash: getCoreCodecsForContext(context).elementModQCodec,
+        manifest: ManifestDecoder,
+        context: getCoreCodecsForContext(context).electionContextCodec,
+      }),
+      D.map(s => new EncryptionState(context, s.manifest, s.context, true))
+    );
+
+    const EncryptionStateEncoder: E.Encoder<unknown, EncryptionState> = {
+      encode: input => ({
+        public_key: getCoreCodecsForContext(
+          context
+        ).elGamalPublicKeyCodec.encode(input.publicKey),
+        extended_base_hash: getCoreCodecsForContext(
+          context
+        ).elementModQCodec.encode(input.extendedBaseHash),
+        manifest: ManifestEncoder.encode(input.manifest),
+        context: getCoreCodecsForContext(context).electionContextCodec.encode(
+          input.context
+        ),
+      }),
+    };
+
+    this.EncryptionStateCodec = C.make(
+      EncryptionStateDecoder,
+      EncryptionStateEncoder
     );
   }
 }
