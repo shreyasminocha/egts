@@ -46,88 +46,88 @@ import {EncryptionState} from './encrypt';
  * be correct.
  */
 class Codecs {
-  readonly ManifestLanguageCodec: C.Codec<
+  readonly manifestLanguageCodec: C.Codec<
     unknown,
     unknown,
     Manifest.ManifestLanguage
   >;
-  readonly ManifestInternationalizedTextCodec: C.Codec<
+  readonly manifestInternationalizedTextCodec: C.Codec<
     unknown,
     unknown,
     Manifest.ManifestInternationalizedText
   >;
-  readonly ManifestSelectionDescriptionCodec: C.Codec<
+  readonly manifestSelectionDescriptionCodec: C.Codec<
     unknown,
     unknown,
     Manifest.ManifestSelectionDescription
   >;
-  readonly ManifestAnnotatedStringCodec: C.Codec<
+  readonly manifestAnnotatedStringCodec: C.Codec<
     unknown,
     unknown,
     Manifest.ManifestAnnotatedString
   >;
-  readonly ManifestContactInformationCodec: C.Codec<
+  readonly manifestContactInformationCodec: C.Codec<
     unknown,
     unknown,
     Manifest.ManifestContactInformation
   >;
-  readonly ManifestGeopoliticalUnitCodec: C.Codec<
+  readonly manifestGeopoliticalUnitCodec: C.Codec<
     unknown,
     unknown,
     Manifest.ManifestGeopoliticalUnit
   >;
-  readonly ManifestCandidateCodec: C.Codec<
+  readonly manifestCandidateCodec: C.Codec<
     unknown,
     unknown,
     Manifest.ManifestCandidate
   >;
-  readonly ManifestPartyCodec: C.Codec<
+  readonly manifestPartyCodec: C.Codec<
     unknown,
     unknown,
     Manifest.ManifestParty
   >;
-  readonly ManifestBallotStyleCodec: C.Codec<
+  readonly manifestBallotStyleCodec: C.Codec<
     unknown,
     unknown,
     Manifest.ManifestBallotStyle
   >;
-  readonly ManifestCodec: C.Codec<unknown, unknown, Manifest.Manifest>;
-  readonly ManifestContestDescriptionCodec: C.Codec<
+  readonly manifestCodec: C.Codec<unknown, unknown, Manifest.Manifest>;
+  readonly manifestContestDescriptionCodec: C.Codec<
     unknown,
     unknown,
     Manifest.ManifestContestDescription
   >;
-  readonly ManifestCandidateContestDescriptionCodec: C.Codec<
+  readonly manifestCandidateContestDescriptionCodec: C.Codec<
     unknown,
     unknown,
     Manifest.ManifestCandidateContestDescription
   >;
-  readonly SubmittedContestCodec: C.Codec<unknown, unknown, SubmittedContest>;
-  readonly SubmittedSelectionCodec: C.Codec<
+  readonly submittedContestCodec: C.Codec<unknown, unknown, SubmittedContest>;
+  readonly submittedSelectionCodec: C.Codec<
     unknown,
     unknown,
     SubmittedSelection
   >;
-  readonly SubmittedBallotCodec: C.Codec<unknown, unknown, SubmittedBallot>;
-  readonly CiphertextSelectionCodec: C.Codec<
+  readonly submittedBallotCodec: C.Codec<unknown, unknown, SubmittedBallot>;
+  readonly ciphertextSelectionCodec: C.Codec<
     unknown,
     unknown,
     CiphertextSelection
   >;
-  readonly CiphertextContestCodec: C.Codec<unknown, unknown, CiphertextContest>;
-  readonly CiphertextBallotCodec: C.Codec<unknown, unknown, CiphertextBallot>;
-  readonly ExtendedDataCodec: C.Codec<unknown, unknown, ExtendedData>;
-  readonly PlaintextSelectionCodec: C.Codec<
+  readonly ciphertextContestCodec: C.Codec<unknown, unknown, CiphertextContest>;
+  readonly ciphertextBallotCodec: C.Codec<unknown, unknown, CiphertextBallot>;
+  readonly extendedDataCodec: C.Codec<unknown, unknown, ExtendedData>;
+  readonly plaintextSelectionCodec: C.Codec<
     unknown,
     unknown,
     PlaintextSelection
   >;
-  readonly PlaintextContestCodec: C.Codec<unknown, unknown, PlaintextContest>;
-  readonly PlaintextBallotCodec: C.Codec<unknown, unknown, PlaintextBallot>;
-  readonly EncryptionStateCodec: C.Codec<unknown, unknown, EncryptionState>;
+  readonly plaintextContestCodec: C.Codec<unknown, unknown, PlaintextContest>;
+  readonly plaintextBallotCodec: C.Codec<unknown, unknown, PlaintextBallot>;
+  readonly encryptionStateCodec: C.Codec<unknown, unknown, EncryptionState>;
 
   constructor(readonly context: GroupContext) {
-    const ManifestLanguageDecoder: D.Decoder<
+    const manifestLanguageDecoder: D.Decoder<
       unknown,
       Manifest.ManifestLanguage
     > = pipe(
@@ -138,7 +138,7 @@ class Codecs {
       D.map(s => new Manifest.ManifestLanguage(context, s.value, s.language))
     );
 
-    const ManifestLanguageEncoder: E.Encoder<
+    const manifestLanguageEncoder: E.Encoder<
       unknown,
       Manifest.ManifestLanguage
     > = {
@@ -148,22 +148,22 @@ class Codecs {
       }),
     };
 
-    this.ManifestLanguageCodec = C.make(
-      ManifestLanguageDecoder,
-      ManifestLanguageEncoder
+    this.manifestLanguageCodec = C.make(
+      manifestLanguageDecoder,
+      manifestLanguageEncoder
     );
 
-    const ManifestInternationalizedTextDecoder: D.Decoder<
+    const manifestInternationalizedTextDecoder: D.Decoder<
       unknown,
       Manifest.ManifestInternationalizedText
     > = pipe(
       D.struct({
-        text: D.array(ManifestLanguageDecoder),
+        text: D.array(manifestLanguageDecoder),
       }),
       D.map(s => new Manifest.ManifestInternationalizedText(context, s.text))
     );
 
-    const ManifestInternationalizedTextEncoder: E.Encoder<
+    const manifestInternationalizedTextEncoder: E.Encoder<
       unknown,
       Manifest.ManifestInternationalizedText
     > = {
@@ -172,12 +172,12 @@ class Codecs {
       }),
     };
 
-    this.ManifestInternationalizedTextCodec = C.make(
-      ManifestInternationalizedTextDecoder,
-      ManifestInternationalizedTextEncoder
+    this.manifestInternationalizedTextCodec = C.make(
+      manifestInternationalizedTextDecoder,
+      manifestInternationalizedTextEncoder
     );
 
-    const ManifestSelectionDescriptionDecoder: D.Decoder<
+    const manifestSelectionDescriptionDecoder: D.Decoder<
       unknown,
       Manifest.ManifestSelectionDescription
     > = pipe(
@@ -197,7 +197,7 @@ class Codecs {
       )
     );
 
-    const ManifestSelectionDescriptionEncoder: E.Encoder<
+    const manifestSelectionDescriptionEncoder: E.Encoder<
       unknown,
       Manifest.ManifestSelectionDescription
     > = {
@@ -208,12 +208,12 @@ class Codecs {
       }),
     };
 
-    this.ManifestSelectionDescriptionCodec = C.make(
-      ManifestSelectionDescriptionDecoder,
-      ManifestSelectionDescriptionEncoder
+    this.manifestSelectionDescriptionCodec = C.make(
+      manifestSelectionDescriptionDecoder,
+      manifestSelectionDescriptionEncoder
     );
 
-    const ManifestAnnotatedStringDecoder: D.Decoder<
+    const manifestAnnotatedStringDecoder: D.Decoder<
       unknown,
       Manifest.ManifestAnnotatedString
     > = pipe(
@@ -227,7 +227,7 @@ class Codecs {
       )
     );
 
-    const ManifestAnnotatedStringEncoder: E.Encoder<
+    const manifestAnnotatedStringEncoder: E.Encoder<
       unknown,
       Manifest.ManifestAnnotatedString
     > = {
@@ -237,19 +237,19 @@ class Codecs {
       }),
     };
 
-    this.ManifestAnnotatedStringCodec = C.make(
-      ManifestAnnotatedStringDecoder,
-      ManifestAnnotatedStringEncoder
+    this.manifestAnnotatedStringCodec = C.make(
+      manifestAnnotatedStringDecoder,
+      manifestAnnotatedStringEncoder
     );
 
-    const ManifestContactInformationDecoder: D.Decoder<
+    const manifestContactInformationDecoder: D.Decoder<
       unknown,
       Manifest.ManifestContactInformation
     > = pipe(
       D.struct({
         address_line: D.array(D.string),
-        email: D.array(ManifestAnnotatedStringDecoder),
-        phone: D.array(ManifestAnnotatedStringDecoder),
+        email: D.array(manifestAnnotatedStringDecoder),
+        phone: D.array(manifestAnnotatedStringDecoder),
         name: D.string,
       }),
       D.map(
@@ -264,7 +264,7 @@ class Codecs {
       )
     );
 
-    const ManifestContactInformationEncoder: E.Encoder<
+    const manifestContactInformationEncoder: E.Encoder<
       unknown,
       Manifest.ManifestContactInformation
     > = {
@@ -276,12 +276,12 @@ class Codecs {
       }),
     };
 
-    this.ManifestContactInformationCodec = C.make(
-      ManifestContactInformationDecoder,
-      ManifestContactInformationEncoder
+    this.manifestContactInformationCodec = C.make(
+      manifestContactInformationDecoder,
+      manifestContactInformationEncoder
     );
 
-    const ManifestGeopoliticalUnitDecoder: D.Decoder<
+    const manifestGeopoliticalUnitDecoder: D.Decoder<
       unknown,
       Manifest.ManifestGeopoliticalUnit
     > = pipe(
@@ -289,7 +289,7 @@ class Codecs {
         object_id: D.string,
         name: D.string,
         type: D.number,
-        contact_information: ManifestContactInformationDecoder,
+        contact_information: manifestContactInformationDecoder,
       }),
       D.map(
         s =>
@@ -303,7 +303,7 @@ class Codecs {
       )
     );
 
-    const ManifestGeopoliticalUnitEncoder: E.Encoder<
+    const manifestGeopoliticalUnitEncoder: E.Encoder<
       unknown,
       Manifest.ManifestGeopoliticalUnit
     > = {
@@ -315,18 +315,18 @@ class Codecs {
       }),
     };
 
-    this.ManifestGeopoliticalUnitCodec = C.make(
-      ManifestGeopoliticalUnitDecoder,
-      ManifestGeopoliticalUnitEncoder
+    this.manifestGeopoliticalUnitCodec = C.make(
+      manifestGeopoliticalUnitDecoder,
+      manifestGeopoliticalUnitEncoder
     );
 
-    const ManifestCandidateDecoder: D.Decoder<
+    const manifestCandidateDecoder: D.Decoder<
       unknown,
       Manifest.ManifestCandidate
     > = pipe(
       D.struct({
         object_id: D.string,
-        name: ManifestInternationalizedTextDecoder,
+        name: manifestInternationalizedTextDecoder,
         party_id: D.string,
         image_uri: D.string,
         is_write_in: D.boolean,
@@ -344,7 +344,7 @@ class Codecs {
       )
     );
 
-    const ManifestCandidateEncoder: E.Encoder<
+    const manifestCandidateEncoder: E.Encoder<
       unknown,
       Manifest.ManifestCandidate
     > = {
@@ -357,16 +357,16 @@ class Codecs {
       }),
     };
 
-    this.ManifestCandidateCodec = C.make(
-      ManifestCandidateDecoder,
-      ManifestCandidateEncoder
+    this.manifestCandidateCodec = C.make(
+      manifestCandidateDecoder,
+      manifestCandidateEncoder
     );
 
-    const ManifestPartyDecoder: D.Decoder<unknown, Manifest.ManifestParty> =
+    const manifestPartyDecoder: D.Decoder<unknown, Manifest.ManifestParty> =
       pipe(
         D.struct({
           object_id: D.string,
-          name: ManifestInternationalizedTextDecoder,
+          name: manifestInternationalizedTextDecoder,
           abbreviation: D.string,
           color: D.string,
           logo_uri: D.string,
@@ -384,7 +384,7 @@ class Codecs {
         )
       );
 
-    const ManifestPartyEncoder: E.Encoder<unknown, Manifest.ManifestParty> = {
+    const manifestPartyEncoder: E.Encoder<unknown, Manifest.ManifestParty> = {
       encode: input => ({
         object_id: input.partyId,
         name: input.name,
@@ -394,12 +394,12 @@ class Codecs {
       }),
     };
 
-    this.ManifestPartyCodec = C.make(
-      ManifestPartyDecoder,
-      ManifestPartyEncoder
+    this.manifestPartyCodec = C.make(
+      manifestPartyDecoder,
+      manifestPartyEncoder
     );
 
-    const ManifestBallotStyleDecoder: D.Decoder<
+    const manifestBallotStyleDecoder: D.Decoder<
       unknown,
       Manifest.ManifestBallotStyle
     > = pipe(
@@ -421,7 +421,7 @@ class Codecs {
       )
     );
 
-    const ManifestBallotStyleEncoder: E.Encoder<
+    const manifestBallotStyleEncoder: E.Encoder<
       unknown,
       Manifest.ManifestBallotStyle
     > = {
@@ -433,12 +433,12 @@ class Codecs {
       }),
     };
 
-    this.ManifestBallotStyleCodec = C.make(
-      ManifestBallotStyleDecoder,
-      ManifestBallotStyleEncoder
+    this.manifestBallotStyleCodec = C.make(
+      manifestBallotStyleDecoder,
+      manifestBallotStyleEncoder
     );
 
-    const ManifestContestDescriptionDecoder: D.Decoder<
+    const manifestContestDescriptionDecoder: D.Decoder<
       unknown,
       Manifest.ManifestContestDescription
     > = pipe(
@@ -450,9 +450,9 @@ class Codecs {
         number_elected: D.number,
         votes_allowed: D.number,
         name: D.string,
-        ballot_selections: D.array(ManifestSelectionDescriptionDecoder),
-        ballot_title: ManifestInternationalizedTextDecoder,
-        ballot_subtitle: ManifestInternationalizedTextDecoder,
+        ballot_selections: D.array(manifestSelectionDescriptionDecoder),
+        ballot_title: manifestInternationalizedTextDecoder,
+        ballot_subtitle: manifestInternationalizedTextDecoder,
       }),
       D.map(
         s =>
@@ -472,7 +472,7 @@ class Codecs {
       )
     );
 
-    const ManifestContestDescriptionEncoder: E.Encoder<
+    const manifestContestDescriptionEncoder: E.Encoder<
       unknown,
       Manifest.ManifestContestDescription
     > = {
@@ -485,23 +485,23 @@ class Codecs {
         votes_allowed: input.votesAllowed,
         name: input.name,
         ballot_selections: JSON.stringify(
-          input.selections.map(ManifestSelectionDescriptionEncoder.encode)
+          input.selections.map(manifestSelectionDescriptionEncoder.encode)
         ),
         ballot_title:
           input.ballotTitle &&
-          ManifestInternationalizedTextEncoder.encode(input.ballotTitle),
+          manifestInternationalizedTextEncoder.encode(input.ballotTitle),
         ballot_subtitle:
           input.ballotSubtitle &&
-          ManifestInternationalizedTextEncoder.encode(input.ballotSubtitle),
+          manifestInternationalizedTextEncoder.encode(input.ballotSubtitle),
       }),
     };
 
-    this.ManifestContestDescriptionCodec = C.make(
-      ManifestContestDescriptionDecoder,
-      ManifestContestDescriptionEncoder
+    this.manifestContestDescriptionCodec = C.make(
+      manifestContestDescriptionDecoder,
+      manifestContestDescriptionEncoder
     );
 
-    const ManifestCandidateContestDescriptionDecoder: D.Decoder<
+    const manifestCandidateContestDescriptionDecoder: D.Decoder<
       unknown,
       Manifest.ManifestCandidateContestDescription
     > = pipe(
@@ -513,9 +513,9 @@ class Codecs {
         number_elected: D.number,
         votes_allowed: D.number,
         name: D.string,
-        ballot_selections: D.array(ManifestSelectionDescriptionDecoder),
-        ballot_title: ManifestInternationalizedTextDecoder,
-        ballot_subtitle: ManifestInternationalizedTextDecoder,
+        ballot_selections: D.array(manifestSelectionDescriptionDecoder),
+        ballot_title: manifestInternationalizedTextDecoder,
+        ballot_subtitle: manifestInternationalizedTextDecoder,
         primary_party_ids: D.array(D.string),
       }),
       D.map(
@@ -537,35 +537,35 @@ class Codecs {
       )
     );
 
-    const ManifestCandidateContestDescriptionEncoder: E.Encoder<
+    const manifestCandidateContestDescriptionEncoder: E.Encoder<
       unknown,
       Manifest.ManifestCandidateContestDescription
     > = {
       encode: input => ({
-        ...(ManifestContestDescriptionEncoder.encode(input) as Object),
+        ...(manifestContestDescriptionEncoder.encode(input) as Object),
         primary_party_ids: input.primaryPartyIds,
       }),
     };
 
-    this.ManifestCandidateContestDescriptionCodec = C.make(
-      ManifestCandidateContestDescriptionDecoder,
-      ManifestCandidateContestDescriptionEncoder
+    this.manifestCandidateContestDescriptionCodec = C.make(
+      manifestCandidateContestDescriptionDecoder,
+      manifestCandidateContestDescriptionEncoder
     );
 
-    const ManifestDecoder: D.Decoder<unknown, Manifest.Manifest> = pipe(
+    const manifestDecoder: D.Decoder<unknown, Manifest.Manifest> = pipe(
       D.struct({
         election_scope_id: D.string,
         spec_version: D.string,
         type: D.number,
         start_date: D.string,
         end_date: D.string,
-        geopolitical_units: D.array(ManifestGeopoliticalUnitDecoder),
-        parties: D.array(ManifestPartyDecoder),
-        candidates: D.array(ManifestCandidateDecoder),
-        contests: D.array(ManifestContestDescriptionDecoder),
-        ballots: D.array(ManifestBallotStyleDecoder),
-        name: ManifestInternationalizedTextDecoder,
-        contact_information: ManifestContactInformationDecoder,
+        geopolitical_units: D.array(manifestGeopoliticalUnitDecoder),
+        parties: D.array(manifestPartyDecoder),
+        candidates: D.array(manifestCandidateDecoder),
+        contests: D.array(manifestContestDescriptionDecoder),
+        ballots: D.array(manifestBallotStyleDecoder),
+        name: manifestInternationalizedTextDecoder,
+        contact_information: manifestContactInformationDecoder,
       }),
       D.map(
         s =>
@@ -587,7 +587,7 @@ class Codecs {
       )
     );
 
-    const ManifestEncoder: E.Encoder<unknown, Manifest.Manifest> = {
+    const manifestEncoder: E.Encoder<unknown, Manifest.Manifest> = {
       encode: input => ({
         election_scope_id: input.electionScopeId,
         spec_version: input.specVersion,
@@ -595,29 +595,29 @@ class Codecs {
         start_date: input.startDate,
         end_date: input.endDate,
         geopolitical_units: JSON.stringify(
-          ManifestGeopoliticalUnitEncoder.encode
+          manifestGeopoliticalUnitEncoder.encode
         ),
-        parties: JSON.stringify(input.parties.map(ManifestPartyEncoder.encode)),
+        parties: JSON.stringify(input.parties.map(manifestPartyEncoder.encode)),
         candidates: JSON.stringify(
-          input.candidates.map(ManifestCandidateEncoder.encode)
+          input.candidates.map(manifestCandidateEncoder.encode)
         ),
         contests: JSON.stringify(
-          input.contests.map(ManifestContestDescriptionEncoder.encode)
+          input.contests.map(manifestContestDescriptionEncoder.encode)
         ),
         ballots: JSON.stringify(
-          input.ballotStyles.map(ManifestBallotStyleEncoder.encode)
+          input.ballotStyles.map(manifestBallotStyleEncoder.encode)
         ),
         name:
-          input.name && ManifestInternationalizedTextEncoder.encode(input.name),
+          input.name && manifestInternationalizedTextEncoder.encode(input.name),
         contact_information:
           input.contactInformation &&
-          ManifestContactInformationEncoder.encode(input.contactInformation),
+          manifestContactInformationEncoder.encode(input.contactInformation),
       }),
     };
 
-    this.ManifestCodec = C.make(ManifestDecoder, ManifestEncoder);
+    this.manifestCodec = C.make(manifestDecoder, manifestEncoder);
 
-    const SubmittedSelectionDecoder: D.Decoder<unknown, SubmittedSelection> =
+    const submittedSelectionDecoder: D.Decoder<unknown, SubmittedSelection> =
       pipe(
         D.struct({
           object_id: D.string,
@@ -646,7 +646,7 @@ class Codecs {
         )
       );
 
-    const SubmittedSelectionEncoder: E.Encoder<unknown, SubmittedSelection> = {
+    const submittedSelectionEncoder: E.Encoder<unknown, SubmittedSelection> = {
       encode: input => ({
         object_id: input.selectionId,
         sequence_order: input.sequenceOrder,
@@ -671,17 +671,17 @@ class Codecs {
       }),
     };
 
-    this.SubmittedSelectionCodec = C.make(
-      SubmittedSelectionDecoder,
-      SubmittedSelectionEncoder
+    this.submittedSelectionCodec = C.make(
+      submittedSelectionDecoder,
+      submittedSelectionEncoder
     );
 
-    const SubmittedContestDecoder: D.Decoder<unknown, SubmittedContest> = pipe(
+    const submittedContestDecoder: D.Decoder<unknown, SubmittedContest> = pipe(
       D.struct({
         object_id: D.string,
         sequence_order: D.number,
         description_hash: getCoreCodecsForContext(context).elementModQCodec,
-        ballot_selections: D.array(SubmittedSelectionDecoder),
+        ballot_selections: D.array(submittedSelectionDecoder),
         ciphertext_accumulation:
           getCoreCodecsForContext(context).elGamalCiphertextCodec,
         crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
@@ -703,7 +703,7 @@ class Codecs {
       )
     );
 
-    const SubmittedContestEncoder: E.Encoder<unknown, SubmittedContest> = {
+    const submittedContestEncoder: E.Encoder<unknown, SubmittedContest> = {
       encode: input => ({
         object_id: input.contestId,
         sequence_order: input.sequenceOrder,
@@ -711,7 +711,7 @@ class Codecs {
           context
         ).elementModQCodec.encode(input.contestHash),
         ballot_selections: JSON.stringify(
-          input.selections.map(SubmittedSelectionEncoder.encode)
+          input.selections.map(submittedSelectionEncoder.encode)
         ),
         ciphertext_accumulation: getCoreCodecsForContext(
           context
@@ -725,18 +725,18 @@ class Codecs {
       }),
     };
 
-    this.SubmittedContestCodec = C.make(
-      SubmittedContestDecoder,
-      SubmittedContestEncoder
+    this.submittedContestCodec = C.make(
+      submittedContestDecoder,
+      submittedContestEncoder
     );
 
-    const SubmittedBallotDecoder: D.Decoder<unknown, SubmittedBallot> = pipe(
+    const submittedBallotDecoder: D.Decoder<unknown, SubmittedBallot> = pipe(
       D.struct({
         object_id: D.string,
         style_id: D.string,
         manifest_hash: getCoreCodecsForContext(context).elementModQCodec,
         code_hash: getCoreCodecsForContext(context).elementModQCodec,
-        contests: D.array(SubmittedContestDecoder),
+        contests: D.array(submittedContestDecoder),
         code: getCoreCodecsForContext(context).elementModQCodec,
         timestamp: D.number,
         crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
@@ -758,7 +758,7 @@ class Codecs {
       )
     );
 
-    const SubmittedBallotEncoder: E.Encoder<unknown, SubmittedBallot> = {
+    const submittedBallotEncoder: E.Encoder<unknown, SubmittedBallot> = {
       encode: input => ({
         object_id: input.ballotId,
         style_id: input.ballotStyleId,
@@ -772,7 +772,7 @@ class Codecs {
           input.code
         ),
         code: JSON.stringify(
-          input.contests.map(SubmittedContestEncoder.encode)
+          input.contests.map(submittedContestEncoder.encode)
         ),
         timestamp: input.timestamp,
         crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
@@ -782,12 +782,12 @@ class Codecs {
       }),
     };
 
-    this.SubmittedBallotCodec = C.make(
-      SubmittedBallotDecoder,
-      SubmittedBallotEncoder
+    this.submittedBallotCodec = C.make(
+      submittedBallotDecoder,
+      submittedBallotEncoder
     );
 
-    const CiphertextSelectionDecoder: D.Decoder<unknown, CiphertextSelection> =
+    const ciphertextSelectionDecoder: D.Decoder<unknown, CiphertextSelection> =
       pipe(
         D.struct({
           object_id: D.string,
@@ -819,7 +819,7 @@ class Codecs {
         )
       );
 
-    const CiphertextSelectionEncoder: E.Encoder<unknown, CiphertextSelection> =
+    const ciphertextSelectionEncoder: E.Encoder<unknown, CiphertextSelection> =
       {
         encode: input => ({
           object_id: input.selectionId,
@@ -845,18 +845,18 @@ class Codecs {
         }),
       };
 
-    this.CiphertextSelectionCodec = C.make(
-      CiphertextSelectionDecoder,
-      CiphertextSelectionEncoder
+    this.ciphertextSelectionCodec = C.make(
+      ciphertextSelectionDecoder,
+      ciphertextSelectionEncoder
     );
 
-    const CiphertextContestDecoder: D.Decoder<unknown, CiphertextContest> =
+    const ciphertextContestDecoder: D.Decoder<unknown, CiphertextContest> =
       pipe(
         D.struct({
           object_id: D.string,
           sequence_order: D.number,
           description_hash: getCoreCodecsForContext(context).elementModQCodec,
-          ballot_selections: D.array(CiphertextSelectionDecoder),
+          ballot_selections: D.array(ciphertextSelectionDecoder),
           ciphertext_accumulation:
             getCoreCodecsForContext(context).elGamalCiphertextCodec,
           crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
@@ -880,7 +880,7 @@ class Codecs {
         )
       );
 
-    const CiphertextContestEncoder: E.Encoder<unknown, CiphertextContest> = {
+    const ciphertextContestEncoder: E.Encoder<unknown, CiphertextContest> = {
       encode: input => ({
         object_id: input.contestId,
         sequence_order: input.sequenceOrder,
@@ -888,7 +888,7 @@ class Codecs {
           context
         ).elementModQCodec.encode(input.contestHash),
         ballot_selections: JSON.stringify(
-          input.selections.map(CiphertextSelectionEncoder.encode)
+          input.selections.map(ciphertextSelectionEncoder.encode)
         ),
         ciphertext_accumulation: getCoreCodecsForContext(
           context
@@ -902,23 +902,22 @@ class Codecs {
       }),
     };
 
-    this.CiphertextContestCodec = C.make(
-      CiphertextContestDecoder,
-      CiphertextContestEncoder
+    this.ciphertextContestCodec = C.make(
+      ciphertextContestDecoder,
+      ciphertextContestEncoder
     );
 
-    const CiphertextBallotDecoder: D.Decoder<unknown, CiphertextBallot> = pipe(
+    const ciphertextBallotDecoder: D.Decoder<unknown, CiphertextBallot> = pipe(
       D.struct({
         object_id: D.string,
         style_id: D.string,
         manifest_hash: getCoreCodecsForContext(context).elementModQCodec,
         code_hash: getCoreCodecsForContext(context).elementModQCodec,
-        contests: D.array(CiphertextContestDecoder),
+        contests: D.array(ciphertextContestDecoder),
         code: getCoreCodecsForContext(context).elementModQCodec,
         timestamp: D.number,
         crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
         nonce: getCoreCodecsForContext(context).elementModQCodec,
-        // state: D.number,
       }),
       D.map(
         s =>
@@ -936,7 +935,7 @@ class Codecs {
       )
     );
 
-    const CiphertextBallotEncoder: E.Encoder<unknown, CiphertextBallot> = {
+    const ciphertextBallotEncoder: E.Encoder<unknown, CiphertextBallot> = {
       encode: input => ({
         object_id: input.ballotId,
         style_id: input.ballotStyleId,
@@ -950,22 +949,21 @@ class Codecs {
           input.code
         ),
         code: JSON.stringify(
-          input.contests.map(CiphertextContestEncoder.encode)
+          input.contests.map(ciphertextContestEncoder.encode)
         ),
         timestamp: input.timestamp,
         crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
           input.cryptoHash
         ),
-        // state: input.state,
       }),
     };
 
-    this.CiphertextBallotCodec = C.make(
-      CiphertextBallotDecoder,
-      CiphertextBallotEncoder
+    this.ciphertextBallotCodec = C.make(
+      ciphertextBallotDecoder,
+      ciphertextBallotEncoder
     );
 
-    const ExtendedDataDecoder: D.Decoder<unknown, ExtendedData> = pipe(
+    const extendedDataDecoder: D.Decoder<unknown, ExtendedData> = pipe(
       D.struct({
         value: D.string,
         length: D.number,
@@ -973,23 +971,23 @@ class Codecs {
       D.map(s => new ExtendedData(s.value, s.length))
     );
 
-    const ExtendedDataEncoder: E.Encoder<unknown, ExtendedData> = {
+    const extendedDataEncoder: E.Encoder<unknown, ExtendedData> = {
       encode: input => ({
         value: input.value,
         length: input.length,
       }),
     };
 
-    this.ExtendedDataCodec = C.make(ExtendedDataDecoder, ExtendedDataEncoder);
+    this.extendedDataCodec = C.make(extendedDataDecoder, extendedDataEncoder);
 
-    const PlaintextSelectionDecoder: D.Decoder<unknown, PlaintextSelection> =
+    const plaintextSelectionDecoder: D.Decoder<unknown, PlaintextSelection> =
       pipe(
         D.struct({
           object_id: D.string,
           sequence_order: D.number,
           vote: D.number,
           is_placeholder_selection: D.boolean,
-          extended_data: ExtendedDataDecoder,
+          extended_data: extendedDataDecoder,
         }),
         D.map(
           s =>
@@ -1003,26 +1001,26 @@ class Codecs {
         )
       );
 
-    const PlaintextSelectionEncoder: E.Encoder<unknown, PlaintextSelection> = {
+    const plaintextSelectionEncoder: E.Encoder<unknown, PlaintextSelection> = {
       encode: input => ({
         object_id: input.selectionId,
         sequence_order: input.sequenceOrder,
         vote: input.vote,
         is_placeholder_selection: input.isPlaceholderSelection,
-        extended_data: input.extendedData && ExtendedDataEncoder,
+        extended_data: input.extendedData && extendedDataEncoder,
       }),
     };
 
-    this.PlaintextSelectionCodec = C.make(
-      PlaintextSelectionDecoder,
-      PlaintextSelectionEncoder
+    this.plaintextSelectionCodec = C.make(
+      plaintextSelectionDecoder,
+      plaintextSelectionEncoder
     );
 
-    const PlaintextContestDecoder: D.Decoder<unknown, PlaintextContest> = pipe(
+    const plaintextContestDecoder: D.Decoder<unknown, PlaintextContest> = pipe(
       D.struct({
         object_id: D.string,
         sequence_order: D.number,
-        ballot_selections: D.array(PlaintextSelectionDecoder),
+        ballot_selections: D.array(plaintextSelectionDecoder),
       }),
       D.map(
         s =>
@@ -1034,54 +1032,54 @@ class Codecs {
       )
     );
 
-    const PlaintextContestEncoder: E.Encoder<unknown, PlaintextContest> = {
+    const plaintextContestEncoder: E.Encoder<unknown, PlaintextContest> = {
       encode: input => ({
         object_id: input.contestId,
         sequence_order: input.sequenceOrder,
         ballot_selections: JSON.stringify(
-          input.selections.map(PlaintextSelectionEncoder.encode)
+          input.selections.map(plaintextSelectionEncoder.encode)
         ),
       }),
     };
 
-    this.PlaintextContestCodec = C.make(
-      PlaintextContestDecoder,
-      PlaintextContestEncoder
+    this.plaintextContestCodec = C.make(
+      plaintextContestDecoder,
+      plaintextContestEncoder
     );
 
-    const PlaintextBallotDecoder: D.Decoder<unknown, PlaintextBallot> = pipe(
+    const plaintextBallotDecoder: D.Decoder<unknown, PlaintextBallot> = pipe(
       D.struct({
         object_id: D.string,
         style_id: D.string,
-        contests: D.array(PlaintextContestDecoder),
+        contests: D.array(plaintextContestDecoder),
       }),
       D.map(s => new PlaintextBallot(s.object_id, s.style_id, s.contests))
     );
 
-    const PlaintextBallotEncoder: E.Encoder<unknown, PlaintextBallot> = {
+    const plaintextBallotEncoder: E.Encoder<unknown, PlaintextBallot> = {
       encode: input => ({
         object_id: input.ballotId,
         style_id: input.ballotStyleId,
-        contests: input.contests.map(PlaintextContestEncoder.encode),
+        contests: input.contests.map(plaintextContestEncoder.encode),
       }),
     };
 
-    this.PlaintextBallotCodec = C.make(
-      PlaintextBallotDecoder,
-      PlaintextBallotEncoder
+    this.plaintextBallotCodec = C.make(
+      plaintextBallotDecoder,
+      plaintextBallotEncoder
     );
 
-    const EncryptionStateDecoder: D.Decoder<unknown, EncryptionState> = pipe(
+    const encryptionStateDecoder: D.Decoder<unknown, EncryptionState> = pipe(
       D.struct({
         public_key: getCoreCodecsForContext(context).elGamalPublicKeyCodec,
         extended_base_hash: getCoreCodecsForContext(context).elementModQCodec,
-        manifest: ManifestDecoder,
+        manifest: manifestDecoder,
         context: getCoreCodecsForContext(context).electionContextCodec,
       }),
       D.map(s => new EncryptionState(context, s.manifest, s.context, true))
     );
 
-    const EncryptionStateEncoder: E.Encoder<unknown, EncryptionState> = {
+    const encryptionStateEncoder: E.Encoder<unknown, EncryptionState> = {
       encode: input => ({
         public_key: getCoreCodecsForContext(
           context
@@ -1089,16 +1087,16 @@ class Codecs {
         extended_base_hash: getCoreCodecsForContext(
           context
         ).elementModQCodec.encode(input.extendedBaseHash),
-        manifest: ManifestEncoder.encode(input.manifest),
+        manifest: manifestEncoder.encode(input.manifest),
         context: getCoreCodecsForContext(context).electionContextCodec.encode(
           input.context
         ),
       }),
     };
 
-    this.EncryptionStateCodec = C.make(
-      EncryptionStateDecoder,
-      EncryptionStateEncoder
+    this.encryptionStateCodec = C.make(
+      encryptionStateDecoder,
+      encryptionStateEncoder
     );
   }
 }
