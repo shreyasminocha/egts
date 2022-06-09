@@ -25,7 +25,7 @@ import {EncryptionState} from './encrypt';
 
 // These JSON importer/exporter things are using the io-ts package:
 // https://github.com/gcanti/io-ts/
-// Which, in turn, uses a functional progrmaming library:
+// Which, in turn, uses a functional programming library:
 // https://github.com/gcanti/fp-ts/
 
 // The decoders have a pipeline where each stage of the pipe is returning Either<Error, T>
@@ -427,8 +427,8 @@ class Codecs {
     > = {
       encode: input => ({
         object_id: input.ballotStyleId,
-        geopolitical_unit_ids: JSON.stringify(input.geopoliticalUnitIds),
-        party_ids: JSON.stringify(input.partyIds),
+        geopolitical_unit_ids: input.geopoliticalUnitIds,
+        party_ids: input.partyIds,
         image_uri: input.imageUri,
       }),
     };
@@ -484,8 +484,8 @@ class Codecs {
         number_elected: input.numberElected,
         votes_allowed: input.votesAllowed,
         name: input.name,
-        ballot_selections: JSON.stringify(
-          input.selections.map(manifestSelectionDescriptionEncoder.encode)
+        ballot_selections: input.selections.map(
+          manifestSelectionDescriptionEncoder.encode
         ),
         ballot_title:
           input.ballotTitle &&
@@ -594,19 +594,11 @@ class Codecs {
         type: input.electionType,
         start_date: input.startDate,
         end_date: input.endDate,
-        geopolitical_units: JSON.stringify(
-          manifestGeopoliticalUnitEncoder.encode
-        ),
-        parties: JSON.stringify(input.parties.map(manifestPartyEncoder.encode)),
-        candidates: JSON.stringify(
-          input.candidates.map(manifestCandidateEncoder.encode)
-        ),
-        contests: JSON.stringify(
-          input.contests.map(manifestContestDescriptionEncoder.encode)
-        ),
-        ballots: JSON.stringify(
-          input.ballotStyles.map(manifestBallotStyleEncoder.encode)
-        ),
+        geopolitical_units: manifestGeopoliticalUnitEncoder.encode,
+        parties: input.parties.map(manifestPartyEncoder.encode),
+        candidates: input.candidates.map(manifestCandidateEncoder.encode),
+        contests: input.contests.map(manifestContestDescriptionEncoder.encode),
+        ballots: input.ballotStyles.map(manifestBallotStyleEncoder.encode),
         name:
           input.name && manifestInternationalizedTextEncoder.encode(input.name),
         contact_information:
@@ -710,8 +702,8 @@ class Codecs {
         description_hash: getCoreCodecsForContext(
           context
         ).elementModQCodec.encode(input.contestHash),
-        ballot_selections: JSON.stringify(
-          input.selections.map(submittedSelectionEncoder.encode)
+        ballot_selections: input.selections.map(
+          submittedSelectionEncoder.encode
         ),
         ciphertext_accumulation: getCoreCodecsForContext(
           context
@@ -771,9 +763,7 @@ class Codecs {
         contests: getCoreCodecsForContext(context).elementModQCodec.encode(
           input.code
         ),
-        code: JSON.stringify(
-          input.contests.map(submittedContestEncoder.encode)
-        ),
+        code: input.contests.map(submittedContestEncoder.encode),
         timestamp: input.timestamp,
         crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
           input.cryptoHashElement
@@ -887,8 +877,8 @@ class Codecs {
         description_hash: getCoreCodecsForContext(
           context
         ).elementModQCodec.encode(input.contestHash),
-        ballot_selections: JSON.stringify(
-          input.selections.map(ciphertextSelectionEncoder.encode)
+        ballot_selections: input.selections.map(
+          ciphertextSelectionEncoder.encode
         ),
         ciphertext_accumulation: getCoreCodecsForContext(
           context
@@ -948,9 +938,7 @@ class Codecs {
         contests: getCoreCodecsForContext(context).elementModQCodec.encode(
           input.code
         ),
-        code: JSON.stringify(
-          input.contests.map(ciphertextContestEncoder.encode)
-        ),
+        code: input.contests.map(ciphertextContestEncoder.encode),
         timestamp: input.timestamp,
         crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
           input.cryptoHash
@@ -1036,8 +1024,8 @@ class Codecs {
       encode: input => ({
         object_id: input.contestId,
         sequence_order: input.sequenceOrder,
-        ballot_selections: JSON.stringify(
-          input.selections.map(plaintextSelectionEncoder.encode)
+        ballot_selections: input.selections.map(
+          plaintextSelectionEncoder.encode
         ),
       }),
     };
