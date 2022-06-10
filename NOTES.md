@@ -2,6 +2,8 @@
 
 ## How are going to get concurrency?
 
+- Google's [clooney](https://github.com/GoogleChromeLabs/clooney) seems like exactly the right idea for setting up "actors" that hold state and then you just call them. The code hasn't been updated in long enough that it doesn't seem to play nicely when you try to load it. And I tried dropping the code in directly to this repo, and ran into a bunch of other errors. Sadly, seems unlikely to work. Among other issues, doesn't seem to support Node.
+
 - Instructions for using [workerpool](https://github.com/josdejong/workerpool): https://spin.atomicobject.com/2019/02/18/wrap-typescript-function/
   - Looks like there's a `workerEmit()` function that lets us have them just generating stuff and a `cpus` property to know how many to launch
     - But there doesn't seem to be a way to do a bounded queue with `workerEmit`. There is an optional bound on the number of tasks.
