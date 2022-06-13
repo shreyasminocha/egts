@@ -16,6 +16,7 @@ import {
   DisjunctiveChaumPedersenProofKnownNonce,
 } from '../../../src/electionguard/core/chaum-pedersen';
 import {UInt256} from '../../../src/electionguard/core/uint256';
+import { numberRange } from '../../../src/electionguard';
 
 /** Generates arbitrary UInt256 values. */
 export function uInt256(): fc.Arbitrary<UInt256> {
@@ -124,6 +125,18 @@ export function elGamalCiphertextAndContext(
           ),
       };
     });
+}
+
+/**
+ * fast-check doesn't provide us an easy way to make an array where the
+ * array index is used as part of the generator for each element. This
+ * is a hack to solve the problem.
+ */
+export function arrayIndexedArbitrary<T>(
+  func: (i: number) => fc.Arbitrary<T>,
+  size: number
+): fc.Arbitrary<Array<T>> {
+  return fc.tuple(...numberRange(0, size - 1).map(i => func(i)));
 }
 
 /**
