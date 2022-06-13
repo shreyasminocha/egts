@@ -16,6 +16,7 @@ import {
   ExpandedGenericChaumPedersenProof,
 } from './chaum-pedersen';
 import {
+  EdgeCaseConfiguration,
   ElectionConstants,
   ElectionContext,
   EncryptionDevice,
@@ -84,6 +85,11 @@ class Codecs {
   readonly electionConstantsCodec: C.Codec<unknown, unknown, ElectionConstants>;
   readonly electionContextCodec: C.Codec<unknown, unknown, ElectionContext>;
   readonly encryptionDeviceCodec: C.Codec<unknown, unknown, EncryptionDevice>;
+  readonly edgeCaseConfigurationCodec: C.Codec<
+    unknown,
+    unknown,
+    EdgeCaseConfiguration
+  >;
 
   constructor(readonly context: GroupContext) {
     const uInt8ArrayDecoder: D.Decoder<unknown, Uint8Array> = pipe(
@@ -193,6 +199,41 @@ class Codecs {
       electionConstantsEncoder
     );
 
+    const edgeCaseConfigurationDecoder: D.Decoder<
+      unknown,
+      EdgeCaseConfiguration
+    > = pipe(
+      D.struct({
+        allow_overvotes: D.nullable(D.boolean),
+        max_votes: D.nullable(D.number),
+      }),
+      D.map(
+        // default values taken from the Python code
+        s =>
+          new EdgeCaseConfiguration(
+            s.allow_overvotes || true,
+            s.max_votes || 1_000_000
+          )
+      )
+    );
+
+    const edgeCaseConfigurationEncoder: E.Encoder<
+      unknown,
+      EdgeCaseConfiguration
+    > = {
+      encode: e => {
+        return {
+          allow_overvotes: e.allowOvervotes,
+          max_votes: e.maxVotes,
+        };
+      },
+    };
+
+    this.edgeCaseConfigurationCodec = C.make(
+      edgeCaseConfigurationDecoder,
+      edgeCaseConfigurationEncoder
+    );
+
     const electionContextDecoder: D.Decoder<unknown, ElectionContext> = pipe(
       D.struct({
         number_of_guardians: D.number,
@@ -201,7 +242,7 @@ class Codecs {
         manifest_hash: elementModQDecoder,
         crypto_base_hash: elementModQDecoder,
         crypto_extended_base_hash: elementModQDecoder,
-        commitmentHash: elementModQDecoder,
+        commitment_hash: elementModQDecoder,
         extended_data: D.nullable(D.record(D.string)),
       }),
       D.map(
@@ -209,11 +250,11 @@ class Codecs {
           new ElectionContext(
             s.number_of_guardians,
             s.quorum,
-            s.joint_public_key,
+            new ElGamalPublicKey(s.joint_public_key),
             s.manifest_hash,
             s.crypto_base_hash,
             s.crypto_extended_base_hash,
-            s.commitmentHash,
+            s.commitment_hash,
             // TODO: verify this is the way handle an optional record field
             s.extended_data === null || s.extended_data === undefined
               ? undefined
@@ -227,13 +268,13 @@ class Codecs {
         return {
           number_of_guardians: e.numberOfGuardians,
           quorum: e.quorum,
-          joint_public_key: elementModPEncoder.encode(e.jointPublicKey),
+          joint_public_key: elementModPEncoder.encode(e.jointPublicKey.element),
           manifest_hash: elementModQEncoder.encode(e.manifestHash),
           crypto_base_hash: elementModQEncoder.encode(e.cryptoBaseHash),
           crypto_extended_base_hash: elementModQEncoder.encode(
             e.cryptoExtendedBaseHash
           ),
-          commitmentHash: elementModQEncoder.encode(e.commitmentHash),
+          commitment_hash: elementModQEncoder.encode(e.commitmentHash),
           // TODO: verify this is the way to handle an optional record field
           extended_data: e.extendedData,
         };

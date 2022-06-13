@@ -1,6 +1,11 @@
 import fc from 'fast-check';
-import {GroupContext} from '../../../src/electionguard';
+import {
+  ElectionContext,
+  ElGamalKeypair,
+  GroupContext,
+} from '../../../src/electionguard';
 import * as Manifest from '../../../src/electionguard/ballot/manifest';
+import {elementModQ, elGamalKeypair} from '../core/generators';
 
 export function manifestLanguage(
   context: GroupContext
@@ -225,6 +230,45 @@ export function manifest(
         startDate.toISOString(),
         endDate.toISOString(),
         ...rest
+      );
+    });
+}
+
+export class AllElectionContext {
+  constructor(
+    readonly manifest: Manifest.Manifest,
+    readonly electionContext: ElectionContext,
+    readonly keypair: ElGamalKeypair
+  ) {}
+}
+
+export function allElectionContext(
+  context: GroupContext
+): fc.Arbitrary<AllElectionContext> {
+  return fc
+    .tuple(
+      manifest(context),
+      elGamalKeypair(context),
+      elementModQ(context),
+      elementModQ(context),
+      elementModQ(context),
+      elementModQ(context),
+      elementModQ(context)
+    )
+    .map(t => {
+      const [manifest, keypair, baseHash, extendedBaseHash, commitmentHash] = t;
+      return new AllElectionContext(
+        manifest,
+        new ElectionContext(
+          1,
+          1,
+          keypair.publicKeyVal,
+          manifest.cryptoHashElement,
+          baseHash,
+          extendedBaseHash,
+          commitmentHash
+        ),
+        keypair
       );
     });
 }

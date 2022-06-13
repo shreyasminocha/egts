@@ -35,7 +35,7 @@ export class EncryptionState {
     readonly context: ElectionContext,
     readonly validate: boolean
   ) {
-    this.publicKey = new ElGamalPublicKey(context.jointPublicKey);
+    this.publicKey = context.jointPublicKey;
     this.extendedBaseHash = context.cryptoExtendedBaseHash;
     this.manifestHash = manifest.cryptoHashElement;
   }
