@@ -279,3 +279,42 @@ export function getOrFail<T>(
     return result;
   }
 }
+
+/**
+ * Combines two arrays by running the provided lambda on each pair of
+ * elements.
+ */
+export function zipMap<T1, T2, R>(
+  a: Array<T1>,
+  b: Array<T2>,
+  func: (a: T1, b: T2) => R
+): Array<R> {
+  return a.map((k, i) => func(k, b[i]));
+}
+
+/**
+ * Combines three arrays by running the provided lambda on each pair of
+ * elements.
+ */
+export function zipMap3<T1, T2, T3, R>(
+  a: Array<T1>,
+  b: Array<T2>,
+  c: Array<T3>,
+  func: (a: T1, b: T2, c: T3) => R
+): Array<R> {
+  return a.map((k, i) => func(k, b[i], c[i]));
+}
+
+/**
+ * Combines four arrays by running the provided lambda on each pair of
+ * elements.
+ */
+export function zipMap4<T1, T2, T3, T4, R>(
+  a: Array<T1>,
+  b: Array<T2>,
+  c: Array<T3>,
+  d: Array<T4>,
+  func: (a: T1, b: T2, c: T3, d: T4) => R
+): Array<R> {
+  return a.map((k, i) => func(k, b[i], c[i], d[i]));
+}
