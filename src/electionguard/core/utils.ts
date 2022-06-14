@@ -1,3 +1,5 @@
+import seedrandom = require('seedrandom');
+
 // source for useful functions to and from uint8Array:
 // https://coolaj86.com/articles/convert-js-bigints-to-typedarrays/
 
@@ -317,4 +319,25 @@ export function zipMap4<T1, T2, T3, T4, R>(
   func: (a: T1, b: T2, c: T3, d: T4) => R
 ): Array<R> {
   return a.map((k, i) => func(k, b[i], c[i], d[i]));
+}
+
+/** Returns a (shallow) copy of the array with the elements in a random order. */
+export function shuffleArray<T>(
+  input: Array<T>,
+  rng?: seedrandom.PRNG
+): Array<T> {
+  // Inspiration: https://stackoverflow.com/a/12646864
+
+  if (rng === undefined) {
+    rng = seedrandom();
+  }
+
+  const result = input.slice(); // shallow copy
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = rng.int32() % i;
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
 }

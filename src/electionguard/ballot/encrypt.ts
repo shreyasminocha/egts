@@ -266,7 +266,7 @@ export function encryptContest(
   return encryptedContest;
 }
 
-function selectionFrom(
+export function selectionFrom(
   selectionId: string,
   sequenceOrder: number,
   isPlaceholder: boolean,

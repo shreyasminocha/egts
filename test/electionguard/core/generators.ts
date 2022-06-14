@@ -16,7 +16,7 @@ import {
   DisjunctiveChaumPedersenProofKnownNonce,
 } from '../../../src/electionguard/core/chaum-pedersen';
 import {UInt256} from '../../../src/electionguard/core/uint256';
-import { numberRange } from '../../../src/electionguard';
+import {numberRange} from '../../../src/electionguard';
 
 /** Generates arbitrary UInt256 values. */
 export function uInt256(): fc.Arbitrary<UInt256> {

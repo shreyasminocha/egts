@@ -1,7 +1,22 @@
 import fc from 'fast-check';
-import {GroupContext, numberRange, zipMap4} from '../../../src/electionguard';
+import {
+  ElectionContext,
+  ElGamalKeypair,
+  GroupContext,
+  numberRange,
+  PlaintextBallot,
+  PlaintextContest,
+  shuffleArray,
+  zipMap4,
+} from '../../../src/electionguard';
 import * as M from '../../../src/electionguard/ballot/manifest';
-import { arrayIndexedArbitrary } from '../core/generators';
+import {
+  arrayIndexedArbitrary,
+  elementModQNoZero,
+  elGamalKeypair,
+} from '../core/generators';
+import seedrandom = require('seedrandom');
+import {selectionFrom} from '../../../src/electionguard/ballot/encrypt';
 
 const _first_names = [
   'James',
@@ -475,7 +490,6 @@ export function contestDescription(
   );
 }
 
-/*
 export function electionDescription(
   context: GroupContext,
   maxNumParties = 3,
@@ -485,7 +499,7 @@ export function electionDescription(
     throw new Error('must have at least one party and at least one contest');
   }
 
-  const result = fc
+  return fc
     .tuple(
       fc.array(geopoliticalUnit(context), {minLength: 1, maxLength: 1}),
       fc.integer({min: 1, max: maxNumParties}),
@@ -494,203 +508,180 @@ export function electionDescription(
     .chain(t => {
       const [geoUnits, numParties, numContests] = t;
       return partyLists(context, numParties).chain(parties =>
-        arrayIndexedArbitrary(
-          i => contestDescription(context, i + 1, parties, geoUnits),
-          numContests
-        ).chain(candidateContests => {})
+        fc
+          .tuple(
+            ballotStyle(context, parties, geoUnits),
+            fc.date(),
+            fc.emailAddress(),
+            internationalizedText(context),
+            contactInformation(context),
+            arrayIndexedArbitrary(
+              i => contestDescription(context, i + 1, parties, geoUnits),
+              numContests
+            )
+          )
+          .map(t => {
+            const [
+              styles,
+              date,
+              scopeId,
+              electionName,
+              contactInfo,
+              candidateContests,
+            ] = t;
+            const candidates = candidateContests.flatMap(c => c.candidates);
+            const contests = candidateContests.map(c => c.contestDescription);
+
+            return new M.Manifest(
+              context,
+              `electionScopeId/${scopeId}`,
+              '1.02',
+              M.ManifestElectionType.general,
+              `${date}`,
+              `${date}`,
+              geoUnits,
+              parties,
+              candidates,
+              contests,
+              [styles],
+              electionName,
+              contactInfo
+            );
+          })
       );
-    })
+    });
 }
 
+export function plaintextVotedBallot(manifest: M.Manifest) {
+  if (manifest.ballotStyles.length < 1) {
+    throw new Error('need at least one ballot style');
+  }
 
+  return fc
+    .tuple(fc.uuid(), fc.constantFrom(...manifest.ballotStyles), fc.string())
+    .map(t => {
+      const [ballotUuid, ballotStyle, rngSeed] = t;
+      const rng = seedrandom(rngSeed);
+      const contests = manifest.getContests(ballotStyle.ballotStyleId);
 
-@composite
-def election_descriptions(
-    draw: _DrawType, max_num_parties: int = 3, max_num_contests: int = 3
-):
-    """
-    Generates a `Manifest` -- the top-level object describing an election.
-    :param draw: Hidden argument, used by Hypothesis.
-    :param max_num_parties: The largest number of parties that will be generated (default: 3)
-    :param max_num_contests: The largest number of contests that will be generated (default: 3)
-    """
-    assert max_num_parties > 0, "need at least one party"
-    assert max_num_contests > 0, "need at least one contest"
+      if (contests.length < 1) {
+        throw new Error('need at least one contest matching the ballot style');
+      }
 
-    geo_units = [draw(geopolitical_units())]
-    num_parties: int = draw(integers(1, max_num_parties))
+      const votedContests = contests.map(contest => {
+        if (!contest.isValid()) {
+          throw new Error(`contest isn't valid?: ${contest}`);
+        }
+        const n = contest.numberElected;
+        const ballotSelections = contest.selections;
+        const randomSelections = shuffleArray(ballotSelections, rng);
+        const cutPoint = rng.int32() % n;
+        const yesVotes = randomSelections.slice(0, cutPoint);
+        const noVotes = randomSelections.slice(cutPoint);
+        const votedSelections = yesVotes
+          .map(description =>
+            selectionFrom(
+              description.selectionId,
+              description.sequenceOrder,
+              false,
+              true
+            )
+          )
+          .concat(
+            noVotes.map(description =>
+              selectionFrom(
+                description.selectionId,
+                description.sequenceOrder,
+                false,
+                false
+              )
+            )
+          );
+        return new PlaintextContest(
+          contest.contestId,
+          contest.sequenceOrder,
+          votedSelections
+        );
+      });
+      return new PlaintextBallot(
+        ballotUuid,
+        ballotStyle.ballotStyleId,
+        votedContests
+      );
+    });
+}
 
-    # keep this small so tests run faster
-    parties: List[Party] = draw(party_lists(num_parties))
-    num_contests: int = draw(integers(1, max_num_contests))
+export function plaintextVotedBallots(
+  manifest: M.Manifest,
+  count = 1
+): fc.Arbitrary<Array<PlaintextBallot>> {
+  return fc.array(plaintextVotedBallot(manifest), {
+    minLength: count,
+    maxLength: count,
+  });
+}
 
-    # generate a collection candidates mapped to contest descriptions
-    candidate_contests: List[Tuple[List[Candidate], ContestDescription]] = [
-        draw(contest_descriptions(i, parties, geo_units)) for i in range(num_contests)
-    ]
-    assert len(candidate_contests) > 0
+interface CiphertextElectionsTuple {
+  keypair: ElGamalKeypair;
+  electionContext: ElectionContext;
+}
 
-    candidates_ = reduce(
-        lambda a, b: a + b,
-        [candidate_contest[0] for candidate_contest in candidate_contests],
-    )
-    contests = [candidate_contest[1] for candidate_contest in candidate_contests]
-
-    styles = [draw(ballot_styles(parties, geo_units))]
-
-    # maybe later on we'll do something more complicated with dates
-    start_date = draw(datetimes())
-    end_date = start_date
-
-    return Manifest(
-        election_scope_id=draw(emails()),
-        spec_version="v0.95",
-        type=ElectionType.general,  # good enough for now
-        start_date=start_date,
-        end_date=end_date,
-        geopolitical_units=geo_units,
-        parties=parties,
-        candidates=candidates_,
-        contests=contests,
-        ballot_styles=styles,
-        name=draw(internationalized_texts()),
-        contact_information=draw(contact_infos()),
-    )
-
-
-@composite
-def plaintext_voted_ballots(
-    draw: _DrawType, internal_manifest: InternalManifest, count: int = 1
-):
-    """
-    Given
-    """
-    if count == 1:
-        return draw(plaintext_voted_ballot(internal_manifest))
-    ballots: List[PlaintextBallot] = []
-    for _i in range(count):
-        ballots.append(draw(plaintext_voted_ballot(internal_manifest)))
-    return ballots
-
-
-@composite
-def plaintext_voted_ballot(draw: _DrawType, internal_manifest: InternalManifest):
-    """
-    Given an `InternalManifest` object, generates an arbitrary `PlaintextBallot` with the
-    choices made randomly.
-    :param draw: Hidden argument, used by Hypothesis.
-    :param internal_manifest: Any `InternalManifest`
-    """
-
-    num_ballot_styles = len(internal_manifest.ballot_styles)
-    assert num_ballot_styles > 0, "invalid election with no ballot styles"
-
-    # pick a ballot style at random
-    ballot_style = internal_manifest.ballot_styles[
-        draw(integers(0, num_ballot_styles - 1))
-    ]
-
-    contests = internal_manifest.get_contests_for(ballot_style.object_id)
-    assert len(contests) > 0, "invalid ballot style with no contests in it"
-
-    voted_contests: List[PlaintextBallotContest] = []
-    for contest in contests:
-        assert contest.is_valid(), "every contest needs to be valid"
-        n = contest.number_elected  # we need exactly this many 1's, and the rest 0's
-        ballot_selections = deepcopy(contest.ballot_selections)
-        assert len(ballot_selections) >= n
-
-        random = Random(draw(integers()))
-        random.shuffle(ballot_selections)
-        cut_point = draw(integers(0, n))
-        yes_votes = ballot_selections[:cut_point]
-        no_votes = ballot_selections[cut_point:]
-
-        voted_selections = [
-            selection_from(description, is_placeholder=False, is_affirmative=True)
-            for description in yes_votes
-        ] + [
-            selection_from(description, is_placeholder=False, is_affirmative=False)
-            for description in no_votes
-        ]
-
-        voted_contests.append(
-            PlaintextBallotContest(contest.object_id, voted_selections)
-        )
-
-    return PlaintextBallot(str(draw(uuids())), ballot_style.object_id, voted_contests)
-
-
-CiphertextElectionsTupleType = Tuple[ElementModQ, CiphertextElectionContext]
-
-
-@composite
-def ciphertext_elections(draw: _DrawType, manifest: Manifest):
-    """
-    Generates a `CiphertextElectionContext` with a single public-private key pair as the encryption context.
-
-    In a real election, the key ceremony would be used to generate a shared public key.
-
-    :param draw: Hidden argument, used by Hypothesis.
-    :param manifest: An `Manifest` object, with
-    which the `CiphertextElectionContext` will be associated
-    :return: a tuple of a `CiphertextElectionContext` and the secret key associated with it
-    """
-    keypair = draw(elgamal_keypairs())
-    secret_key = keypair.secret_key
-    public_key = keypair.public_key
-    commitment_hash = draw(elements_mod_q_no_zero())
-    ciphertext_election_with_secret: CiphertextElectionsTupleType = (
-        secret_key,
-        make_ciphertext_election_context(
-            number_of_guardians=1,
-            quorum=1,
-            elgamal_public_key=public_key,
-            commitment_hash=commitment_hash,
-            manifest_hash=manifest.crypto_hash(),
+/** Generates a `CiphertextElectionContext` with a single public-private key pair as the encryption context. */
+export function ciphertextElection(
+  context: GroupContext,
+  manifest: M.Manifest
+): fc.Arbitrary<CiphertextElectionsTuple> {
+  return fc
+    .tuple(elGamalKeypair(context), elementModQNoZero(context))
+    .map(t => {
+      const [keypair, commitmentHash] = t;
+      return {
+        keypair: keypair,
+        electionContext: ElectionContext.create(
+          1,
+          1,
+          keypair.publicKey,
+          commitmentHash,
+          manifest.cryptoHashElement
         ),
-    )
-    return ciphertext_election_with_secret
+      };
+    });
+}
 
+interface ElectionAndBallots {
+  manifest: M.Manifest;
+  ballots: Array<PlaintextBallot>;
+  keypair: ElGamalKeypair;
+  electionContext: ElectionContext;
+}
 
-ElectionsAndBallotsTupleType = Tuple[
-    Manifest,
-    InternalManifest,
-    List[PlaintextBallot],
-    ElementModQ,
-    CiphertextElectionContext,
-]
+/**
+ * A convenience generator to generate all of the necessary components for simulating an election.
+ * Every ballot will match the same ballot style.
+ */
+export function electionAndBallots(
+  context: GroupContext,
+  numBallots = 3
+): fc.Arbitrary<ElectionAndBallots> {
+  if (numBallots < 1) {
+    throw new Error(`numBallots must be at least one: ${numBallots}`);
+  }
 
+  return electionDescription(context).chain(manifest => {
+    return fc
+      .tuple(
+        ciphertextElection(context, manifest),
+        plaintextVotedBallots(manifest, numBallots)
+      )
+      .map(t => {
+        const [cec, ballots] = t;
 
-@composite
-def elections_and_ballots(draw: _DrawType, num_ballots: int = 3):
-    """
-    A convenience generator to generate all of the necessary components for simulating an election.
-    Every ballot will match the same ballot style. Hypothesis doesn't
-    let us declare a type hint on strategy return values, so you can use `ELECTIONS_AND_BALLOTS_TUPLE_TYPE`.
-
-    :param draw: Hidden argument, used by Hypothesis.
-    :param num_ballots: The number of ballots to generate (default: 3).
-    :reeturn: a tuple of: an `InternalManifest`, a list of plaintext ballots, an ElGamal secret key,
-        and a `CiphertextElectionContext`
-    """
-    assert num_ballots >= 0, "You're asking for a negative number of ballots?"
-    manifest = draw(election_descriptions())
-    internal_manifest = InternalManifest(manifest)
-
-    ballots = [
-        draw(plaintext_voted_ballots(internal_manifest)) for _ in range(num_ballots)
-    ]
-
-    secret_key, context = draw(ciphertext_elections(manifest))
-
-    mock_election: ElectionsAndBallotsTupleType = (
-        manifest,
-        internal_manifest,
-        ballots,
-        secret_key,
-        context,
-    )
-    return mock_election
-
-*/
+        return {
+          manifest: manifest,
+          ballots: ballots,
+          keypair: cec.keypair,
+          electionContext: cec.electionContext,
+        };
+      });
+  });
+}

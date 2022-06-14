@@ -21,6 +21,7 @@ export interface CryptoHashableElement {
 export type CryptoHashable =
   | string
   | number
+  | bigint
   | undefined
   | CryptoHashableString
   | CryptoHashableElement
@@ -82,6 +83,7 @@ export function hashElements(
                 return 'null';
               case 'string':
                 return e;
+              case 'bigint':
               case 'number':
                 return e?.toString(10); // base 10 in the reference code
               default:

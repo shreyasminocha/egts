@@ -21,6 +21,7 @@
     "@babel/preset-typescript": "^7.17.12",
     "@types/jest": "^27.5.1",
     "@types/node": "^14.11.2",
+    "@types/seedrandom": "^3.0.2",
     "fast-check": "^2.25.0",
     "gts": "^3.1.0",
     "jest": "^28.1.0",
@@ -40,6 +41,7 @@
     "io-ts": "^2.2.16",
     "moment": "^2.29.1",
     "path-browserify": "^1.0.1",
+    "seedrandom": "^3.0.5",
     "stream-browserify": "^3.0.0",
     "workerpool": "^6.2.1"
   },
