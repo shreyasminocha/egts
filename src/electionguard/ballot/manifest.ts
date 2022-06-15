@@ -777,22 +777,6 @@ export class ManifestCandidateContestDescription extends ManifestContestDescript
     this.primaryPartyIds = primaryPartyIds;
   }
 
-  isValid(): boolean {
-    const superValid = super.isValid();
-    if (this.primaryPartyIds === undefined) {
-      return superValid;
-    } else {
-      if (this.primaryPartyIds.length !== this.selections.length) {
-        console.warn(
-          `incorrect number of primaryPartyIds: ${this.primaryPartyIds.length} vs ${this.selections.length}`
-        );
-        return false;
-      } else {
-        return superValid;
-      }
-    }
-  }
-
   equals(other: ManifestCandidateContestDescription): boolean {
     return (
       other instanceof ManifestCandidateContestDescription &&

@@ -15,6 +15,15 @@ import {electionAndBallots} from './generators';
 
 const groupContext = bigIntContext3072();
 describe('Election encryption and tallying', () => {
+  test('Generators yield valid contests', () => {
+    fc.assert(
+      fc.property(electionAndBallots(groupContext), eb => {
+        const contests = eb.manifest.contests;
+        const contestsValid = contests.every(c => c.isValid());
+        expect(contestsValid).toBe(true);
+      })
+    );
+  });
   test('Encryption/decryption inverses', () => {
     fc.assert(
       fc.property(

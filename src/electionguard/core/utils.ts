@@ -335,7 +335,7 @@ export function shuffleArray<T>(
   const result = input.slice(); // shallow copy
 
   for (let i = result.length - 1; i > 0; i--) {
-    const j = rng.int32() % i;
+    const j = Math.abs(rng.int32()) % i;
     [result[i], result[j]] = [result[j], result[i]];
   }
 

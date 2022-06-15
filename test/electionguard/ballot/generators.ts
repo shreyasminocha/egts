@@ -578,20 +578,21 @@ export function plaintextVotedBallot(manifest: M.Manifest) {
         const cutPoint = rng.int32() % n;
         const yesVotes = randomSelections.slice(0, cutPoint);
         const noVotes = randomSelections.slice(cutPoint);
+
         const votedSelections = yesVotes
-          .map(description =>
+          .map(selectionDesc =>
             selectionFrom(
-              description.selectionId,
-              description.sequenceOrder,
+              selectionDesc.selectionId,
+              selectionDesc.sequenceOrder,
               false,
               true
             )
           )
           .concat(
-            noVotes.map(description =>
+            noVotes.map(selectionDesc =>
               selectionFrom(
-                description.selectionId,
-                description.sequenceOrder,
+                selectionDesc.selectionId,
+                selectionDesc.sequenceOrder,
                 false,
                 false
               )
