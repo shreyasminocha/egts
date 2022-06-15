@@ -55,13 +55,13 @@ export class EncryptionState {
 export function encryptBallot(
   state: EncryptionState,
   ballot: PlaintextBallot,
-  primaryNonce: ElementModQ
+  ballotEncryptionSeed: ElementModQ
 ): CiphertextBallot {
   const ballotNonce: ElementModQ = hashElements(
     state.group,
     state.manifestHash,
     ballot.ballotId,
-    primaryNonce
+    ballotEncryptionSeed
   );
 
   const pcontests = associateBy(ballot.contests, c => c.contestId);
@@ -105,7 +105,7 @@ export function encryptBallot(
     encryptedContests,
     timestamp,
     cryptoHash,
-    primaryNonce
+    ballotEncryptionSeed
   );
   return encryptedBallot;
 }
@@ -247,9 +247,9 @@ export function encryptContest(
       limit
     )
   ) {
-    console.warn(
-      `Ballot ${ballotId} contest ${contest.contestId} proof does not validate`
-    );
+    const errStr = `Ballot ${ballotId} contest ${contest.contestId} proof does not validate`;
+    console.warn(errStr);
+    throw new Error(errStr);
   }
 
   const encryptedContest = new CiphertextContest(
@@ -347,9 +347,9 @@ export function encryptSelection(
     state.validate &&
     !proof.isValid(elGamalEncryption, state.publicKey, state.extendedBaseHash)
   ) {
-    console.warn(
-      `Selection ${plaintextSelection.selectionId} proof does not validate`
-    );
+    const errStr = `Selection ${plaintextSelection.selectionId} proof does not validate`;
+    console.warn(errStr);
+    throw new Error(errStr);
   }
 
   if (plaintextSelection.extendedData !== undefined) {

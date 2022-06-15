@@ -20,12 +20,12 @@ import {
  */
 export function decryptAndVerifyBallot(
   manifest: Manifest,
-  qbar: ElementModQ,
+  extendedBaseHash: ElementModQ,
   keypair: ElGamalKeypair,
   ballot: SubmittedBallot
 ): PlaintextBallot {
   const pcontests = ballot.contests.map(c =>
-    decryptAndVerifyContest(manifest, qbar, keypair, c)
+    decryptAndVerifyContest(manifest, extendedBaseHash, keypair, c)
   );
 
   return new PlaintextBallot(ballot.ballotId, ballot.ballotStyleId, pcontests);
@@ -33,7 +33,7 @@ export function decryptAndVerifyBallot(
 
 function decryptAndVerifyContest(
   manifest: Manifest,
-  qbar: ElementModQ,
+  extendedBaseHash: ElementModQ,
   keypair: ElGamalKeypair,
   contest: SubmittedContest
 ): PlaintextContest {
@@ -47,7 +47,7 @@ function decryptAndVerifyContest(
   const proofValid = contest.proof.isValid(
     cryptoSum,
     keypair,
-    qbar,
+    extendedBaseHash,
     contestDescription.votesAllowed
   );
 
@@ -56,7 +56,7 @@ function decryptAndVerifyContest(
   }
 
   const pselections = contest.selections.map(s =>
-    decryptAndVerifySelection(qbar, keypair, s)
+    decryptAndVerifySelection(extendedBaseHash, keypair, s)
   );
 
   const pSelectionsWithoutPlaceholders = pselections.filter(
@@ -71,14 +71,14 @@ function decryptAndVerifyContest(
 }
 
 function decryptAndVerifySelection(
-  qbar: ElementModQ,
+  extendedBaseHash: ElementModQ,
   keypair: ElGamalKeypair,
   selection: SubmittedSelection
 ): PlaintextSelection {
   const proofValid = selection.proof.isValid(
     selection.ciphertext,
     keypair,
-    qbar
+    extendedBaseHash
   );
   if (!proofValid) {
     throw new Error('proof validation failed');
