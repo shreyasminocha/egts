@@ -231,18 +231,18 @@ class Codecs {
       M.ManifestContactInformation
     > = pipe(
       D.struct({
-        address_line: D.array(D.string),
+        address_line: D.nullable(D.array(D.string)),
         email: D.array(manifestAnnotatedStringDecoder),
-        phone: D.array(manifestAnnotatedStringDecoder),
+        phone: D.nullable(D.array(manifestAnnotatedStringDecoder)),
         name: D.string,
       }),
       D.map(
         s =>
           new M.ManifestContactInformation(
             context,
-            s.address_line,
+            s.address_line || undefined,
             s.email,
-            s.phone,
+            s.phone || undefined,
             s.name
           )
       )
@@ -272,8 +272,8 @@ class Codecs {
       D.struct({
         object_id: D.string,
         name: D.string,
-        type: D.number,
-        contact_information: manifestContactInformationDecoder,
+        type: D.string,
+        contact_information: D.nullable(manifestContactInformationDecoder),
       }),
       D.map(
         s =>
@@ -281,8 +281,10 @@ class Codecs {
             context,
             s.object_id,
             s.name,
-            s.type as M.ManifestReportingUnitType,
-            s.contact_information
+            M.ManifestReportingUnitType[
+              s.type as keyof typeof M.ManifestReportingUnitType
+            ],
+            s.contact_information || undefined
           )
       )
     );
@@ -309,9 +311,9 @@ class Codecs {
         D.struct({
           object_id: D.string,
           name: manifestInternationalizedTextDecoder,
-          party_id: D.string,
-          image_uri: D.string,
-          is_write_in: D.boolean,
+          party_id: D.nullable(D.string),
+          image_uri: D.nullable(D.string),
+          is_write_in: D.nullable(D.boolean),
         }),
         D.map(
           s =>
@@ -319,9 +321,9 @@ class Codecs {
               context,
               s.object_id,
               s.name,
-              s.party_id,
-              s.image_uri,
-              s.is_write_in
+              s.party_id || undefined,
+              s.image_uri || undefined,
+              !!s.is_write_in
             )
         )
       );
@@ -345,9 +347,9 @@ class Codecs {
       D.struct({
         object_id: D.string,
         name: manifestInternationalizedTextDecoder,
-        abbreviation: D.string,
-        color: D.string,
-        logo_uri: D.string,
+        abbreviation: D.nullable(D.string),
+        color: D.nullable(D.string),
+        logo_uri: D.nullable(D.string),
       }),
       D.map(
         s =>
@@ -355,9 +357,9 @@ class Codecs {
             context,
             s.object_id,
             s.name,
-            s.abbreviation,
-            s.color,
-            s.logo_uri
+            s.abbreviation || undefined,
+            s.color || undefined,
+            s.logo_uri || undefined
           )
       )
     );
@@ -424,13 +426,13 @@ class Codecs {
         object_id: D.string,
         sequence_order: D.number,
         electoral_district_id: D.string,
-        vote_variation: D.number,
+        vote_variation: D.string,
         number_elected: D.number,
         votes_allowed: D.number,
         name: D.string,
         ballot_selections: D.array(manifestSelectionDescriptionDecoder),
-        ballot_title: manifestInternationalizedTextDecoder,
-        ballot_subtitle: manifestInternationalizedTextDecoder,
+        ballot_title: D.nullable(manifestInternationalizedTextDecoder),
+        ballot_subtitle: D.nullable(manifestInternationalizedTextDecoder),
       }),
       D.map(
         s =>
@@ -439,13 +441,15 @@ class Codecs {
             s.object_id,
             s.sequence_order,
             s.electoral_district_id,
-            s.vote_variation as M.ManifestVoteVariationType,
+            M.ManifestVoteVariationType[
+              s.vote_variation as keyof typeof M.ManifestVoteVariationType
+            ],
             s.number_elected,
             s.votes_allowed,
             s.name,
             s.ballot_selections,
-            s.ballot_title,
-            s.ballot_subtitle
+            s.ballot_title || undefined,
+            s.ballot_subtitle || undefined
           )
       )
     );
@@ -487,14 +491,14 @@ class Codecs {
         object_id: D.string,
         sequence_order: D.number,
         electoral_district_id: D.string,
-        vote_variation: D.number,
+        vote_variation: D.string,
         number_elected: D.number,
         votes_allowed: D.number,
         name: D.string,
         ballot_selections: D.array(manifestSelectionDescriptionDecoder),
-        ballot_title: manifestInternationalizedTextDecoder,
-        ballot_subtitle: manifestInternationalizedTextDecoder,
-        primary_party_ids: D.array(D.string),
+        ballot_title: D.nullable(manifestInternationalizedTextDecoder),
+        ballot_subtitle: D.nullable(manifestInternationalizedTextDecoder),
+        primary_party_ids: D.nullable(D.array(D.string)),
       }),
       D.map(
         s =>
@@ -503,14 +507,16 @@ class Codecs {
             s.object_id,
             s.sequence_order,
             s.electoral_district_id,
-            s.vote_variation as M.ManifestVoteVariationType,
+            M.ManifestVoteVariationType[
+              s.vote_variation as keyof typeof M.ManifestVoteVariationType
+            ],
             s.number_elected,
             s.votes_allowed,
             s.name,
             s.ballot_selections,
-            s.ballot_title,
-            s.ballot_subtitle,
-            s.primary_party_ids
+            s.ballot_title || undefined,
+            s.ballot_subtitle || undefined,
+            s.primary_party_ids || undefined
           )
       )
     );
@@ -534,7 +540,7 @@ class Codecs {
       D.struct({
         election_scope_id: D.string,
         spec_version: D.string,
-        type: D.number,
+        type: D.string,
         start_date: D.string,
         end_date: D.string,
         geopolitical_units: D.array(manifestGeopoliticalUnitDecoder),
@@ -542,8 +548,8 @@ class Codecs {
         candidates: D.array(manifestCandidateDecoder),
         contests: D.array(manifestContestDescriptionDecoder),
         ballot_styles: D.array(manifestBallotStyleDecoder),
-        name: manifestInternationalizedTextDecoder,
-        contact_information: manifestContactInformationDecoder,
+        name: D.nullable(manifestInternationalizedTextDecoder),
+        contact_information: D.nullable(manifestContactInformationDecoder),
       }),
       D.map(
         s =>
@@ -551,7 +557,9 @@ class Codecs {
             context,
             s.election_scope_id,
             s.spec_version,
-            s.type,
+            M.ManifestElectionType[
+              s.type as keyof typeof M.ManifestElectionType
+            ],
             s.start_date,
             s.end_date,
             s.geopolitical_units,
@@ -559,8 +567,8 @@ class Codecs {
             s.candidates,
             s.contests,
             s.ballot_styles,
-            s.name,
-            s.contact_information
+            s.name || undefined,
+            s.contact_information || undefined
           )
       )
     );

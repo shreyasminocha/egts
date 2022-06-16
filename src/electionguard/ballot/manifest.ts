@@ -435,9 +435,9 @@ export class ManifestContactInformation
 
   constructor(
     context: GroupContext,
-    readonly addressLine: Array<string>,
+    readonly addressLine: Array<string> | undefined,
     readonly email: Array<ManifestAnnotatedString>,
-    readonly phone: Array<ManifestAnnotatedString>,
+    readonly phone: Array<ManifestAnnotatedString> | undefined,
     readonly name: string | undefined
   ) {
     this.cryptoHashElement = hashElements(
