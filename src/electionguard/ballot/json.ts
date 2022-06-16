@@ -541,7 +541,7 @@ class Codecs {
         parties: D.array(manifestPartyDecoder),
         candidates: D.array(manifestCandidateDecoder),
         contests: D.array(manifestContestDescriptionDecoder),
-        ballots: D.array(manifestBallotStyleDecoder),
+        ballot_styles: D.array(manifestBallotStyleDecoder),
         name: manifestInternationalizedTextDecoder,
         contact_information: manifestContactInformationDecoder,
       }),
@@ -558,7 +558,7 @@ class Codecs {
             s.parties,
             s.candidates,
             s.contests,
-            s.ballots,
+            s.ballot_styles,
             s.name,
             s.contact_information
           )
@@ -576,7 +576,9 @@ class Codecs {
         parties: input.parties.map(manifestPartyEncoder.encode),
         candidates: input.candidates.map(manifestCandidateEncoder.encode),
         contests: input.contests.map(manifestContestDescriptionEncoder.encode),
-        ballots: input.ballotStyles.map(manifestBallotStyleEncoder.encode),
+        ballot_styles: input.ballotStyles.map(
+          manifestBallotStyleEncoder.encode
+        ),
         name:
           input.name && manifestInternationalizedTextEncoder.encode(input.name),
         contact_information:
