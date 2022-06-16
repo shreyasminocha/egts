@@ -238,7 +238,7 @@ class Codecs {
       D.struct({
         number_of_guardians: D.number,
         quorum: D.number,
-        joint_public_key: elementModPDecoder,
+        elgamal_public_key: elementModPDecoder,
         manifest_hash: elementModQDecoder,
         crypto_base_hash: elementModQDecoder,
         crypto_extended_base_hash: elementModQDecoder,
@@ -250,7 +250,7 @@ class Codecs {
           new ElectionContext(
             s.number_of_guardians,
             s.quorum,
-            new ElGamalPublicKey(s.joint_public_key),
+            new ElGamalPublicKey(s.elgamal_public_key),
             s.manifest_hash,
             s.crypto_base_hash,
             s.crypto_extended_base_hash,

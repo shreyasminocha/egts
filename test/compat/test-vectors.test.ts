@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import {getCodecsForContext as getBallotCodecsForContext} from '../../src/electionguard/ballot/json';
+import {getCodecsForContext as getCoreCodecsForContext} from '../../src/electionguard/core/json';
 import {bigIntContext4096} from '../../src/electionguard/core/group-bigint';
 import {pipe} from 'fp-ts/function';
 import {fold} from 'fp-ts/Either';
@@ -32,6 +33,24 @@ describe('compat', () => {
         w => {
           manifest = w;
           expect(manifest).toBeTruthy();
+        }
+      )
+    );
+
+    const possiblyElectionContext = getCoreCodecsForContext(
+      bigIntContext4096()
+    ).electionContextCodec.decode(artifacts.context);
+
+    let electionContext;
+    pipe(
+      possiblyElectionContext,
+      fold(
+        err => {
+          throw new Error(JSON.stringify(err, null, 4));
+        },
+        w => {
+          electionContext = w;
+          expect(electionContext).toBeTruthy();
         }
       )
     );
