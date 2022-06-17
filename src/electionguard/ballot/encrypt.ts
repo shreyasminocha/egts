@@ -184,11 +184,11 @@ export function encryptContest(
   const selectionSequenceOrderMax = maxOf(
     contestDescription.selections,
     it => it.sequenceOrder
-  );
+  ).sequenceOrder;
 
   const encryptedPlaceholders = numberRange(1, limit).map(placeholderNumber => {
-    const sequenceNo =
-      selectionSequenceOrderMax.sequenceOrder + placeholderNumber;
+    const sequenceNo = selectionSequenceOrderMax + placeholderNumber;
+
     const plaintextSelection = selectionFrom(
       `${contestDescription.contestId}-$sequenceNo`,
       sequenceNo,
@@ -289,7 +289,7 @@ function generatePlaceholderSelectionFrom(
 ): ManifestSelectionDescription {
   const sequenceOrdinals = contest.selections.map(s => s.sequenceOrder);
 
-  if (!sequenceOrdinals.includes(sequenceId)) {
+  if (sequenceOrdinals.includes(sequenceId)) {
     throw new Error(
       `mismatched placeholder selection ${sequenceId} already exists for contest`
     );

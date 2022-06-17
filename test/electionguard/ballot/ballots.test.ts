@@ -10,7 +10,7 @@ import {
   encryptBallot,
   EncryptionState,
 } from '../../../src/electionguard/ballot/encrypt';
-import {elementModQ} from '../core/generators';
+import {elementModQ, fcFastConfig} from '../core/generators';
 import {electionAndBallots} from './generators';
 
 const groupContext = bigIntContext3072();
@@ -21,7 +21,8 @@ describe('Election encryption and tallying', () => {
         const contests = eb.manifest.contests;
         const contestsValid = contests.every(c => c.isValid());
         expect(contestsValid).toBe(true);
-      })
+      }),
+      fcFastConfig
     );
   });
   test('Encryption/decryption inverses', () => {
@@ -59,7 +60,8 @@ describe('Election encryption and tallying', () => {
             matchingArraysOfAnyElectionObjects(eb.ballots, decryptedBallots)
           ).toBe(true);
         }
-      )
+      ),
+      fcFastConfig
     );
   });
 
