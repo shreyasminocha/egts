@@ -4,6 +4,8 @@ import {
   bigIntContext4096,
 } from '../../../src/electionguard/core/group-bigint';
 import {Nonces} from '../../../src/electionguard/core/nonces';
+import fc from 'fast-check';
+import {elementModQ} from './generators';
 
 function testNonces(context: GroupContext) {
   describe(`${context.name}: nonce tests`, () => {
@@ -22,6 +24,22 @@ function testNonces(context: GroupContext) {
 
       const nonces4 = new Nonces(context.TWO_MOD_Q, 'something extra');
       expect(nonces3.get(1)).toEqual(nonces4.get(1));
+    });
+    test('uniqueness', () => {
+      fc.assert(
+        fc.property(elementModQ(context), fc.string(), (seed, s) => {
+          const nonces = new Nonces(seed, s);
+          const [na, nb, nc, nd] = nonces;
+          const nBigints = [
+            na.toBigint(),
+            nb.toBigint(),
+            nc.toBigint(),
+            nd.toBigint(),
+          ];
+
+          expect(new Set(nBigints).size).toEqual(4);
+        })
+      );
     });
   });
 }

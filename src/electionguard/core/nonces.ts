@@ -35,6 +35,7 @@ export class Nonces implements Iterable<ElementModQ> {
     return hashElements(
       this.internalSeed.context,
       this.internalSeed,
+      i,
       ...headers
     );
   }

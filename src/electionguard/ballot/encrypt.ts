@@ -322,9 +322,18 @@ export function encryptSelection(
 
   const nonceSequence = new Nonces(manifestSelectionHash, contestNonce);
 
-  const disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence.get(0);
+  // BUG-FOR-BUG COMPATIBILITY WARNING: the Python code is doing something
+  // wonky to get the disjunctive-cp-nonce that might be incorrect. We're
+  // doing something very different here to try to ensure uniqueness.
+
+  //     selection_nonce = nonce_sequence[selection_description.sequence_order]
+  //     disjunctive_chaum_pedersen_nonce = next(iter(nonce_sequence))
+
   const selectionNonce: ElementModQ = nonceSequence.get(
     plaintextSelection.sequenceOrder
+  );
+  const disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence.get(
+    -plaintextSelection.sequenceOrder
   );
 
   // Generate the encryption
