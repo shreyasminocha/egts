@@ -244,6 +244,7 @@ class Codecs {
         crypto_extended_base_hash: elementModQDecoder,
         commitment_hash: elementModQDecoder,
         extended_data: D.nullable(D.record(D.string)),
+        configuration: edgeCaseConfigurationDecoder,
       }),
       D.map(
         s =>
@@ -258,7 +259,8 @@ class Codecs {
             // TODO: verify this is the way handle an optional record field
             s.extended_data === null || s.extended_data === undefined
               ? undefined
-              : s.extended_data
+              : s.extended_data,
+            s.configuration
           )
       )
     );
@@ -277,6 +279,7 @@ class Codecs {
           commitment_hash: elementModQEncoder.encode(e.commitmentHash),
           // TODO: verify this is the way to handle an optional record field
           extended_data: e.extendedData,
+          configuration: e.configuration || null,
         };
       },
     };
@@ -609,7 +612,7 @@ export function getCodecsForContext(context: GroupContext): Codecs {
  */
 export function eitherRightOrFail<E, T>(input: Either.Either<E, T>): T {
   if (Either.isLeft(input)) {
-    throw new Error(`${input.left}`);
+    throw new Error(`${JSON.stringify(input.left, null, 2)}`);
   }
   return input.right;
 }

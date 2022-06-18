@@ -385,18 +385,18 @@ class Codecs {
     > = pipe(
       D.struct({
         object_id: D.string,
-        geopolitical_unit_ids: D.array(D.string),
-        party_ids: D.array(D.string),
-        image_uri: D.string,
+        geopolitical_unit_ids: D.nullable(D.array(D.string)),
+        party_ids: D.nullable(D.array(D.string)),
+        image_uri: D.nullable(D.string),
       }),
       D.map(
         s =>
           new M.ManifestBallotStyle(
             context,
             s.object_id,
-            s.geopolitical_unit_ids,
-            s.party_ids,
-            s.image_uri
+            s.geopolitical_unit_ids || undefined,
+            s.party_ids || undefined,
+            s.image_uri || undefined
           )
       )
     );
@@ -610,7 +610,9 @@ class Codecs {
           proof:
             getCoreCodecsForContext(context)
               .disjunctiveChaumPedersenProofKnownNonceCodec,
-          extended_data: D.string,
+          extended_data: D.nullable(
+            getCoreCodecsForContext(context).hashedElGamalCiphertextCodec
+          ),
         }),
         D.map(
           s =>
@@ -621,7 +623,8 @@ class Codecs {
               s.ciphertext,
               s.crypto_hash,
               s.is_placeholder_selection,
-              s.proof
+              s.proof,
+              s.extended_data || undefined
             )
         )
       );
@@ -778,8 +781,9 @@ class Codecs {
           proof:
             getCoreCodecsForContext(context)
               .disjunctiveChaumPedersenProofKnownNonceCodec,
-          extended_data:
-            getCoreCodecsForContext(context).hashedElGamalCiphertextCodec,
+          extended_data: D.nullable(
+            getCoreCodecsForContext(context).hashedElGamalCiphertextCodec
+          ),
         }),
         D.map(
           s =>
@@ -792,7 +796,7 @@ class Codecs {
               s.is_placeholder_selection,
               s.proof,
               s.nonce,
-              s.extended_data
+              s.extended_data || undefined
             )
         )
       );
@@ -890,7 +894,7 @@ class Codecs {
         object_id: D.string,
         style_id: D.string,
         manifest_hash: getCoreCodecsForContext(context).elementModQCodec,
-        code_hash: getCoreCodecsForContext(context).elementModQCodec,
+        code_seed: getCoreCodecsForContext(context).elementModQCodec,
         contests: D.array(ciphertextContestDecoder),
         code: getCoreCodecsForContext(context).elementModQCodec,
         timestamp: D.number,
@@ -903,7 +907,7 @@ class Codecs {
             s.object_id,
             s.style_id,
             s.manifest_hash,
-            s.code_hash,
+            s.code_seed,
             s.code,
             s.contests,
             s.timestamp,
@@ -920,7 +924,7 @@ class Codecs {
         manifest_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
           input.manifestHash
         ),
-        code_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+        code_seed: getCoreCodecsForContext(context).elementModQCodec.encode(
           input.codeSeed
         ),
         contests: getCoreCodecsForContext(context).elementModQCodec.encode(
@@ -963,7 +967,7 @@ class Codecs {
           sequence_order: D.number,
           vote: D.number,
           is_placeholder_selection: D.boolean,
-          extended_data: extendedDataDecoder,
+          extended_data: D.nullable(extendedDataDecoder),
         }),
         D.map(
           s =>
@@ -972,7 +976,7 @@ class Codecs {
               s.sequence_order,
               s.vote,
               s.is_placeholder_selection,
-              s.extended_data
+              s.extended_data || undefined
             )
         )
       );

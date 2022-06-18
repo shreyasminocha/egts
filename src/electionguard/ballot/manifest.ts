@@ -78,6 +78,7 @@ export class Manifest implements CryptoHashableElement {
     }
 
     const gpIds = mbs.geopoliticalUnitIds;
+    if (gpIds === undefined) return [];
     return this.contests.filter(c => gpIds.includes(c.geopoliticalUnitId));
   }
 }
@@ -347,8 +348,8 @@ export class ManifestBallotStyle
   constructor(
     context: GroupContext,
     readonly ballotStyleId: string,
-    readonly geopoliticalUnitIds: Array<string>,
-    readonly partyIds: Array<string>,
+    readonly geopoliticalUnitIds: Array<string> | undefined,
+    readonly partyIds: Array<string> | undefined,
     readonly imageUri: string | undefined
   ) {
     this.cryptoHashElement = hashElements(
