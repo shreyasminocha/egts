@@ -12,7 +12,7 @@ import {
 } from './generators';
 import {
   eitherRightOrFail,
-  getCodecsForContext,
+  getCoreCodecsForContext,
 } from '../../../src/electionguard/core/json';
 import {GroupContext} from '../../../src/electionguard/core/group-common';
 import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
@@ -48,7 +48,7 @@ function testCodecLaws<T>(
 }
 
 function testCodecsForContext(context: GroupContext) {
-  const codecs = getCodecsForContext(context);
+  const codecs = getCoreCodecsForContext(context);
   testCodecLaws(
     context.name,
     'Uint8Array',

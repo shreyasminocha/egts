@@ -14,7 +14,7 @@ import {elementModQ, fcFastConfig} from '../core/generators';
 import {electionAndBallots} from './generators';
 
 const groupContext = bigIntContext3072();
-describe('Election encryption and tallying', () => {
+describe('Election / ballot encryption', () => {
   test('Generators yield valid contests', () => {
     fc.assert(
       fc.property(electionAndBallots(groupContext), eb => {
@@ -120,11 +120,11 @@ describe('Election encryption and tallying', () => {
             ballot.ballotNonce().toBigint()
           );
 
-          const allNonces = selectionNonces
+          const allBallotNonces = selectionNonces
             .concat(contestNonces)
             .concat(ballotNonces);
 
-          expect(noRepeatingBigints(allNonces)).toBe(true);
+          expect(noRepeatingBigints(allBallotNonces)).toBe(true);
 
           const chaumPedersenBigintsCR = encryptedBallots.flatMap(ballot =>
             ballot.contests.flatMap(contest =>
@@ -161,19 +161,25 @@ describe('Election encryption and tallying', () => {
               chaumPedersenBigintsB.concat(chaumPedersenBigintsA)
             )
           ).toBe(true);
+
+          const absolutelyEverything = elGamalPads
+            .concat(allBallotNonces)
+            .concat(chaumPedersenBigintsA)
+            .concat(chaumPedersenBigintsB)
+            .concat(chaumPedersenBigintsCR);
+
+          expect(noRepeatingBigints(absolutelyEverything)).toBe(true);
         }
       ),
       fcFastConfig
     );
   });
-
-  // TODO: test that no nonces are reused in the same election.
-
-  // TODO: test that when you add the ballots (elGamalAdd), then
-  //   decrypt, you get the proper tally (which you can also compute
-  //   directly from the plaintext).
 });
 
 function noRepeatingBigints(input: bigint[]): boolean {
+  // We're doing this with bigint rather than elements
+  // because we know built-in types work without us having
+  // to worry about whether we're doing equality correctly.
+
   return new Set(input).size === input.length;
 }

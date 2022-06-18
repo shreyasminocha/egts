@@ -323,8 +323,10 @@ export function encryptSelection(
   const nonceSequence = new Nonces(manifestSelectionHash, contestNonce);
 
   // BUG-FOR-BUG COMPATIBILITY WARNING: the Python code is doing something
-  // wonky to get the disjunctive-cp-nonce that might be incorrect. We're
-  // doing something very different here to try to ensure uniqueness.
+  // wonky to get the disjunctive-cp-nonce. Needs further investigation,
+  // but is probably just asking for nonce_sequence[0], so the first
+  // selection and the proof will share a nonce. Due to the way they're
+  // further hashed, this likely isn't a security vulnerability.
 
   //     selection_nonce = nonce_sequence[selection_description.sequence_order]
   //     disjunctive_chaum_pedersen_nonce = next(iter(nonce_sequence))
@@ -332,9 +334,7 @@ export function encryptSelection(
   const selectionNonce: ElementModQ = nonceSequence.get(
     plaintextSelection.sequenceOrder
   );
-  const disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence.get(
-    -plaintextSelection.sequenceOrder
-  );
+  const disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence.get(0);
 
   // Generate the encryption
   const elGamalEncryption = elGamalEncrypt(

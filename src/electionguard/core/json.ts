@@ -593,7 +593,7 @@ class Codecs {
 const codecs = new Map<string, Codecs>();
 
 /** Given a context, returns all the codecs for that context.  */
-export function getCodecsForContext(context: GroupContext): Codecs {
+export function getCoreCodecsForContext(context: GroupContext): Codecs {
   let result = codecs.get(context.name);
   if (result === undefined) {
     result = new Codecs(context);
@@ -604,12 +604,13 @@ export function getCodecsForContext(context: GroupContext): Codecs {
 
 /**
  * Breaks the beautiful functional aspects of using a codec decoder and
- * either gives us the actual value or throws an error. Useful for tests.
- * DON'T USE THIS IN PRODUCTION CODE WHEN FAILURES NEED TO BE HANDLED.
+ * either gives us the actual value or throws an error. Useful for tests
+ * or when we really do want to throw an error.
  */
 export function eitherRightOrFail<E, T>(input: Either.Either<E, T>): T {
   if (Either.isLeft(input)) {
-    throw new Error(`${input.left}`);
+    throw input.left;
+  } else {
+    return input.right;
   }
-  return input.right;
 }

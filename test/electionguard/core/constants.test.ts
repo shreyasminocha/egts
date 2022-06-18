@@ -1,7 +1,7 @@
 import {
   bigIntContext4096,
   eitherRightOrFail,
-  getCodecsForContext,
+  getCoreCodecsForContext,
 } from '../../../src/electionguard';
 import * as Either from 'fp-ts/lib/Either';
 
@@ -12,7 +12,7 @@ const expectedSerialization =
 describe('Core constants', () => {
   test('4096-bit production constants from internal', () => {
     const context = bigIntContext4096();
-    const codecs = getCodecsForContext(context);
+    const codecs = getCoreCodecsForContext(context);
     const internalConstants = context.electionConstants;
     const external = codecs.electionConstantsCodec.encode(internalConstants);
     const backAgain = codecs.electionConstantsCodec.decode(external);
@@ -22,7 +22,7 @@ describe('Core constants', () => {
 
   test('4096-bit production constants from external', () => {
     const context = bigIntContext4096();
-    const codecs = getCodecsForContext(context);
+    const codecs = getCoreCodecsForContext(context);
     const externalConstantsEither = codecs.electionConstantsCodec.decode(
       JSON.parse(expectedSerialization)
     );

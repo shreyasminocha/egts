@@ -20,7 +20,7 @@ import {
   PlaintextSelection,
   ExtendedData,
 } from './plaintext-ballot';
-import {getCodecsForContext as getCoreCodecsForContext} from '../core/json';
+import {getCoreCodecsForContext as getCoreCodecsForContext} from '../core/json';
 import {EncryptionState} from './encrypt';
 
 // These JSON importer/exporter things are using the io-ts package:
@@ -1069,7 +1069,7 @@ class Codecs {
 
 const codecs = new Map<string, Codecs>();
 
-export function getCodecsForContext(context: GroupContext): Codecs {
+export function getBallotCodecsForContext(context: GroupContext): Codecs {
   let result = codecs.get(context.name);
   if (result === undefined) {
     result = new Codecs(context);

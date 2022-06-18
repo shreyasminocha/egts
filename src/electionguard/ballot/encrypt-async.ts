@@ -1,10 +1,13 @@
 import {ElectionContext} from '../core/constants';
+import {bigIntContext4096} from '../core/group-bigint';
 import {ElementModQ} from '../core/group-common';
 import {hashElements} from '../core/hash';
+import {eitherRightOrFail, getCoreCodecsForContext} from '../core/json';
 import {mapFrom, stringSetsEqual} from '../core/utils';
 import {CiphertextBallot, CiphertextContest} from './ciphertext-ballot';
 import {sortedArrayOfOrderedElectionObjects} from './election-object-base';
 import {encryptContest, EncryptionState} from './encrypt';
+import {getBallotCodecsForContext} from './json';
 import {Manifest, ManifestContestDescription} from './manifest';
 import {PlaintextContest} from './plaintext-ballot';
 
@@ -22,8 +25,13 @@ import {PlaintextContest} from './plaintext-ballot';
  * all the contest encryption is complete, and will then return the encrypted
  * ballot. This call has the potential to fail, for example, if you haven't
  * encrypted all the necessary contests for the given ballot style.
+ *
+ * Also of note: while elsewhere in the ElectionGuard-Python codebase, errors
+ * are indicated by returning undefined, here it's different. Errors are indicated
+ * by throwing an Error class, which will contain enough context to assist
+ * in tracking down any problems.
  */
-export class WorkerPoolEncryption {
+export class AsyncBallotEncryptor {
   readonly encryptionState: EncryptionState;
   readonly manifestContests: Map<string, ManifestContestDescription>;
   readonly sequenceOrder: Map<string, number>;
@@ -31,6 +39,66 @@ export class WorkerPoolEncryption {
   readonly encryptedContests: Map<string, Promise<CiphertextContest>>;
   readonly primaryNonce: ElementModQ;
 
+  /**
+   * Builds an instance of AsyncBallotEncryptor with good default values
+   * when appropriate.
+   * @param manifestObj A JavaScript object corresponding to an ElectionGuard Manifest.
+   * @param contextObj A JavaScript object corresponding to an ElectionGuard ElectionContext.
+   * @param validate Specifies whether each encryption is validated immediately
+   *   after it is created. Significant performance penalty, but might catch
+   *   one-in-a-million hardware failures on unreliable clients.
+   * @param ballotStyleId The manifest might specify multiple ballot styles. This
+   *   names the ballot style to be used for this particular ballot.
+   * @param ballotId Every ballot needs a string identifier which should be globally
+   *   unique.
+   */
+  static create(
+    manifestObj: object,
+    contextObj: object,
+    validate: boolean,
+    ballotStyleId: string,
+    ballotId: string
+  ): AsyncBallotEncryptor {
+    // While ElectionGuard-TypeScript supports 3072-bit encryption as well as 4096-bit encryption,
+    // everybody else just does 4096-bit, so we'll hard-code that here.
+    const group = bigIntContext4096();
+
+    const bCodecs = getBallotCodecsForContext(group);
+    const cCodecs = getCoreCodecsForContext(group);
+    const manifest = eitherRightOrFail(
+      bCodecs.manifestCodec.decode(manifestObj)
+    );
+    const context = eitherRightOrFail(
+      cCodecs.electionContextCodec.decode(contextObj)
+    );
+    const masterNonce = group.randQ();
+    return new AsyncBallotEncryptor(
+      manifest,
+      context,
+      validate,
+      masterNonce,
+      ballotStyleId,
+      ballotId
+    );
+  }
+
+  /**
+   * Builds an instance of AsyncBallotEncryptor. For ease
+   * of use, you may prefer the static create() method instead,
+   * which allows you to pass in JavaScript objects for external
+   * types like the manifest, and it will let you know if there's
+   * a problem.
+   * @param manifest Defines everything about the election contests, candidates, etc.
+   * @param context Defines everything about the election cryptographic settings.
+   * @param validate Specifies whether each encryption is validated immediately
+   *   after it is created. Significant performance penalty, but might catch
+   *   one-in-a-million hardware failures on unreliable clients.
+   * @param masterNonce The root of all randomness used for encrypting the ballot.
+   * @param ballotStyleId The manifest might specify multiple ballot styles. This
+   *   names the ballot style to be used for this particular ballot.
+   * @param ballotId Every ballot needs a string identifier which should be globally
+   *   unique.
+   */
   constructor(
     manifest: Manifest,
     context: ElectionContext,
@@ -108,19 +176,18 @@ export class WorkerPoolEncryption {
   /**
    * Fetches the encrypted ballot, possibly blocking until all the async
    * computation is complete. If a contest wasn't submitted, then it's
-   * not possible to derive the result, so undefined is returned.
+   * not possible to derive the result, so an Error is thrown.
    */
-  async getEncryptedBallot(): Promise<CiphertextBallot | undefined> {
+  async getEncryptedBallot(): Promise<CiphertextBallot> {
     if (
       !stringSetsEqual(
         Array.from(this.encryptedContests.keys()),
         this.contestIds
       )
     ) {
-      console.error(
-        `missing contests: only ${this.encryptedContests.size} of ${this.contestIds.length} present`
-      );
-      return undefined;
+      const errStr = `missing contests: only ${this.encryptedContests.size} of ${this.contestIds.length} present`;
+      console.error(errStr);
+      throw new Error(errStr);
     }
 
     // If we get here, we've got all the promises we're going to need,
@@ -130,14 +197,11 @@ export class WorkerPoolEncryption {
       e => {
         // hopefully, if something goes wrong, this will notice it and log something
         console.error(`promise failure? ${e}`);
-        return undefined;
+        throw e;
       }
     );
 
     const unsortedEncryptedContests = await promisedResults;
-    if (unsortedEncryptedContests === undefined) {
-      return undefined;
-    }
 
     const encryptedContests = sortedArrayOfOrderedElectionObjects(
       unsortedEncryptedContests
