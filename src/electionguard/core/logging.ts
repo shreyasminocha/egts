@@ -1,13 +1,15 @@
-// This logging library is a wee bit different from others,
-// so it was worth writing our own. It supports both
-// eager and lazy specification of a log string: just
-// use a lambda returning the log string for lazy behavior.
-// Also, everything logged here is stored and can be fetched
-// using getAllLogs(). Useful when gathering an extended
-// error dump.
+// "Simple" logging module for ElectionGuard.
+
+// This code supports eager and lazy specification of a log string:
+// just use a lambda returning the log string for lazy behavior.
+// Also, everything logged here is stored and can be fetched using
+// getAllLogs(). Useful when gathering an extended error dump.
 
 // TODO: capture stack traces or allow them to be rendered
 //   in some useful way to the logs.
+
+// TODO; maintain log in a more structured way, to make it
+//   easier for an external entity to parse the logs.
 
 const allLogs: string[] = [];
 type LogTypes = 'INFO' | 'WARN' | 'ERROR';
