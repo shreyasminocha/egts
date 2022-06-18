@@ -19,6 +19,7 @@ import {
   uint8ArrayChunked,
   uint8ArrayConcat,
 } from './utils';
+import * as log from './logging';
 
 /**
  * The ciphertext representation of an arbitrary byte-array, encrypted with an ElGamal public key.
@@ -57,8 +58,9 @@ export class HashedElGamalCiphertext {
 
     if (!expectedHmac.equals(this.c2)) {
       if (!suppressWarnings)
-        console.warn(
-          "HashedElGamalCiphertext decryption failure: HMAC doesn't match"
+        log.warn(
+          'HashedElGamalCiphertext',
+          "decryption failure: HMAC doesn't match"
         );
       return undefined;
     }

@@ -8,6 +8,7 @@ import {
   bigIntContext4096,
 } from '../src/electionguard/core/group-bigint';
 import {GroupContext} from '../src/electionguard/core/group-common';
+import * as log from '../src/electionguard/core/logging';
 
 function measureTimeMillis(f: () => void): number {
   const start = Date.now();
@@ -26,19 +27,19 @@ function getRandomInt(min: number, max: number): number {
  * A simple benchmark that just measures how fast ElGamal encryption runs
  */
 function benchmarkElGamal(context: GroupContext) {
-  console.log(`${context.name}: BenchmarkElgamal`);
+  log.info('ElGamalBench', `${context.name}: BenchmarkElgamal`);
   const N = 1000;
 
   const max = 100;
   const min = 0;
-  console.log(`Initializing benchmark for ${N} attempts.`);
+  log.info('ElGamalBench', `Initializing benchmark for ${N} attempts.`);
 
   const messages = Array.from({length: N}, () => getRandomInt(min, max));
   const keypair = ElGamalKeypair.createRandom(context);
   const nonce = context.randQ();
 
-  console.log('Running!');
-  // console.log(messages);
+  log.info('ElGamalBench', 'Running!');
+  // log.info(messages);
   const ciphertexts: ElGamalCiphertext[] = [];
   const encryptionTimeMs = measureTimeMillis(() => {
     messages.forEach(message =>
@@ -54,12 +55,13 @@ function benchmarkElGamal(context: GroupContext) {
     );
   });
   const decryptionTime = decryptionTimeMs / 1000.0;
-  console.log(
+  log.info(
+    'ElGamalBench',
     `ElGamal ${(N / encryptionTime).toFixed(2)} encryptions/sec, ${(
       N / decryptionTime
     ).toFixed(2)} decryptions/sec`
   );
-  console.log();
+  log.info('ElGamalBench', '');
 }
 
 benchmarkElGamal(bigIntContext3072());

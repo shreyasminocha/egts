@@ -30,6 +30,7 @@ import {
 import {HashedElGamalCiphertext} from './hashed-elgamal';
 import {UInt256} from './uint256';
 import * as Either from 'fp-ts/lib/Either';
+import * as log from './logging';
 
 // These JSON importer/exporter things are using the io-ts package:
 // https://github.com/gcanti/io-ts/
@@ -164,8 +165,8 @@ class Codecs {
           generator: uInt8ArrayDecoder,
         }),
         D.withMessage((i, e) => {
-          console.log(`value: ${i}`);
-          console.log(`error: ${e}`);
+          log.info('ElectionConstandsDecoder', `value: ${i}`);
+          log.info('ElectionConstandsDecoder', `error: ${e}`);
           return 'Hmm';
         }),
         D.map(

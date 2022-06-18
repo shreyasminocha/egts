@@ -10,6 +10,7 @@ import {encryptContest, EncryptionState} from './encrypt';
 import {getBallotCodecsForContext} from './json';
 import {Manifest, ManifestContestDescription} from './manifest';
 import {PlaintextContest} from './plaintext-ballot';
+import * as log from '../core/logging';
 
 /**
  * This class wraps all the state and machinery necessary to offload encryption
@@ -185,9 +186,10 @@ export class AsyncBallotEncryptor {
         this.contestIds
       )
     ) {
-      const errStr = `missing contests: only ${this.encryptedContests.size} of ${this.contestIds.length} present`;
-      console.error(errStr);
-      throw new Error(errStr);
+      log.errorAndThrow(
+        'AsyncBallotEncryptor.getEncryptedBallot',
+        `missing contests: only ${this.encryptedContests.size} of ${this.contestIds.length} present`
+      );
     }
 
     // If we get here, we've got all the promises we're going to need,
@@ -196,7 +198,10 @@ export class AsyncBallotEncryptor {
     const promisedResults = Promise.all(this.encryptedContests.values()).catch(
       e => {
         // hopefully, if something goes wrong, this will notice it and log something
-        console.error(`promise failure? ${e}`);
+        log.warn(
+          'AsyncBallotEncryptor.getEncryptedBallot',
+          `promise failure? ${e}`
+        );
         throw e;
       }
     );

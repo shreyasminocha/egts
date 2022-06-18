@@ -1,5 +1,6 @@
 // support for computing discrete logs, with a cache so they're never recomputed
 import {ElementModP, multP, GroupContext} from './group-common';
+import * as log from './logging';
 
 // We're keeping this relatively small because we're not really using
 // dLog in production for ElectionGuard-TypeScript. All that we're
@@ -42,7 +43,7 @@ export class DLogger {
 
     while (!input.equals(this.dlogMaxElem)) {
       if (this.dlogMaxExp++ > MAX_DLOG) {
-        console.error('dLog: max dlog reached, could not decode input');
+        log.warn('dLog', 'max dlog reached, could not decode input');
         return undefined;
       } else {
         this.dlogMaxElem = multP(this.dlogMaxElem, this.base);

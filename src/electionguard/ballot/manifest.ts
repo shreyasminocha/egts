@@ -9,6 +9,7 @@ import {
   objEqualsOrUndefEquals,
   OrderedObjectBase,
 } from './election-object-base';
+import * as log from '../core/logging';
 
 /**
  * The Election Manifest: defines the candidates, contests, and associated information for a
@@ -684,7 +685,8 @@ export class ManifestContestDescription
       noRepeatSelectionIds;
 
     if (!success) {
-      console.warn(
+      log.warn(
+        'ManifestContestDescription',
         `Contest ${this.contestId} failed validation check: ${{
           validNumberElected: validNumberElected,
           validVotesAllowed: validVotesAllowed,

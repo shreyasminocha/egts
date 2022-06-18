@@ -12,6 +12,7 @@ import {
 } from './group-common';
 import {CryptoHashable, hashElements} from './hash';
 import {Nonces} from './nonces';
+import * as log from './logging';
 
 /** Proof that the ciphertext is a given constant. */
 export class ConstantChaumPedersenProofKnownNonce {
@@ -92,7 +93,10 @@ export class ConstantChaumPedersenProofKnownNonce {
     const constantQ = context.createElementModQ(this.constant);
 
     if (constantQ === undefined) {
-      console.warn('invalid constant found in proof!');
+      log.warn(
+        'ConstantChaumPedersenProofKnownNonce',
+        'invalid constant found in proof!'
+      );
       return false;
     }
 
@@ -194,7 +198,10 @@ export class ConstantChaumPedersenProofKnownSecretKey {
 
     const constantQ = context.createElementModQ(this.constant);
     if (constantQ === undefined) {
-      console.warn('invalid constant found in proof!');
+      log.warn(
+        'ConstantChaumPedersenProofKnownSecretKey',
+        'invalid constant found in proof!'
+      );
       return false;
     }
 
@@ -421,7 +428,8 @@ export class DisjunctiveChaumPedersenProofKnownNonce {
     // If valid0 or valid1 is false, this will already have been logged,
     // so we don't have to repeat it here.
     if ((!consistentC || !validHash || !validCiphertext) && !suppressWarnings)
-      console.warn(
+      log.warn(
+        'DisjunctiveChaumPedersenProofKnownNonce',
         `Invalid commitments for disjunctive Chaum-Pedersen proof: ${JSON.stringify(
           {
             consistentC: consistentC,
@@ -687,7 +695,8 @@ export class ExpandedGenericChaumPedersenProof {
       validB;
 
     if (!success && !suppressWarnings)
-      console.warn(
+      log.warn(
+        'ExpandedGenericChaumPedersenProof',
         `Invalid generic Chaum-Pedersen proof: ${JSON.stringify({
           hashGood: hashGood,
           // inBoundsG: inBoundsG,

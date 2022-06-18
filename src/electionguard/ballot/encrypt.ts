@@ -23,6 +23,7 @@ import {
   PlaintextContest,
   PlaintextSelection,
 } from './plaintext-ballot';
+import * as log from '../core/logging';
 
 /** State used for all encryption functions, wrapped into a single class. */
 export class EncryptionState {
@@ -247,9 +248,10 @@ export function encryptContest(
       limit
     )
   ) {
-    const errStr = `Ballot ${ballotId} contest ${contest.contestId} proof does not validate`;
-    console.warn(errStr);
-    throw new Error(errStr);
+    log.errorAndThrow(
+      'encryptContest',
+      `Ballot ${ballotId} contest ${contest.contestId} proof does not validate`
+    );
   }
 
   const encryptedContest = new CiphertextContest(
@@ -356,9 +358,10 @@ export function encryptSelection(
     state.validate &&
     !proof.isValid(elGamalEncryption, state.publicKey, state.extendedBaseHash)
   ) {
-    const errStr = `Selection ${plaintextSelection.selectionId} proof does not validate`;
-    console.warn(errStr);
-    throw new Error(errStr);
+    log.errorAndThrow(
+      'encryptSelection',
+      `Selection ${plaintextSelection.selectionId} proof does not validate`
+    );
   }
 
   if (plaintextSelection.extendedData !== undefined) {
