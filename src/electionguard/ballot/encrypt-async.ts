@@ -52,13 +52,20 @@ export class AsyncBallotEncryptor {
    *   names the ballot style to be used for this particular ballot.
    * @param ballotId Every ballot needs a string identifier which should be globally
    *   unique.
+   * @param masterNonce The root of all randomness used for encrypting the ballot. If
+   *  not provided, a new random number will be securely generated.
+   * @param timestamp Optional timestamp for the ballot, in seconds since the Unix epoch.
+   *   If not provided, the current time will be used (Date.now() / 1000) when the
+   *   final ballot is completed and returned.
    */
   static create(
     manifestObj: object,
     contextObj: object,
     validate: boolean,
     ballotStyleId: string,
-    ballotId: string
+    ballotId: string,
+    masterNonce?: ElementModQ,
+    timestamp?: number
   ): AsyncBallotEncryptor {
     // While ElectionGuard-TypeScript supports 3072-bit encryption as well as 4096-bit encryption,
     // everybody else just does 4096-bit, so we'll hard-code that here.
@@ -72,14 +79,17 @@ export class AsyncBallotEncryptor {
     const context = eitherRightOrFail(
       cCodecs.electionContextCodec.decode(contextObj)
     );
-    const masterNonce = group.randQ();
+
+    if (masterNonce === undefined) masterNonce = group.randQ();
+
     return new AsyncBallotEncryptor(
       manifest,
       context,
       validate,
       masterNonce,
       ballotStyleId,
-      ballotId
+      ballotId,
+      timestamp
     );
   }
 
@@ -99,6 +109,9 @@ export class AsyncBallotEncryptor {
    *   names the ballot style to be used for this particular ballot.
    * @param ballotId Every ballot needs a string identifier which should be globally
    *   unique.
+   * @param timestamp Optional timestamp for the ballot, in seconds since the Unix epoch.
+   *   If not provided, the current time will be used (Date.now() / 1000) when the
+   *   final ballot is completed and returned.
    */
   constructor(
     manifest: Manifest,
@@ -106,7 +119,8 @@ export class AsyncBallotEncryptor {
     validate: boolean,
     readonly masterNonce: ElementModQ,
     readonly ballotStyleId: string,
-    readonly ballotId: string
+    readonly ballotId: string,
+    readonly timestamp?: number
   ) {
     this.encryptionState = new EncryptionState(
       masterNonce.context,
@@ -219,9 +233,9 @@ export class AsyncBallotEncryptor {
       encryptedContests
     );
 
-    // Ticks are defined here as number of seconds since the unix epoch (00:00:00 UTC on 1
-    // January 1970)
-    const timestamp: number = Date.now() / 1000;
+    const timestamp =
+      this.timestamp === undefined ? Date.now() / 1000 : this.timestamp;
+
     const ballotCode = hashElements(
       this.encryptionState.group,
       this.encryptionState.group.ZERO_MOD_Q, // tracking hash of prior ballot
