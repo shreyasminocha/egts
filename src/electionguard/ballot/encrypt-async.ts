@@ -35,7 +35,7 @@ import * as log from '../core/logging';
 export class AsyncBallotEncryptor {
   readonly encryptionState: EncryptionState;
   readonly manifestContests: Map<string, ManifestContestDescription>;
-  readonly sequenceOrder: Map<string, number>;
+  readonly sequenceOrderMap: Map<string, number>;
   readonly contestIds: string[];
   readonly encryptedContests: Map<string, Promise<CiphertextContest>>;
   readonly primaryNonce: ElementModQ;
@@ -148,7 +148,7 @@ export class AsyncBallotEncryptor {
       mcd => mcd
     );
 
-    this.sequenceOrder = mapFrom(
+    this.sequenceOrderMap = mapFrom(
       manifestContestDescriptions,
       mcd => mcd.contestId,
       mcd => mcd.sequenceOrder
@@ -158,11 +158,19 @@ export class AsyncBallotEncryptor {
 
   /** Starts an async encryption of the contest. Returns immediately. */
   encrypt(contest: PlaintextContest): void {
-    const sequenceOrder = this.sequenceOrder.get(contest.contestId);
+    const sequenceOrder = this.sequenceOrderMap.get(contest.contestId);
     const manifestContestDesc = this.manifestContests.get(contest.contestId);
 
+    if (sequenceOrder !== contest.sequenceOrder) {
+      log.warn(
+        'encrypt-async',
+        `unexpected seequence order: ${sequenceOrder} vs. ${contest.sequenceOrder}`
+      );
+    }
+
     if (manifestContestDesc === undefined || sequenceOrder === undefined) {
-      throw new Error(
+      log.errorAndThrow(
+        'encrypt-async',
         `unexpected absence of a ManifestContestDescription for ${contest.contestId}`
       );
     }
@@ -179,6 +187,18 @@ export class AsyncBallotEncryptor {
     sequenceOrder: number,
     manifestContestDesc: ManifestContestDescription
   ): Promise<CiphertextContest> {
+    log.info(
+      'encrypt-async.encryptHelper',
+      `encrypting contest ${contest.contestId}, sequence #${sequenceOrder}`
+    );
+
+    if (sequenceOrder !== contest.sequenceOrder) {
+      log.errorAndThrow(
+        'encrypt-async.encryptHelper',
+        `wrong sequence number: ${contest.sequenceOrder} vs. ${sequenceOrder}`
+      );
+    }
+
     return encryptContest(
       this.encryptionState,
       contest,

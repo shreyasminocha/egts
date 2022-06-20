@@ -36,16 +36,15 @@ export function warn(module: string, contents: LogStringType) {
 }
 
 /** Logs an error, also throws Error with the same string. */
-export function errorAndThrow(module: string, contents: LogStringType) {
-  common('ERROR', module, contents, true);
+export function errorAndThrow(module: string, contents: LogStringType): never {
+  throw new Error(common('ERROR', module, contents));
 }
 
 function common(
   type: LogTypes,
   module: string,
-  contents: LogStringType,
-  error = false
-) {
+  contents: LogStringType
+): string {
   const contentsStr = typeof contents === 'string' ? contents : contents();
 
   const date = new Date().toISOString();
@@ -65,7 +64,7 @@ function common(
   }
   allLogs.push(fullLogStr);
 
-  if (error) throw new Error(fullLogStr);
+  return fullLogStr;
 }
 
 /** Returns an array of every logged string. */
