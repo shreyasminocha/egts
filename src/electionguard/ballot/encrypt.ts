@@ -52,11 +52,16 @@ export class EncryptionState {
  * This method also allows for ballots to exclude passing contests for which the voter made no
  * selections. It will fill missing contests with `false` selections and generate `placeholder`
  * selections that are marked `true`.
+ *
+ * The timestamp should be in the form of the number of seconds since
+ * the Unix epoch, e.g., equivalent to calling Date.now() / 1000. If it's
+ * left out, it will be set to the current time.
  */
 export function encryptBallot(
   state: EncryptionState,
   ballot: PlaintextBallot,
-  ballotEncryptionSeed: ElementModQ
+  ballotEncryptionSeed: ElementModQ,
+  timestamp?: number
 ): CiphertextBallot {
   const ballotNonce: ElementModQ = hashElements(
     state.group,
@@ -89,7 +94,8 @@ export function encryptBallot(
 
   // Ticks are defined here as number of seconds since the unix epoch (00:00:00 UTC on 1
   // January 1970)
-  const timestamp: number = Date.now() / 1000;
+  if (timestamp === undefined) timestamp = Date.now() / 1000;
+
   const ballotCode = hashElements(
     state.group,
     state.group.ZERO_MOD_Q, // tracking hash of prior ballot

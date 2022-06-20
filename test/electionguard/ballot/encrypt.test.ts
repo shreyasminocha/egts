@@ -64,6 +64,44 @@ describe('Election / ballot encryption', () => {
       fcFastConfig
     );
   });
+  test('Encrypt the same election twice; idential result', () => {
+    fc.assert(
+      fc.property(
+        electionAndBallots(groupContext),
+        elementModQ(groupContext),
+        (eb, seed) => {
+          const timestamp = Date.now() / 1000;
+          const nonces = new Nonces(seed);
+          // This ends up running the verification twice: once while encrypting, and once while decrypting.
+          // This is fine, because we'd like to catch verification errors at encryption time, if possible,
+          // but we'll take them wherever we can get them.
+
+          const encryptionState = new EncryptionState(
+            groupContext,
+            eb.manifest,
+            eb.electionContext,
+            true
+          );
+          const submittedBallots1 = eb.ballots.map((b, i) =>
+            encryptBallot(encryptionState, b, nonces.get(i), timestamp).submit(
+              BallotState.CAST
+            )
+          );
+          const submittedBallots2 = eb.ballots.map((b, i) =>
+            encryptBallot(encryptionState, b, nonces.get(i), timestamp).submit(
+              BallotState.CAST
+            )
+          );
+          const matching = matchingArraysOfAnyElectionObjects(
+            submittedBallots1,
+            submittedBallots2
+          );
+          expect(matching).toBe(true);
+        }
+      ),
+      fcFastConfig
+    );
+  });
   test('Encryption nonces are all unique', () => {
     fc.assert(
       fc.property(
