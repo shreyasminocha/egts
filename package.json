@@ -42,8 +42,7 @@
     "moment": "^2.29.1",
     "path-browserify": "^1.0.1",
     "seedrandom": "^3.0.5",
-    "stream-browserify": "^3.0.0",
-    "ts-enum-util": "^4.0.2"
+    "stream-browserify": "^3.0.0"
   },
   "scripts": {
     "docs": "typedoc",

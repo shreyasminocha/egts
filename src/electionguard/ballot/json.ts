@@ -1,7 +1,6 @@
 import * as D from 'io-ts/Decoder';
 import * as E from 'io-ts/Encoder';
 import * as C from 'io-ts/Codec';
-import * as IOTS from 'io-ts';
 import {pipe} from 'fp-ts/function';
 import {GroupContext} from '../core/group-common';
 import * as M from './manifest';
@@ -23,7 +22,6 @@ import {
 } from './plaintext-ballot';
 import * as CJ from '../core/json';
 import {EncryptionState} from './encrypt';
-import {$enum, EnumWrapper} from 'ts-enum-util';
 
 function nullToUndefined<G>(n: G | null): G | undefined {
   return n === null ? undefined : n;
@@ -31,25 +29,6 @@ function nullToUndefined<G>(n: G | null): G | undefined {
 
 function undefinedToNull<G>(n: G | undefined): G | null {
   return n === undefined ? null : n;
-}
-
-/** This utility function can be used to turn a TypeScript enum into a io-ts codec. */
-export function codecFromEnum
-<EnumType extends Record<Extract<keyof EnumType, string>, string>>
-(enumName: string, wrapper: EnumWrapper<string, EnumType>) {
-  const encoder: E.Encoder<unknown, EnumType> = {
-    encode: input => wrapper.getKeyOrThrow(input)
-  };
-
-  const decoder: D.Decoder<unknown, EnumType> = pipe(
-    D.string,
-    D.refine((input): input is string => wrapper.isKey(input), "isKey"),
-    D.map(
-      input => wrapper.getValueOrThrow(input)
-    )
-  );
-
-  return new C.make(decoder, encoder);
 }
 
 // These JSON importer/exporter things are using the io-ts package:
@@ -96,6 +75,16 @@ export class Codecs {
     unknown,
     unknown,
     M.ManifestElectionType
+  >;
+  readonly manifestVoteVariationTypeCodec: C.Codec<
+    unknown,
+    unknown,
+    M.ManifestVoteVariationType
+  >;
+  readonly manifestReportingUnitTypeCodec: C.Codec<
+    unknown,
+    unknown,
+    M.ManifestReportingUnitType
   >;
   readonly manifestContactInformationCodec: C.Codec<
     unknown,
@@ -201,7 +190,74 @@ export class Codecs {
       manifestInternationalizedTextEncoder
     );
 
-    this.manifestElectionTypeCodec = codecFromEnum("ManifestElectionType", M.ManifestElectionType);
+    const manifestElectionTypeDecoder: D.Decoder<
+      unknown,
+      M.ManifestElectionType
+    > = pipe(
+      D.string,
+      D.refine(
+        (s): s is M.ManifestElectionType =>
+          M.ManifestElectionTypeStrings.includes(s),
+        'valid string'
+      )
+    );
+    const manifestElectionTypeEncoder: E.Encoder<
+      unknown,
+      M.ManifestElectionType
+    > = {
+      encode: input => input,
+    };
+
+    this.manifestElectionTypeCodec = C.make(
+      manifestElectionTypeDecoder,
+      manifestElectionTypeEncoder
+    );
+
+    const manifestReportingUnitTypeDecoder: D.Decoder<
+      unknown,
+      M.ManifestReportingUnitType
+    > = pipe(
+      D.string,
+      D.refine(
+        (s): s is M.ManifestReportingUnitType =>
+          M.ManifestReportingUnitTypeStrings.includes(s),
+        'valid string'
+      )
+    );
+    const manifestReportingUnitTypeEncoder: E.Encoder<
+      unknown,
+      M.ManifestReportingUnitType
+    > = {
+      encode: input => input,
+    };
+
+    this.manifestReportingUnitTypeCodec = C.make(
+      manifestReportingUnitTypeDecoder,
+      manifestReportingUnitTypeEncoder
+    );
+
+    const manifestVoteVariationTypeDecoder: D.Decoder<
+      unknown,
+      M.ManifestVoteVariationType
+    > = pipe(
+      D.string,
+      D.refine(
+        (s): s is M.ManifestVoteVariationType =>
+          M.ManifestVoteVariationTypeStrings.includes(s),
+        'valid string'
+      )
+    );
+    const manifestVoteVariationTypeEncoder: E.Encoder<
+      unknown,
+      M.ManifestVoteVariationType
+    > = {
+      encode: input => input,
+    };
+
+    this.manifestVoteVariationTypeCodec = C.make(
+      manifestVoteVariationTypeDecoder,
+      manifestVoteVariationTypeEncoder
+    );
 
     const manifestSelectionDescriptionDecoder: D.Decoder<
       unknown,
@@ -311,7 +367,7 @@ export class Codecs {
       D.struct({
         object_id: D.string,
         name: D.string,
-        type: D.string,
+        type: manifestReportingUnitTypeDecoder,
         contact_information: D.nullable(manifestContactInformationDecoder),
       }),
       D.map(
@@ -320,9 +376,7 @@ export class Codecs {
             context,
             s.object_id,
             s.name,
-            M.ManifestReportingUnitType[
-              s.type as keyof typeof M.ManifestReportingUnitType
-            ],
+            s.type,
             nullToUndefined(s.contact_information)
           )
       )
@@ -489,9 +543,7 @@ export class Codecs {
             s.object_id,
             s.sequence_order,
             s.electoral_district_id,
-            M.ManifestVoteVariationType[
-              s.vote_variation as keyof typeof M.ManifestVoteVariationType
-            ],
+            s.vote_variation,
             s.number_elected,
             nullToUndefined(s.votes_allowed),
             s.name,
@@ -510,7 +562,7 @@ export class Codecs {
         object_id: input.contestId,
         sequence_order: input.sequenceOrder,
         electoral_district_id: input.geopoliticalUnitId,
-        vote_variation: M.ManifestVoteVariationType[input.voteVariation],
+        vote_variation: input.voteVariation,
         number_elected: input.numberElected,
         votes_allowed: input.votesAllowed,
         name: input.name,
@@ -539,7 +591,7 @@ export class Codecs {
         object_id: D.string,
         sequence_order: D.number,
         electoral_district_id: D.string,
-        vote_variation: D.string,
+        vote_variation: manifestVoteVariationTypeDecoder,
         number_elected: D.number,
         votes_allowed: D.number,
         name: D.string,
@@ -555,9 +607,7 @@ export class Codecs {
             s.object_id,
             s.sequence_order,
             s.electoral_district_id,
-            M.ManifestVoteVariationType[
-              s.vote_variation as keyof typeof M.ManifestVoteVariationType
-            ],
+            s.vote_variation,
             s.number_elected,
             s.votes_allowed,
             s.name,
@@ -588,7 +638,7 @@ export class Codecs {
       D.struct({
         election_scope_id: D.string,
         spec_version: D.string,
-        type: D.string,
+        type: manifestElectionTypeDecoder,
         start_date: D.string,
         end_date: D.string,
         geopolitical_units: D.array(manifestGeopoliticalUnitDecoder),
@@ -609,9 +659,7 @@ export class Codecs {
             context,
             s.election_scope_id,
             s.spec_version,
-            M.ManifestElectionType[
-              s.type as keyof typeof M.ManifestElectionType
-            ],
+            s.type,
             s.start_date,
             s.end_date,
             s.geopolitical_units,
@@ -632,7 +680,9 @@ export class Codecs {
         type: input.electionType,
         start_date: input.startDate,
         end_date: input.endDate,
-        geopolitical_units: manifestGeopoliticalUnitEncoder.encode,
+        geopolitical_units: input.geopoliticalUnits.map(
+          manifestGeopoliticalUnitEncoder.encode
+        ),
         parties: input.parties.map(manifestPartyEncoder.encode),
         candidates: input.candidates.map(manifestCandidateEncoder.encode),
         contests: input.contests.map(manifestContestDescriptionEncoder.encode),

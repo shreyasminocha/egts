@@ -55,8 +55,7 @@ function testBallotCodecsForContext(context: GroupContext) {
     'ElectionType',
     G.electionType(),
     bCodecs.manifestElectionTypeCodec,
-    // equality on enums is weird
-    (a, b) => M.ManifestElectionType[a] === M.ManifestElectionType[b]
+    (a, b) => a === b
   );
 }
 

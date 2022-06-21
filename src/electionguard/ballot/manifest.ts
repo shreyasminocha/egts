@@ -39,7 +39,7 @@ export class Manifest implements CryptoHashableElement {
     this.cryptoHashElement = hashElements(
       context,
       electionScopeId,
-      ManifestElectionType[electionType], // gets string name from enum
+      electionType, // gets string name from enum
       startDate,
       endDate,
       name,
@@ -90,45 +90,48 @@ export class Manifest implements CryptoHashableElement {
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election-type)
  */
-export enum ManifestElectionType {
-  unknown,
+export const ManifestElectionTypeStrings = [
+  'unknown',
 
   /** For an election held typically on the national day for elections. */
-  general,
+  'general',
 
   /**
    * For a primary election that is for a specific party where voter eligibility is based on
    * registration.
    */
-  partisan_primary_closed,
+  'partisan_primary_closed',
 
   /**
    * For a primary election that is for a specific party where voter declares desired party or
    * chooses in private.
    */
-  partisan_primary_open,
+  'partisan_primary_open',
 
   /** For a primary election without a specified type, such as a nonpartisan primary. */
-  primary,
+  'primary',
 
   /**
    * For an election to decide a prior contest that ended with no candidate receiving a
    * majority of the votes.
    */
-  runoff,
+  'runoff',
 
   /**
    * For an election held out of sequence for special circumstances, for example, to fill a
    * vacated office.
    */
-  special,
+  'special',
 
   /**
    * Used when the election type is not listed in this enumeration. If used, include a
    * specific value of the OtherType element.
    */
-  other,
-}
+  'other',
+];
+
+/** typed union of aceptable strings */
+export type ManifestElectionType = typeof ManifestElectionTypeStrings[number];
 
 /**
  * The type of geopolitical unit.
@@ -136,116 +139,120 @@ export enum ManifestElectionType {
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/reporting-unit-type)
  */
-export enum ManifestReportingUnitType {
-  unknown,
+export const ManifestReportingUnitTypeStrings = [
+  'unknown',
 
   /** Used to report batches of ballots that might cross precinct boundaries. */
-  ballot_batch,
+  'ballot_batch',
 
   /** Used for a ballot-style area that's generally composed of precincts. */
-  ballot_style_area,
+  'ballot_style_area',
 
   /** Used as a synonym for a county. */
-  borough,
+  'borough',
 
   /** Used for a city that reports results or for the district that encompasses it. */
-  city,
+  'city',
 
   /** Used for city council districts. */
-  city_council,
+  'city_council',
 
   /**
    * Used for one or more precincts that have been combined for the purposes of reporting. If
    * the term ward is used interchangeably with combined precinct, use combined-precinct for
    * the ReportingUnitType.
    */
-  combined_precinct,
+  'combined_precinct',
 
   /** Used for national legislative body districts. */
-  congressional,
+  'congressional',
 
   /** Used for a country. */
-  country,
+  'country',
 
   /**
    * Used for a county or for the district that encompasses it. Synonymous with borough and
    * parish in some localities.
    */
-  county,
+  'county',
 
   /** Used for county council districts. */
-  county_council,
+  'county_council',
 
   /** Used for a dropbox for absentee ballots. */
-  drop_box,
+  'drop_box',
 
   /** Used for judicial districts. */
-  judicial,
+  'judicial',
 
   /**
    * Used as applicable for various units such as towns, townships, villages that report
    * votes, or for the district that encompasses them.
    */
-  municipality,
+  'municipality',
 
   /** Used for a polling place. */
-  polling_place,
+  'polling_place',
 
   /** Used if the terms for ward or district are used interchangeably with precinct. */
-  precinct,
+  'precinct',
 
   /** Used for a school district. */
-  school,
+  'school',
 
   /** Used for a special district. */
-  special,
+  'special',
 
   /** Used for splits of precincts. */
-  split_precinct,
+  'split_precinct',
 
   /** Used for a state or for the district that encompasses it. */
-  state,
+  'state',
 
   /** Used for a state house or assembly district. */
-  state_house,
+  'state_house',
 
   /** Used for a state senate district. */
-  state_senate,
+  'state_senate',
 
   /**
    * Used for type of municipality that reports votes or for the district that encompasses it.
    */
-  town,
+  'town',
 
   /**
    * Used for type of municipality that reports votes or for the district that encompasses it.
    */
-  township,
+  'township',
 
   /** Used for a utility district. */
-  utility,
+  'utility',
 
   /**
    * Used for a type of municipality that reports votes or for the district that encompasses
    * it.
    */
-  village,
+  'village',
 
   /** Used for a vote center. */
-  vote_center,
+  'vote_center',
 
   /** Used for combinations or groupings of precincts or other units. */
-  ward,
+  'ward',
 
   /** Used for a water district. */
-  water,
+  'water',
 
   /**
    * Used for other types of reporting units that aren't included in this enumeration. If
    * used, provide the item's custom type in an OtherType element.
    */
-  other,
-}
+  'other',
+];
+
+/** typed union of aceptable strings */
+export type ManifestReportingUnitType =
+  typeof ManifestReportingUnitTypeStrings[number];
 
 /**
  * Enumeration for contest algorithm or rules in the contest.
@@ -253,64 +260,68 @@ export enum ManifestReportingUnitType {
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/vote-variation)
  */
-export enum ManifestVoteVariationType {
+export const ManifestVoteVariationTypeStrings = [
   /** Each voter can select up to one option. */
-  one_of_m,
+  'one_of_m',
 
   /** Approval voting, where each voter can select as many options as desired. */
-  approval,
+  'approval',
 
   /**
    * Borda count, where each voter can rank the options, and the rankings are assigned point
    * values.
    */
-  borda,
+  'borda',
 
   /** Cumulative voting, where each voter can distribute their vote to up to N options. */
-  cumulative,
+  'cumulative',
 
   /** A 1-of-m method where the winner needs more than 50% of the vote to be elected. */
-  majority,
+  'majority',
 
   /** A method where each voter can select up to N options. */
-  n_of_m,
+  'n_of_m',
 
   /**
    * A 1-of-m method where the option with the most votes is elected, regardless of whether
    * the option has more than 50% of the vote.
    */
-  plurality,
+  'plurality',
 
   /**
    * A proportional representation method, which is any system that elects winners in
    * proportion to the total vote. For the single transferable vote (STV) method, use rcv
    * instead.
    */
-  proportional,
+  'proportional',
 
   /** Range voting, where each voter can select a score for each option. */
-  range,
+  'range',
 
   /**
    * Ranked choice voting (RCV), where each voter can rank the options, and the ballots are
    * counted in rounds. Also known as instant-runoff voting (IRV) and the single transferable
    * vote (STV).
    */
-  rcv,
+  'rcv',
 
   /**
    * A 1-of-m method where the winner needs more than some predetermined fraction of the vote
    * to be elected, and where the fraction is more than 50%. For example, the winner might
    * need three-fifths or two-thirds of the vote.
    */
-  super_majority,
+  'super_majority',
 
   /**
    * The vote variation is a type that isn't included in this enumeration. If used, provide
    * the item's custom type in an OtherType element.
    */
-  other,
-}
+  'other',
+];
+
+/** typed union of aceptable strings */
+export type ManifestVoteVariationType =
+  typeof ManifestVoteVariationTypeStrings[number];
 
 /**
  * An annotated character string.
@@ -486,7 +497,7 @@ export class ManifestGeopoliticalUnit
       context,
       geopoliticalUnitId,
       name,
-      ManifestReportingUnitType[type], // gets string name from enum
+      type,
       contactInformation
     );
   }
@@ -630,7 +641,7 @@ export class ManifestContestDescription
       contestId,
       sequenceOrder,
       geopoliticalUnitId,
-      ManifestVoteVariationType[voteVariation], // gets string name from enum
+      voteVariation,
       ballotTitle,
       ballotSubtitle,
       name,

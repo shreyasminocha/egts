@@ -3,7 +3,7 @@ import * as C from 'io-ts/Codec';
 import * as fc from 'fast-check';
 import {fcFastConfig} from './generators';
 import {eitherRightOrFail} from '../../../src/electionguard/core/json';
-import {Either} from 'fp-ts/lib/Either';
+import * as Either from 'fp-ts/lib/Either';
 
 /** Evaluates any codec and generator for correctness. */
 export function testCodecLaws<T>(
@@ -17,11 +17,12 @@ export function testCodecLaws<T>(
     test('serialize / deserialize', () => {
       fc.assert(
         fc.property(generator, (value: T) => {
-          if (typeName === 'ElectionType') {
-            console.log('working on ElectionType')
-          }
           const serialized = codec.encode(value);
           const deserialized = codec.decode(serialized);
+          if (Either.isLeft(deserialized)) {
+            console.warn(`deserialization failure for ${typeName}`);
+          }
+
           const unpacked = eitherRightOrFail(deserialized);
           expect(equality(value, unpacked)).toBe(true);
 

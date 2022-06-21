@@ -180,21 +180,14 @@ export function annotatedString(
 
 export function electionType(): fc.Arbitrary<M.ManifestElectionType> {
   return fc
-    .constantFrom(...Object.keys(M.ManifestElectionType))
-    .filter(t => t !== 'unknown')
-    .map(t => M.ManifestElectionType[t as keyof typeof M.ManifestElectionType]);
+    .constantFrom(...M.ManifestElectionTypeStrings)
+    .filter(t => t !== 'unknown');
 }
 
 export function reportingUnitType(): fc.Arbitrary<M.ManifestReportingUnitType> {
   return fc
-    .constantFrom(...Object.keys(M.ManifestReportingUnitType))
-    .filter(t => t !== 'unknown')
-    .map(
-      t =>
-        M.ManifestReportingUnitType[
-          t as keyof typeof M.ManifestReportingUnitType
-        ]
-    );
+    .constantFrom(...M.ManifestReportingUnitTypeStrings)
+    .filter(t => t !== 'unknown');
 }
 
 export function contactInformation(
@@ -361,10 +354,7 @@ export function candidateContestDescription(
             candidateToSelectionDescription(context, candidate, i + 1)
           );
 
-          const voteVariation =
-            nFinal === 1
-              ? M.ManifestVoteVariationType.one_of_m
-              : M.ManifestVoteVariationType.n_of_m;
+          const voteVariation = nFinal === 1 ? 'one_of_m' : 'n_of_m';
 
           return fc
             .tuple(
@@ -464,7 +454,7 @@ export function referendumContestDescription(
                 uuid,
                 sequenceOrder,
                 electoralDistrictId,
-                M.ManifestVoteVariationType.one_of_m,
+                'one_of_m',
                 1,
                 n,
                 name,
@@ -536,7 +526,7 @@ export function electionDescription(
               context,
               `electionScopeId/${scopeId}`,
               '1.02',
-              M.ManifestElectionType.general,
+              'general',
               `${date}`,
               `${date}`,
               geoUnits,
