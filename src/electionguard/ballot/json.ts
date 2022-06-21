@@ -1,6 +1,7 @@
 import * as D from 'io-ts/Decoder';
 import * as E from 'io-ts/Encoder';
 import * as C from 'io-ts/Codec';
+import * as IOTS from 'io-ts';
 import {pipe} from 'fp-ts/function';
 import {GroupContext} from '../core/group-common';
 import * as M from './manifest';
@@ -22,6 +23,7 @@ import {
 } from './plaintext-ballot';
 import * as CJ from '../core/json';
 import {EncryptionState} from './encrypt';
+import {$enum, EnumWrapper} from 'ts-enum-util';
 
 function nullToUndefined<G>(n: G | null): G | undefined {
   return n === null ? undefined : n;
@@ -29,6 +31,25 @@ function nullToUndefined<G>(n: G | null): G | undefined {
 
 function undefinedToNull<G>(n: G | undefined): G | null {
   return n === undefined ? null : n;
+}
+
+/** This utility function can be used to turn a TypeScript enum into a io-ts codec. */
+export function codecFromEnum
+<EnumType extends Record<Extract<keyof EnumType, string>, string>>
+(enumName: string, wrapper: EnumWrapper<string, EnumType>) {
+  const encoder: E.Encoder<unknown, EnumType> = {
+    encode: input => wrapper.getKeyOrThrow(input)
+  };
+
+  const decoder: D.Decoder<unknown, EnumType> = pipe(
+    D.string,
+    D.refine((input): input is string => wrapper.isKey(input), "isKey"),
+    D.map(
+      input => wrapper.getValueOrThrow(input)
+    )
+  );
+
+  return new C.make(decoder, encoder);
 }
 
 // These JSON importer/exporter things are using the io-ts package:
@@ -171,7 +192,7 @@ export class Codecs {
       M.ManifestInternationalizedText
     > = {
       encode: input => ({
-        text: input.text,
+        text: input.text.map(s => manifestLanguageEncoder.encode(s)),
       }),
     };
 
@@ -180,27 +201,7 @@ export class Codecs {
       manifestInternationalizedTextEncoder
     );
 
-    const manifestElectionTypeEncoder: E.Encoder<
-      unknown,
-      M.ManifestElectionType
-    > = {
-      encode: input => M.ManifestElectionType[input],
-    };
-
-    const manifestElectionTypeDecoder: D.Decoder<
-      unknown,
-      M.ManifestElectionType
-    > = pipe(
-      D.string,
-      D.map(
-        s => M.ManifestElectionType[s as keyof typeof M.ManifestElectionType]
-      )
-    );
-
-    this.manifestElectionTypeCodec = C.make(
-      manifestElectionTypeDecoder,
-      manifestElectionTypeEncoder
-    );
+    this.manifestElectionTypeCodec = codecFromEnum("ManifestElectionType", M.ManifestElectionType);
 
     const manifestSelectionDescriptionDecoder: D.Decoder<
       unknown,

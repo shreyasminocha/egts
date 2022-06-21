@@ -1,8 +1,9 @@
 import {GroupContext} from '../../../src/electionguard/core/group-common';
 import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
 import {getBallotCodecsForContext} from '../../../src/electionguard/ballot/json';
-import {testCodecLaws} from '../core/json.test';
+import {testCodecLaws} from '../core/testCodecLaws';
 import * as G from './generators';
+import * as M from '../../../src/electionguard/ballot/manifest';
 
 function testBallotCodecsForContext(context: GroupContext) {
   //   const cCodecs = getCoreCodecsForContext(context);
@@ -54,7 +55,8 @@ function testBallotCodecsForContext(context: GroupContext) {
     'ElectionType',
     G.electionType(),
     bCodecs.manifestElectionTypeCodec,
-    (a, b) => a === b
+    // equality on enums is weird
+    (a, b) => M.ManifestElectionType[a] === M.ManifestElectionType[b]
   );
 }
 

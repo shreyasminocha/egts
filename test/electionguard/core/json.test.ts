@@ -1,5 +1,3 @@
-import {Arbitrary} from 'fast-check';
-import * as C from 'io-ts/Codec';
 import * as fc from 'fast-check';
 import {
   electionConstants,
@@ -7,46 +5,15 @@ import {
   elementModQ,
   elGamalCiphertextAndContext,
   elGamalKeypair,
-  fcFastConfig,
   uInt256,
   uint8ArrayReasonable,
 } from './generators';
-import {
-  eitherRightOrFail,
-  getCoreCodecsForContext,
-} from '../../../src/electionguard/core/json';
+import {getCoreCodecsForContext} from '../../../src/electionguard/core/json';
 import {GroupContext} from '../../../src/electionguard/core/group-common';
 import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
 import {HashedElGamalCiphertext} from '../../../src/electionguard/core/hashed-elgamal';
 import {arraysEqual} from '../../../src/electionguard/core/utils';
-
-export function testCodecLaws<T>(
-  contextName: string,
-  typeName: string,
-  generator: Arbitrary<T>,
-  codec: C.Codec<unknown, unknown, T>,
-  equality: (a: T, b: T) => boolean
-) {
-  describe(`${contextName}: tests for ${typeName}`, () => {
-    test('serialize / deserialize', () => {
-      fc.assert(
-        fc.property(generator, (value: T) => {
-          const serialized = codec.encode(value);
-          const deserialized = codec.decode(serialized);
-          const unpacked = eitherRightOrFail(deserialized);
-          expect(equality(value, unpacked)).toBe(true);
-
-          // now we'll make sure we can go to strings and back
-          const serializedStr = JSON.stringify(serialized);
-          const backToObject = JSON.parse(serializedStr);
-          const deserialized2 = codec.decode(backToObject);
-          expect(equality(value, eitherRightOrFail(deserialized2))).toBe(true);
-        }),
-        fcFastConfig
-      );
-    });
-  });
-}
+import {testCodecLaws} from './testCodecLaws';
 
 function testCodecsForContext(context: GroupContext) {
   const codecs = getCoreCodecsForContext(context);
