@@ -190,6 +190,12 @@ export function reportingUnitType(): fc.Arbitrary<M.ManifestReportingUnitType> {
     .filter(t => t !== 'unknown');
 }
 
+export function voteVariationType(): fc.Arbitrary<M.ManifestVoteVariationType> {
+  return fc
+    .constantFrom(...M.ManifestVoteVariationTypeStrings)
+    .filter(t => t !== 'unknown');
+}
+
 export function contactInformation(
   context: GroupContext
 ): fc.Arbitrary<M.ManifestContactInformation> {

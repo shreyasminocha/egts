@@ -349,8 +349,14 @@ export class Codecs {
     > = {
       encode: input => ({
         address_line: undefinedToNull(input.addressLine),
-        email: undefinedToNull(input.email),
-        phone: undefinedToNull(input.phone),
+        email:
+          input.email !== undefined
+            ? input.email.map(manifestAnnotatedStringEncoder.encode)
+            : null,
+        phone:
+          input.phone !== undefined
+            ? input.phone.map(manifestAnnotatedStringEncoder.encode)
+            : null,
         name: undefinedToNull(input.name),
       }),
     };
@@ -393,7 +399,9 @@ export class Codecs {
         contact_information:
           input.contactInformation === undefined
             ? null
-            : input.contactInformation,
+            : manifestContactInformationEncoder.encode(
+                input.contactInformation
+              ),
       }),
     };
 

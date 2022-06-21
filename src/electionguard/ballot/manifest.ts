@@ -18,7 +18,7 @@ import * as log from '../core/logging';
  * @see
  *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election)
  */
-export class Manifest implements CryptoHashableElement {
+export class Manifest implements CryptoHashableElement, Eq<Manifest> {
   cryptoHashElement: ElementModQ;
 
   constructor(
@@ -49,6 +49,30 @@ export class Manifest implements CryptoHashableElement {
       // candidates,
       contests,
       ballotStyles
+    );
+  }
+
+  equals(other: Manifest): boolean {
+    return (
+      other instanceof Manifest &&
+      other.electionScopeId === this.electionScopeId &&
+      other.specVersion === this.specVersion &&
+      other.electionType === this.electionType &&
+      other.startDate === this.startDate &&
+      other.endDate === this.endDate &&
+      matchingArraysOfAnyElectionObjects(
+        other.geopoliticalUnits,
+        this.geopoliticalUnits
+      ) &&
+      matchingArraysOfAnyElectionObjects(other.parties, this.parties) &&
+      matchingArraysOfAnyElectionObjects(other.candidates, this.candidates) &&
+      matchingArraysOfAnyElectionObjects(other.contests, this.contests) &&
+      matchingArraysOfAnyElectionObjects(
+        other.ballotStyles,
+        this.ballotStyles
+      ) &&
+      objEqualsOrUndefEquals(other.name, this.name) &&
+      objEqualsOrUndefEquals(other.contactInformation, this.contactInformation)
     );
   }
 

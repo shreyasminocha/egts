@@ -57,6 +57,41 @@ function testBallotCodecsForContext(context: GroupContext) {
     bCodecs.manifestElectionTypeCodec,
     (a, b) => a === b
   );
+  testCodecLaws(
+    context.name,
+    'ReportingUnitType',
+    G.reportingUnitType(),
+    bCodecs.manifestReportingUnitTypeCodec,
+    (a, b) => a === b
+  );
+  testCodecLaws(
+    context.name,
+    'ElectionVariationType',
+    G.voteVariationType(),
+    bCodecs.manifestVoteVariationTypeCodec,
+    (a, b) => a === b
+  );
+  testCodecLaws(
+    context.name,
+    'GeopoliticalUnit',
+    G.geopoliticalUnit(context),
+    bCodecs.manifestGeopoliticalUnitCodec,
+    (a, b) => a.equals(b)
+  );
+  testCodecLaws(
+    context.name,
+    'ContactInformation',
+    G.contactInformation(context),
+    bCodecs.manifestContactInformationCodec,
+    (a, b) => a.equals(b)
+  );
+  testCodecLaws(
+    context.name,
+    'Manifest',
+    G.electionDescription(context),
+    bCodecs.manifestCodec,
+    (a, b) => a.equals(b)
+  );
 }
 
 testBallotCodecsForContext(bigIntContext3072());
