@@ -20,7 +20,7 @@ import {
   PlaintextSelection,
   ExtendedData,
 } from './plaintext-ballot';
-import {getCoreCodecsForContext as getCoreCodecsForContext} from '../core/json';
+import * as CJ from '../core/json';
 import {EncryptionState} from './encrypt';
 
 function nullToUndefined<G>(n: G | null): G | undefined {
@@ -53,7 +53,8 @@ function undefinedToNull<G>(n: G | undefined): G | null {
  * a 4096-bit group and encode to a 3072-bit group, the results are not going to
  * be correct.
  */
-class Codecs {
+export class Codecs {
+  readonly coreCodecs: CJ.Codecs;
   readonly manifestLanguageCodec: C.Codec<unknown, unknown, M.ManifestLanguage>;
   readonly manifestInternationalizedTextCodec: C.Codec<
     unknown,
@@ -132,6 +133,8 @@ class Codecs {
   readonly encryptionStateCodec: C.Codec<unknown, unknown, EncryptionState>;
 
   constructor(readonly context: GroupContext) {
+    this.coreCodecs = CJ.getCoreCodecsForContext(context);
+
     const manifestLanguageDecoder: D.Decoder<unknown, M.ManifestLanguage> =
       pipe(
         D.struct({
@@ -587,13 +590,11 @@ class Codecs {
         type: D.string,
         start_date: D.string,
         end_date: D.string,
-        geopolitical_units: D.array(
-          D.nullable(manifestGeopoliticalUnitDecoder)
-        ),
-        parties: D.array(D.nullable(manifestPartyDecoder)),
-        candidates: D.array(D.nullable(manifestCandidateDecoder)),
-        contests: D.array(D.nullable(manifestContestDescriptionDecoder)),
-        ballot_styles: D.array(D.nullable(manifestBallotStyleDecoder)),
+        geopolitical_units: D.array(manifestGeopoliticalUnitDecoder),
+        parties: D.array(manifestPartyDecoder),
+        candidates: D.array(manifestCandidateDecoder),
+        contests: D.array(manifestContestDescriptionDecoder),
+        ballot_styles: D.array(manifestBallotStyleDecoder),
       }),
       D.intersect(
         D.partial({
@@ -612,11 +613,11 @@ class Codecs {
             ],
             s.start_date,
             s.end_date,
-            s.geopolitical_units.map(nullToUndefined),
-            s.parties.map(nullToUndefined),
-            s.candidates.map(nullToUndefined),
-            s.contests.map(nullToUndefined),
-            s.ballot_styles.map(nullToUndefined),
+            s.geopolitical_units,
+            s.parties,
+            s.candidates,
+            s.contests,
+            s.ballot_styles,
             s.name,
             nullToUndefined(s.contact_information)
           )
@@ -652,16 +653,14 @@ class Codecs {
         D.struct({
           object_id: D.string,
           sequence_order: D.number,
-          description_hash: getCoreCodecsForContext(context).elementModQCodec,
-          ciphertext: getCoreCodecsForContext(context).elGamalCiphertextCodec,
-          crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
+          description_hash: this.coreCodecs.elementModQCodec,
+          ciphertext: this.coreCodecs.elGamalCiphertextCodec,
+          crypto_hash: this.coreCodecs.elementModQCodec,
           nonce: D.string,
           is_placeholder_selection: D.boolean,
-          proof:
-            getCoreCodecsForContext(context)
-              .disjunctiveChaumPedersenProofKnownNonceCodec,
+          proof: this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec,
           extended_data: D.nullable(
-            getCoreCodecsForContext(context).hashedElGamalCiphertextCodec
+            this.coreCodecs.hashedElGamalCiphertextCodec
           ),
         }),
         D.map(
@@ -683,22 +682,23 @@ class Codecs {
       encode: input => ({
         object_id: input.selectionId,
         sequence_order: input.sequenceOrder,
-        description_hash: getCoreCodecsForContext(
-          context
-        ).elementModQCodec.encode(input.selectionHash),
-        ciphertext: getCoreCodecsForContext(
-          context
-        ).elGamalCiphertextCodec.encode(input.ciphertext),
-        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+        description_hash: this.coreCodecs.elementModQCodec.encode(
+          input.selectionHash
+        ),
+        ciphertext: this.coreCodecs.elGamalCiphertextCodec.encode(
+          input.ciphertext
+        ),
+        crypto_hash: this.coreCodecs.elementModQCodec.encode(
           input.cryptoHashElement
         ),
         is_placeholder_selection: input.isPlaceholderSelection,
-        proof: getCoreCodecsForContext(
-          context
-        ).disjunctiveChaumPedersenProofKnownNonceCodec.encode(input.proof),
+        proof:
+          this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec.encode(
+            input.proof
+          ),
         extended_data:
           input.extendedData &&
-          getCoreCodecsForContext(context).hashedElGamalCiphertextCodec.encode(
+          this.coreCodecs.hashedElGamalCiphertextCodec.encode(
             input.extendedData
           ),
       }),
@@ -713,14 +713,11 @@ class Codecs {
       D.struct({
         object_id: D.string,
         sequence_order: D.number,
-        description_hash: getCoreCodecsForContext(context).elementModQCodec,
+        description_hash: this.coreCodecs.elementModQCodec,
         ballot_selections: D.array(submittedSelectionDecoder),
-        ciphertext_accumulation:
-          getCoreCodecsForContext(context).elGamalCiphertextCodec,
-        crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
-        proof:
-          getCoreCodecsForContext(context)
-            .constantChaumPedersenProofKnownNonceCodec,
+        ciphertext_accumulation: this.coreCodecs.elGamalCiphertextCodec,
+        crypto_hash: this.coreCodecs.elementModQCodec,
+        proof: this.coreCodecs.constantChaumPedersenProofKnownNonceCodec,
       }),
       D.map(
         s =>
@@ -740,21 +737,21 @@ class Codecs {
       encode: input => ({
         object_id: input.contestId,
         sequence_order: input.sequenceOrder,
-        description_hash: getCoreCodecsForContext(
-          context
-        ).elementModQCodec.encode(input.contestHash),
+        description_hash: this.coreCodecs.elementModQCodec.encode(
+          input.contestHash
+        ),
         ballot_selections: input.selections.map(
           submittedSelectionEncoder.encode
         ),
-        ciphertext_accumulation: getCoreCodecsForContext(
-          context
-        ).elGamalCiphertextCodec.encode(input.ciphertextAccumulation),
-        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+        ciphertext_accumulation: this.coreCodecs.elGamalCiphertextCodec.encode(
+          input.ciphertextAccumulation
+        ),
+        crypto_hash: this.coreCodecs.elementModQCodec.encode(
           input.cryptoHashElement
         ),
-        proof: getCoreCodecsForContext(
-          context
-        ).constantChaumPedersenProofKnownNonceCodec.encode(input.proof),
+        proof: this.coreCodecs.constantChaumPedersenProofKnownNonceCodec.encode(
+          input.proof
+        ),
       }),
     };
 
@@ -767,12 +764,12 @@ class Codecs {
       D.struct({
         object_id: D.string,
         style_id: D.string,
-        manifest_hash: getCoreCodecsForContext(context).elementModQCodec,
-        code_hash: getCoreCodecsForContext(context).elementModQCodec,
+        manifest_hash: this.coreCodecs.elementModQCodec,
+        code_hash: this.coreCodecs.elementModQCodec,
         contests: D.array(submittedContestDecoder),
-        code: getCoreCodecsForContext(context).elementModQCodec,
+        code: this.coreCodecs.elementModQCodec,
         timestamp: D.number,
-        crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
+        crypto_hash: this.coreCodecs.elementModQCodec,
         state: D.number,
       }),
       D.map(
@@ -795,18 +792,14 @@ class Codecs {
       encode: input => ({
         object_id: input.ballotId,
         style_id: input.ballotStyleId,
-        manifest_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+        manifest_hash: this.coreCodecs.elementModQCodec.encode(
           input.manifestHash
         ),
-        code_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
-          input.codeSeed
-        ),
-        contests: getCoreCodecsForContext(context).elementModQCodec.encode(
-          input.code
-        ),
+        code_hash: this.coreCodecs.elementModQCodec.encode(input.codeSeed),
+        contests: this.coreCodecs.elementModQCodec.encode(input.code),
         code: input.contests.map(submittedContestEncoder.encode),
         timestamp: input.timestamp,
-        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+        crypto_hash: this.coreCodecs.elementModQCodec.encode(
           input.cryptoHashElement
         ),
         state: input.state,
@@ -823,16 +816,14 @@ class Codecs {
         D.struct({
           object_id: D.string,
           sequence_order: D.number,
-          description_hash: getCoreCodecsForContext(context).elementModQCodec,
-          ciphertext: getCoreCodecsForContext(context).elGamalCiphertextCodec,
-          crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
-          nonce: D.nullable(getCoreCodecsForContext(context).elementModQCodec),
+          description_hash: this.coreCodecs.elementModQCodec,
+          ciphertext: this.coreCodecs.elGamalCiphertextCodec,
+          crypto_hash: this.coreCodecs.elementModQCodec,
+          nonce: D.nullable(this.coreCodecs.elementModQCodec),
           is_placeholder_selection: D.boolean,
-          proof:
-            getCoreCodecsForContext(context)
-              .disjunctiveChaumPedersenProofKnownNonceCodec,
+          proof: this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec,
           extended_data: D.nullable(
-            getCoreCodecsForContext(context).hashedElGamalCiphertextCodec
+            this.coreCodecs.hashedElGamalCiphertextCodec
           ),
         }),
         D.map(
@@ -856,24 +847,25 @@ class Codecs {
         encode: input => ({
           object_id: input.selectionId,
           sequence_order: input.sequenceOrder,
-          description_hash: getCoreCodecsForContext(
-            context
-          ).elementModQCodec.encode(input.selectionHash),
-          ciphertext: getCoreCodecsForContext(
-            context
-          ).elGamalCiphertextCodec.encode(input.ciphertext),
-          crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+          description_hash: this.coreCodecs.elementModQCodec.encode(
+            input.selectionHash
+          ),
+          ciphertext: this.coreCodecs.elGamalCiphertextCodec.encode(
+            input.ciphertext
+          ),
+          crypto_hash: this.coreCodecs.elementModQCodec.encode(
             input.cryptoHash
           ),
           is_placeholder_selection: input.isPlaceholderSelection,
-          proof: getCoreCodecsForContext(
-            context
-          ).disjunctiveChaumPedersenProofKnownNonceCodec.encode(input.proof),
+          proof:
+            this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec.encode(
+              input.proof
+            ),
           extended_data:
             input.extendedData &&
-            getCoreCodecsForContext(
-              context
-            ).hashedElGamalCiphertextCodec.encode(input.extendedData),
+            this.coreCodecs.hashedElGamalCiphertextCodec.encode(
+              input.extendedData
+            ),
         }),
       };
 
@@ -887,15 +879,12 @@ class Codecs {
         D.struct({
           object_id: D.string,
           sequence_order: D.number,
-          description_hash: getCoreCodecsForContext(context).elementModQCodec,
+          description_hash: this.coreCodecs.elementModQCodec,
           ballot_selections: D.array(ciphertextSelectionDecoder),
-          ciphertext_accumulation:
-            getCoreCodecsForContext(context).elGamalCiphertextCodec,
-          crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
-          nonce: getCoreCodecsForContext(context).elementModQCodec,
-          proof:
-            getCoreCodecsForContext(context)
-              .constantChaumPedersenProofKnownNonceCodec,
+          ciphertext_accumulation: this.coreCodecs.elGamalCiphertextCodec,
+          crypto_hash: this.coreCodecs.elementModQCodec,
+          nonce: this.coreCodecs.elementModQCodec,
+          proof: this.coreCodecs.constantChaumPedersenProofKnownNonceCodec,
         }),
         D.map(
           s =>
@@ -916,21 +905,19 @@ class Codecs {
       encode: input => ({
         object_id: input.contestId,
         sequence_order: input.sequenceOrder,
-        description_hash: getCoreCodecsForContext(
-          context
-        ).elementModQCodec.encode(input.contestHash),
+        description_hash: this.coreCodecs.elementModQCodec.encode(
+          input.contestHash
+        ),
         ballot_selections: input.selections.map(
           ciphertextSelectionEncoder.encode
         ),
-        ciphertext_accumulation: getCoreCodecsForContext(
-          context
-        ).elGamalCiphertextCodec.encode(input.ciphertextAccumulation),
-        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
-          input.cryptoHash
+        ciphertext_accumulation: this.coreCodecs.elGamalCiphertextCodec.encode(
+          input.ciphertextAccumulation
         ),
-        proof: getCoreCodecsForContext(
-          context
-        ).constantChaumPedersenProofKnownNonceCodec.encode(input.proof),
+        crypto_hash: this.coreCodecs.elementModQCodec.encode(input.cryptoHash),
+        proof: this.coreCodecs.constantChaumPedersenProofKnownNonceCodec.encode(
+          input.proof
+        ),
       }),
     };
 
@@ -943,13 +930,13 @@ class Codecs {
       D.struct({
         object_id: D.string,
         style_id: D.string,
-        manifest_hash: getCoreCodecsForContext(context).elementModQCodec,
-        code_seed: getCoreCodecsForContext(context).elementModQCodec,
+        manifest_hash: this.coreCodecs.elementModQCodec,
+        code_seed: this.coreCodecs.elementModQCodec,
         contests: D.array(ciphertextContestDecoder),
-        code: getCoreCodecsForContext(context).elementModQCodec,
+        code: this.coreCodecs.elementModQCodec,
         timestamp: D.number,
-        crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
-        nonce: getCoreCodecsForContext(context).elementModQCodec,
+        crypto_hash: this.coreCodecs.elementModQCodec,
+        nonce: this.coreCodecs.elementModQCodec,
       }),
       D.map(
         s =>
@@ -971,20 +958,14 @@ class Codecs {
       encode: input => ({
         object_id: input.ballotId,
         style_id: input.ballotStyleId,
-        manifest_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
+        manifest_hash: this.coreCodecs.elementModQCodec.encode(
           input.manifestHash
         ),
-        code_seed: getCoreCodecsForContext(context).elementModQCodec.encode(
-          input.codeSeed
-        ),
-        contests: getCoreCodecsForContext(context).elementModQCodec.encode(
-          input.code
-        ),
+        code_seed: this.coreCodecs.elementModQCodec.encode(input.codeSeed),
+        contests: this.coreCodecs.elementModQCodec.encode(input.code),
         code: input.contests.map(ciphertextContestEncoder.encode),
         timestamp: input.timestamp,
-        crypto_hash: getCoreCodecsForContext(context).elementModQCodec.encode(
-          input.cryptoHash
-        ),
+        crypto_hash: this.coreCodecs.elementModQCodec.encode(input.cryptoHash),
       }),
     };
 
@@ -1105,26 +1086,24 @@ class Codecs {
 
     const encryptionStateDecoder: D.Decoder<unknown, EncryptionState> = pipe(
       D.struct({
-        public_key: getCoreCodecsForContext(context).elGamalPublicKeyCodec,
-        extended_base_hash: getCoreCodecsForContext(context).elementModQCodec,
+        public_key: this.coreCodecs.elGamalPublicKeyCodec,
+        extended_base_hash: this.coreCodecs.elementModQCodec,
         manifest: manifestDecoder,
-        context: getCoreCodecsForContext(context).electionContextCodec,
+        context: this.coreCodecs.electionContextCodec,
       }),
       D.map(s => new EncryptionState(context, s.manifest, s.context, true))
     );
 
     const encryptionStateEncoder: E.Encoder<unknown, EncryptionState> = {
       encode: input => ({
-        public_key: getCoreCodecsForContext(
-          context
-        ).elGamalPublicKeyCodec.encode(input.publicKey),
-        extended_base_hash: getCoreCodecsForContext(
-          context
-        ).elementModQCodec.encode(input.extendedBaseHash),
-        manifest: manifestEncoder.encode(input.manifest),
-        context: getCoreCodecsForContext(context).electionContextCodec.encode(
-          input.context
+        public_key: this.coreCodecs.elGamalPublicKeyCodec.encode(
+          input.publicKey
         ),
+        extended_base_hash: this.coreCodecs.elementModQCodec.encode(
+          input.extendedBaseHash
+        ),
+        manifest: manifestEncoder.encode(input.manifest),
+        context: this.coreCodecs.electionContextCodec.encode(input.context),
       }),
     };
 

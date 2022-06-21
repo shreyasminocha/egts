@@ -54,7 +54,7 @@ import * as log from './logging';
  * a 4096-bit group and encode to a 3072-bit group, the results are not going to
  * be correct.
  */
-class Codecs {
+export class Codecs {
   readonly uInt8ArrayCodec: C.Codec<unknown, string, Uint8Array>;
   readonly uInt256Codec: C.Codec<unknown, string, UInt256>;
   readonly elementModPCodec: C.Codec<unknown, string, ElementModP>;

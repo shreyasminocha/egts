@@ -28,11 +28,11 @@ export class Manifest implements CryptoHashableElement {
     readonly electionType: ManifestElectionType,
     readonly startDate: string, // ISO 8601 formatted date/time
     readonly endDate: string, // ISO 8601 formatted date/time
-    readonly geopoliticalUnits: Array<ManifestGeopoliticalUnit | undefined>,
-    readonly parties: Array<ManifestParty | undefined>,
-    readonly candidates: Array<ManifestCandidate | undefined>,
-    readonly contests: Array<ManifestContestDescription | undefined>,
-    readonly ballotStyles: Array<ManifestBallotStyle | undefined>,
+    readonly geopoliticalUnits: Array<ManifestGeopoliticalUnit>,
+    readonly parties: Array<ManifestParty>,
+    readonly candidates: Array<ManifestCandidate>,
+    readonly contests: Array<ManifestContestDescription>,
+    readonly ballotStyles: Array<ManifestBallotStyle>,
     readonly name: ManifestInternationalizedText | undefined,
     readonly contactInformation: ManifestContactInformation | undefined
   ) {
@@ -668,7 +668,11 @@ export class ManifestContestDescription
   /** Internal check that the contest description is self-consistent. */
   isValid(): boolean {
     const validNumberElected = this.numberElected <= this.selections.length;
-    const validVotesAllowed = this.numberElected <= this.votesAllowed;
+
+    // if votesAllowed is undefined, we'll just say it's the maximum number
+    const votesAllowed = this.votesAllowed ?? this.numberElected;
+
+    const validVotesAllowed = this.numberElected <= votesAllowed;
     const candidateIds = new Set(this.selections.map(v => v.candidateId));
     const selectionIds = new Set(this.selections.map(v => v.selectionId));
     const sequenceIds = new Set(this.selections.map(v => v.sequenceOrder));

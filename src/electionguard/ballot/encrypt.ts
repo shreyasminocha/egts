@@ -187,7 +187,11 @@ export function encryptContest(
 
   // Handle undervotes. LOOK what about overvotes?
   // Add a placeholder selection for each possible seat in the contest
-  const limit = contestDescription.votesAllowed;
+
+  // If votesAllowed is undefined, then we'll just use numberElected
+  // turning this into an m-of-m election.
+  const limit =
+    contestDescription.votesAllowed || contestDescription.numberElected;
   const selectionSequenceOrderMax = maxOf(
     contestDescription.selections,
     it => it.sequenceOrder
@@ -233,7 +237,13 @@ export function encryptContest(
   const texts = encryptedSelections.map(it => it.ciphertext);
   const ciphertextAccumulation = elGamalAdd(...texts);
   const nonces = encryptedSelections.map(it => it.selectionNonce);
-  const aggNonce = addQ(...nonces);
+  if (nonces.includes(undefined)) {
+    // This should never happen, but we'll check for
+    // it before casting to at least generate a more specific
+    // error in the exception being thrown.
+    throw new Error('Missing nonce!');
+  }
+  const aggNonce = addQ(...(nonces as ElementModQ[]));
 
   const proof: ConstantChaumPedersenProofKnownNonce =
     ConstantChaumPedersenProofKnownNonce.create(

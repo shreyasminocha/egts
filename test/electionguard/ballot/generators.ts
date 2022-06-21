@@ -553,7 +553,7 @@ export function electionDescription(
 }
 
 export function plaintextVotedBallot(manifest: M.Manifest) {
-  if (manifest.ballotStyles.length < 1) {
+  if (manifest.ballotStyles === undefined || manifest.ballotStyles.length < 1) {
     throw new Error('need at least one ballot style');
   }
 

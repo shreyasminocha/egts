@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
-import {getCodecsForContext as getBallotCodecsForContext} from '../../src/electionguard/ballot/json';
+import {getBallotCodecsForContext} from '../../src/electionguard/ballot/json';
 import {
-  getCodecsForContext as getCoreCodecsForContext,
+  getCoreCodecsForContext,
   eitherRightOrFail,
 } from '../../src/electionguard/core/json';
 import {

@@ -144,9 +144,13 @@ describe('Election / ballot encryption', () => {
 
           const selectionNonces: bigint[] = encryptedBallots.flatMap(ballot =>
             ballot.contests.flatMap(contest =>
-              contest.selections.map(selection =>
-                selection.selectionNonce.toBigint()
-              )
+              contest.selections.map(selection => {
+                if (selection.selectionNonce === undefined) {
+                  throw new Error('selectionNonce should not be undefined');
+                } else {
+                  return selection.selectionNonce.toBigint();
+                }
+              })
             )
           );
 
