@@ -54,6 +54,7 @@
     "pretest": "npm run compile",
     "posttest": "npm run lint",
     "test": "jest",
+    "coverage": "jest --coverage",
     "elgamal-bench": "node build/bench/elgamal-benchmark"
   },
   "engines": {
