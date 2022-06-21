@@ -23,6 +23,14 @@ import {
 import {getCodecsForContext as getCoreCodecsForContext} from '../core/json';
 import {EncryptionState} from './encrypt';
 
+function nullToUndefined<G>(n: G | null): G | undefined {
+  return n === null ? undefined : n;
+}
+
+function undefinedToNull<G>(n: G | undefined): G | null {
+  return n === undefined ? null : n;
+}
+
 // These JSON importer/exporter things are using the io-ts package:
 // https://github.com/gcanti/io-ts/
 // Which, in turn, uses a functional programming library:
@@ -232,18 +240,18 @@ class Codecs {
     > = pipe(
       D.struct({
         address_line: D.nullable(D.array(D.string)),
-        email: D.array(manifestAnnotatedStringDecoder),
+        email: D.nullable(D.array(manifestAnnotatedStringDecoder)),
         phone: D.nullable(D.array(manifestAnnotatedStringDecoder)),
-        name: D.string,
+        name: D.nullable(D.string),
       }),
       D.map(
         s =>
           new M.ManifestContactInformation(
             context,
-            s.address_line || undefined,
-            s.email,
-            s.phone || undefined,
-            s.name
+            nullToUndefined(s.address_line),
+            nullToUndefined(s.email),
+            nullToUndefined(s.phone),
+            nullToUndefined(s.name)
           )
       )
     );
@@ -253,10 +261,10 @@ class Codecs {
       M.ManifestContactInformation
     > = {
       encode: input => ({
-        address_line: input.addressLine,
-        email: input.email,
-        phone: input.phone,
-        name: input.name,
+        address_line: undefinedToNull(input.addressLine),
+        email: undefinedToNull(input.email),
+        phone: undefinedToNull(input.phone),
+        name: undefinedToNull(input.name),
       }),
     };
 
@@ -284,7 +292,7 @@ class Codecs {
             M.ManifestReportingUnitType[
               s.type as keyof typeof M.ManifestReportingUnitType
             ],
-            s.contact_information || undefined
+            nullToUndefined(s.contact_information)
           )
       )
     );
@@ -297,7 +305,10 @@ class Codecs {
         object_id: input.objectId,
         name: input.name,
         type: input.type,
-        contact_information: input.contactInformation,
+        contact_information:
+          input.contactInformation === undefined
+            ? null
+            : input.contactInformation,
       }),
     };
 
@@ -310,7 +321,7 @@ class Codecs {
       pipe(
         D.struct({
           object_id: D.string,
-          name: manifestInternationalizedTextDecoder,
+          ballot_name: manifestInternationalizedTextDecoder,
           party_id: D.nullable(D.string),
           image_uri: D.nullable(D.string),
           is_write_in: D.nullable(D.boolean),
@@ -320,9 +331,9 @@ class Codecs {
             new M.ManifestCandidate(
               context,
               s.object_id,
-              s.name,
-              s.party_id || undefined,
-              s.image_uri || undefined,
+              s.ballot_name,
+              s.party_id === null ? undefined : s.party_id,
+              s.image_uri === null ? undefined : s.image_uri,
               !!s.is_write_in
             )
         )
@@ -331,9 +342,9 @@ class Codecs {
     const manifestCandidateEncoder: E.Encoder<unknown, M.ManifestCandidate> = {
       encode: input => ({
         object_id: input.candidateId,
-        name: input.name,
-        party_id: input.partyId,
-        image_uri: input.imageUri,
+        ballot_name: input.name,
+        party_id: input.partyId === undefined ? null : input.partyId,
+        image_uri: input.imageUri === undefined ? null : input.imageUri,
         is_write_in: input.isWriteIn,
       }),
     };
@@ -357,9 +368,9 @@ class Codecs {
             context,
             s.object_id,
             s.name,
-            s.abbreviation || undefined,
-            s.color || undefined,
-            s.logo_uri || undefined
+            s.abbreviation === null ? undefined : s.abbreviation,
+            s.color === null ? undefined : s.color,
+            s.logo_uri === null ? undefined : s.logo_uri
           )
       )
     );
@@ -368,9 +379,10 @@ class Codecs {
       encode: input => ({
         object_id: input.partyId,
         name: input.name,
-        abbreviation: input.abbreviation,
-        color: input.color,
-        logo_uri: input.logoUri,
+        abbreviation:
+          input.abbreviation === undefined ? null : input.abbreviation,
+        color: input.color === undefined ? null : input.color,
+        logo_uri: input.logoUri === undefined ? null : input.logoUri,
       }),
     };
 
@@ -394,9 +406,11 @@ class Codecs {
           new M.ManifestBallotStyle(
             context,
             s.object_id,
-            s.geopolitical_unit_ids || undefined,
-            s.party_ids || undefined,
-            s.image_uri || undefined
+            s.geopolitical_unit_ids === null
+              ? undefined
+              : s.geopolitical_unit_ids,
+            s.party_ids === null ? undefined : s.party_ids,
+            s.image_uri === null ? undefined : s.image_uri
           )
       )
     );
@@ -407,9 +421,12 @@ class Codecs {
     > = {
       encode: input => ({
         object_id: input.ballotStyleId,
-        geopolitical_unit_ids: input.geopoliticalUnitIds,
-        party_ids: input.partyIds,
-        image_uri: input.imageUri,
+        geopolitical_unit_ids:
+          input.geopoliticalUnitIds === undefined
+            ? null
+            : input.geopoliticalUnitIds,
+        party_ids: input.partyIds === undefined ? null : input.partyIds,
+        image_uri: input.imageUri === undefined ? null : input.imageUri,
       }),
     };
 
@@ -428,7 +445,7 @@ class Codecs {
         electoral_district_id: D.string,
         vote_variation: D.string,
         number_elected: D.number,
-        votes_allowed: D.number,
+        votes_allowed: D.nullable(D.number),
         name: D.string,
         ballot_selections: D.array(manifestSelectionDescriptionDecoder),
         ballot_title: D.nullable(manifestInternationalizedTextDecoder),
@@ -445,11 +462,11 @@ class Codecs {
               s.vote_variation as keyof typeof M.ManifestVoteVariationType
             ],
             s.number_elected,
-            s.votes_allowed,
+            nullToUndefined(s.votes_allowed),
             s.name,
             s.ballot_selections,
-            s.ballot_title || undefined,
-            s.ballot_subtitle || undefined
+            nullToUndefined(s.ballot_title),
+            nullToUndefined(s.ballot_subtitle)
           )
       )
     );
@@ -543,14 +560,20 @@ class Codecs {
         type: D.string,
         start_date: D.string,
         end_date: D.string,
-        geopolitical_units: D.array(manifestGeopoliticalUnitDecoder),
-        parties: D.array(manifestPartyDecoder),
-        candidates: D.array(manifestCandidateDecoder),
-        contests: D.array(manifestContestDescriptionDecoder),
-        ballot_styles: D.array(manifestBallotStyleDecoder),
-        name: D.nullable(manifestInternationalizedTextDecoder),
-        contact_information: D.nullable(manifestContactInformationDecoder),
+        geopolitical_units: D.array(
+          D.nullable(manifestGeopoliticalUnitDecoder)
+        ),
+        parties: D.array(D.nullable(manifestPartyDecoder)),
+        candidates: D.array(D.nullable(manifestCandidateDecoder)),
+        contests: D.array(D.nullable(manifestContestDescriptionDecoder)),
+        ballot_styles: D.array(D.nullable(manifestBallotStyleDecoder)),
       }),
+      D.intersect(
+        D.partial({
+          name: manifestInternationalizedTextDecoder,
+          contact_information: D.nullable(manifestContactInformationDecoder),
+        })
+      ),
       D.map(
         s =>
           new M.Manifest(
@@ -562,13 +585,13 @@ class Codecs {
             ],
             s.start_date,
             s.end_date,
-            s.geopolitical_units,
-            s.parties,
-            s.candidates,
-            s.contests,
-            s.ballot_styles,
-            s.name || undefined,
-            s.contact_information || undefined
+            s.geopolitical_units.map(nullToUndefined),
+            s.parties.map(nullToUndefined),
+            s.candidates.map(nullToUndefined),
+            s.contests.map(nullToUndefined),
+            s.ballot_styles.map(nullToUndefined),
+            s.name,
+            nullToUndefined(s.contact_information)
           )
       )
     );
@@ -776,7 +799,7 @@ class Codecs {
           description_hash: getCoreCodecsForContext(context).elementModQCodec,
           ciphertext: getCoreCodecsForContext(context).elGamalCiphertextCodec,
           crypto_hash: getCoreCodecsForContext(context).elementModQCodec,
-          nonce: getCoreCodecsForContext(context).elementModQCodec,
+          nonce: D.nullable(getCoreCodecsForContext(context).elementModQCodec),
           is_placeholder_selection: D.boolean,
           proof:
             getCoreCodecsForContext(context)
@@ -795,7 +818,7 @@ class Codecs {
               s.crypto_hash,
               s.is_placeholder_selection,
               s.proof,
-              s.nonce,
+              s.nonce || undefined,
               s.extended_data || undefined
             )
         )
@@ -965,18 +988,22 @@ class Codecs {
         D.struct({
           object_id: D.string,
           sequence_order: D.number,
-          vote: D.number,
-          is_placeholder_selection: D.boolean,
-          extended_data: D.nullable(extendedDataDecoder),
+          vote: D.literal(0, 1),
         }),
+        D.intersect(
+          D.partial({
+            is_placeholder_selection: D.boolean,
+            extended_data: D.nullable(extendedDataDecoder),
+          })
+        ),
         D.map(
           s =>
             new PlaintextSelection(
               s.object_id,
               s.sequence_order,
               s.vote,
-              s.is_placeholder_selection,
-              s.extended_data || undefined
+              !!s.is_placeholder_selection,
+              s.extended_data === null ? undefined : s.extended_data
             )
         )
       );

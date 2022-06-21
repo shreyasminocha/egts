@@ -115,9 +115,10 @@ describe('compat', () => {
     );
     const plaintextBallotJson = JSON.parse(content);
 
-    const possiblyPlaintextBallot = getBallotCodecsForContext(
-      groupContext
-    ).plaintextBallotCodec.decode(plaintextBallotJson);
+    const possiblyPlaintextBallot =
+      getBallotCodecsForContext(groupContext).plaintextBallotCodec.decode(
+        plaintextBallotJson
+      );
 
     const plaintextBallot = eitherRightOrFail(possiblyPlaintextBallot);
 
@@ -133,10 +134,28 @@ describe('compat', () => {
     );
     const ciphertextBallotJson = JSON.parse(content);
 
-    const possiblyCiphertextBallot = getBallotCodecsForContext(
-      groupContext
-    ).ciphertextBallotCodec.decode(ciphertextBallotJson);
+    const possiblyCiphertextBallot =
+      getBallotCodecsForContext(groupContext).ciphertextBallotCodec.decode(
+        ciphertextBallotJson
+      );
 
     const ciphertextBallot = eitherRightOrFail(possiblyCiphertextBallot);
+
+    content = await fs.readFile(
+      path.join(
+        dir,
+        'submitted_ballots',
+        'submitted_ballot_ballot-ddf5a59a-73f3-11ec-aaed-acde48001122.json'
+      ),
+      'utf-8'
+    );
+    const submittedBallotJson = JSON.parse(content);
+
+    const possiblySubmittedBallot =
+      getBallotCodecsForContext(groupContext).submittedBallotCodec.decode(
+        submittedBallotJson
+      );
+
+    const submittedBallot = eitherRightOrFail(possiblySubmittedBallot);
   });
 });

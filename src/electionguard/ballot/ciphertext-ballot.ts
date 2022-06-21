@@ -10,6 +10,7 @@ import {
   ElectionObjectBase,
   OrderedObjectBase,
   matchingArraysOfOrderedElectionObjects,
+  objEqualsOrUndefEquals,
 } from './election-object-base';
 import {
   BallotState,
@@ -139,7 +140,7 @@ export class CiphertextSelection
     readonly cryptoHash: ElementModQ,
     readonly isPlaceholderSelection: boolean,
     readonly proof: DisjunctiveChaumPedersenProofKnownNonce,
-    readonly selectionNonce: ElementModQ,
+    readonly selectionNonce?: ElementModQ,
     readonly extendedData?: HashedElGamalCiphertext
   ) {}
 
@@ -157,7 +158,7 @@ export class CiphertextSelection
       other.cryptoHash.equals(this.cryptoHash) &&
       other.isPlaceholderSelection === this.isPlaceholderSelection &&
       other.proof.equals(this.proof) &&
-      other.selectionNonce.equals(this.selectionNonce)
+      objEqualsOrUndefEquals(other.selectionNonce, this.selectionNonce)
     );
     // ignoring extended data
   }
