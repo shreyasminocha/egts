@@ -435,7 +435,7 @@ export class Codecs {
     const manifestCandidateEncoder: E.Encoder<unknown, M.ManifestCandidate> = {
       encode: input => ({
         object_id: input.candidateId,
-        ballot_name: input.name,
+        ballot_name: manifestInternationalizedTextEncoder.encode(input.name),
         party_id: input.partyId === undefined ? null : input.partyId,
         image_uri: input.imageUri === undefined ? null : input.imageUri,
         is_write_in: input.isWriteIn,
@@ -471,7 +471,7 @@ export class Codecs {
     const manifestPartyEncoder: E.Encoder<unknown, M.ManifestParty> = {
       encode: input => ({
         object_id: input.partyId,
-        name: input.name,
+        name: manifestInternationalizedTextEncoder.encode(input.name),
         abbreviation:
           input.abbreviation === undefined ? null : input.abbreviation,
         color: input.color === undefined ? null : input.color,
@@ -698,10 +698,15 @@ export class Codecs {
           manifestBallotStyleEncoder.encode
         ),
         name:
-          input.name && manifestInternationalizedTextEncoder.encode(input.name),
+          input.name === undefined
+            ? null
+            : manifestInternationalizedTextEncoder.encode(input.name),
         contact_information:
-          input.contactInformation &&
-          manifestContactInformationEncoder.encode(input.contactInformation),
+          input.contactInformation === undefined
+            ? null
+            : manifestContactInformationEncoder.encode(
+                input.contactInformation
+              ),
       }),
     };
 

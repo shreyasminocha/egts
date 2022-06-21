@@ -27,7 +27,16 @@ export function testCodecLaws<T>(
           expect(equality(value, unpacked)).toBe(true);
 
           // now we'll make sure we can go to strings and back
-          const serializedStr = JSON.stringify(serialized);
+          let serializedStr;
+          try {
+            serializedStr = JSON.stringify(serialized);
+          } catch (e: any) {
+            console.warn(
+              `unexpected JSON stringify failure for ${typeName}: ${serialized}`
+            );
+            throw e;
+          }
+
           const backToObject = JSON.parse(serializedStr);
           const deserialized2 = codec.decode(backToObject);
           expect(equality(value, eitherRightOrFail(deserialized2))).toBe(true);

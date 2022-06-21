@@ -3,7 +3,6 @@ import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
 import {getBallotCodecsForContext} from '../../../src/electionguard/ballot/json';
 import {testCodecLaws} from '../core/testCodecLaws';
 import * as G from './generators';
-import * as M from '../../../src/electionguard/ballot/manifest';
 
 function testBallotCodecsForContext(context: GroupContext) {
   //   const cCodecs = getCoreCodecsForContext(context);
@@ -85,6 +84,31 @@ function testBallotCodecsForContext(context: GroupContext) {
     bCodecs.manifestContactInformationCodec,
     (a, b) => a.equals(b)
   );
+
+  /* -- useful for trying to narrow things down if we're
+     -- failing to encode/decode an entire Manifest
+  testCodecLaws(
+    context.name,
+    'BallotStyle',
+    G.electionDescription(context).map(m => m.ballotStyles[0]),
+    bCodecs.manifestBallotStyleCodec,
+    (a, b) => a.equals(b)
+  );
+  testCodecLaws(
+    context.name,
+    'Candidates',
+    G.electionDescription(context).map(m => m.candidates[0]),
+    bCodecs.manifestCandidateCodec,
+    (a, b) => a.equals(b)
+  );
+  testCodecLaws(
+    context.name,
+    'Contests',
+    G.electionDescription(context).map(m => m.contests[0]),
+    bCodecs.manifestContestDescriptionCodec,
+    (a, b) => a.equals(b)
+  );
+  */
   testCodecLaws(
     context.name,
     'Manifest',
