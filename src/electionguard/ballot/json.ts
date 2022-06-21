@@ -414,7 +414,7 @@ export class Codecs {
       pipe(
         D.struct({
           object_id: D.string,
-          ballot_name: manifestInternationalizedTextDecoder,
+          name: manifestInternationalizedTextDecoder,
           party_id: D.nullable(D.string),
           image_uri: D.nullable(D.string),
           is_write_in: D.nullable(D.boolean),
@@ -424,7 +424,7 @@ export class Codecs {
             new M.ManifestCandidate(
               context,
               s.object_id,
-              s.ballot_name,
+              s.name,
               s.party_id === null ? undefined : s.party_id,
               s.image_uri === null ? undefined : s.image_uri,
               !!s.is_write_in
@@ -435,7 +435,7 @@ export class Codecs {
     const manifestCandidateEncoder: E.Encoder<unknown, M.ManifestCandidate> = {
       encode: input => ({
         object_id: input.candidateId,
-        ballot_name: manifestInternationalizedTextEncoder.encode(input.name),
+        name: manifestInternationalizedTextEncoder.encode(input.name),
         party_id: input.partyId === undefined ? null : input.partyId,
         image_uri: input.imageUri === undefined ? null : input.imageUri,
         is_write_in: input.isWriteIn,
@@ -720,7 +720,7 @@ export class Codecs {
           description_hash: this.coreCodecs.elementModQCodec,
           ciphertext: this.coreCodecs.elGamalCiphertextCodec,
           crypto_hash: this.coreCodecs.elementModQCodec,
-          nonce: D.string,
+          nonce: D.nullable(D.string),
           is_placeholder_selection: D.boolean,
           proof: this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec,
           extended_data: D.nullable(
@@ -829,11 +829,12 @@ export class Codecs {
         object_id: D.string,
         style_id: D.string,
         manifest_hash: this.coreCodecs.elementModQCodec,
-        code_hash: this.coreCodecs.elementModQCodec,
+        code_seed: this.coreCodecs.elementModQCodec,
         contests: D.array(submittedContestDecoder),
         code: this.coreCodecs.elementModQCodec,
         timestamp: D.number,
         crypto_hash: this.coreCodecs.elementModQCodec,
+        nonce: D.nullable(D.string),
         state: D.number,
       }),
       D.map(
@@ -842,7 +843,7 @@ export class Codecs {
             s.object_id,
             s.style_id,
             s.manifest_hash,
-            s.code_hash,
+            s.code_seed,
             s.code,
             s.contests,
             s.timestamp,
@@ -859,7 +860,7 @@ export class Codecs {
         manifest_hash: this.coreCodecs.elementModQCodec.encode(
           input.manifestHash
         ),
-        code_hash: this.coreCodecs.elementModQCodec.encode(input.codeSeed),
+        code_seed: this.coreCodecs.elementModQCodec.encode(input.codeSeed),
         contests: this.coreCodecs.elementModQCodec.encode(input.code),
         code: input.contests.map(submittedContestEncoder.encode),
         timestamp: input.timestamp,

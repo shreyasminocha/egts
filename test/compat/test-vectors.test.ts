@@ -9,8 +9,6 @@ import {
   bigIntContext4096,
   bigIntContextFromConstants,
 } from '../../src/electionguard/core/group-bigint';
-import {pipe} from 'fp-ts/function';
-import {fold} from 'fp-ts/Either';
 import {GroupContext} from '../../src/electionguard/core/group-common';
 
 describe('compat', () => {
@@ -30,38 +28,15 @@ describe('compat', () => {
       bigIntContext4096()
     ).manifestCodec.decode(artifacts.manifest);
 
-    let manifest;
-    pipe(
-      possiblyManifest,
-      fold(
-        err => {
-          throw new Error(JSON.stringify(err, null, 4));
-        },
-        w => {
-          manifest = w;
-          expect(manifest).toBeTruthy();
-          console.log(manifest.cryptoHashElement);
-        }
-      )
-    );
+    const manifest = eitherRightOrFail(possiblyManifest);
+    expect(manifest).toBeTruthy();
 
     const possiblyElectionContext = getCoreCodecsForContext(
       bigIntContext4096()
     ).electionContextCodec.decode(artifacts.context);
 
-    let electionContext;
-    pipe(
-      possiblyElectionContext,
-      fold(
-        err => {
-          throw new Error(JSON.stringify(err, null, 4));
-        },
-        w => {
-          electionContext = w;
-          expect(electionContext).toBeTruthy();
-        }
-      )
-    );
+    const electionContext = eitherRightOrFail(possiblyElectionContext);
+    expect(electionContext).toBeTruthy();
   });
 
   test('can decode the sample data', async () => {
@@ -86,22 +61,19 @@ describe('compat', () => {
 
     content = await fs.readFile(path.join(dir, 'manifest.json'), 'utf-8');
     const manifestJson = JSON.parse(content);
-
     const possiblyManifest = getBallotCodecsForContext(
       groupContext as GroupContext
     ).manifestCodec.decode(manifestJson);
-
     const manifest = eitherRightOrFail(possiblyManifest);
-    console.log(manifest.cryptoHashElement.cryptoHashString);
+    expect(manifest).toBeTruthy();
 
     content = await fs.readFile(path.join(dir, 'context.json'), 'utf-8');
     const contextJson = JSON.parse(content);
-
     const possiblyContext = getCoreCodecsForContext(
       groupContext as GroupContext
     ).electionContextCodec.decode(contextJson);
-
     const context = eitherRightOrFail(possiblyContext);
+    expect(context).toBeTruthy();
 
     content = await fs.readFile(
       path.join(
@@ -114,13 +86,12 @@ describe('compat', () => {
       'utf-8'
     );
     const plaintextBallotJson = JSON.parse(content);
-
     const possiblyPlaintextBallot =
       getBallotCodecsForContext(groupContext).plaintextBallotCodec.decode(
         plaintextBallotJson
       );
-
     const plaintextBallot = eitherRightOrFail(possiblyPlaintextBallot);
+    expect(plaintextBallot).toBeTruthy();
 
     content = await fs.readFile(
       path.join(
@@ -133,13 +104,12 @@ describe('compat', () => {
       'utf-8'
     );
     const ciphertextBallotJson = JSON.parse(content);
-
     const possiblyCiphertextBallot =
       getBallotCodecsForContext(groupContext).ciphertextBallotCodec.decode(
         ciphertextBallotJson
       );
-
     const ciphertextBallot = eitherRightOrFail(possiblyCiphertextBallot);
+    expect(ciphertextBallot).toBeTruthy();
 
     content = await fs.readFile(
       path.join(
@@ -150,12 +120,11 @@ describe('compat', () => {
       'utf-8'
     );
     const submittedBallotJson = JSON.parse(content);
-
     const possiblySubmittedBallot =
       getBallotCodecsForContext(groupContext).submittedBallotCodec.decode(
         submittedBallotJson
       );
-
     const submittedBallot = eitherRightOrFail(possiblySubmittedBallot);
+    expect(submittedBallot).toBeTruthy();
   });
 });
