@@ -87,10 +87,6 @@ class ElementModQImpl implements ElementModQ {
     return `ElementModQ(${this.toHex()})`;
   }
 
-  toJSON(): string {
-    return this.toString();
-  }
-
   toUInt256(): UInt256 {
     return UInt256.createFrom(this.value);
   }
@@ -160,10 +156,6 @@ class ElementModPImpl implements ElementModP {
 
   toString(): string {
     return `ElementModP(${this.toHex()})`;
-  }
-
-  toJSON(): string {
-    return this.toString();
   }
 
   isInBounds(): boolean {
