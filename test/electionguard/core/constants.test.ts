@@ -1,5 +1,7 @@
 import {
+  bigIntContext3072,
   bigIntContext4096,
+  bigIntContextFromConstants,
   eitherRightOrFail,
   getCoreCodecsForContext,
 } from '../../../src/electionguard';
@@ -18,6 +20,20 @@ describe('Core constants', () => {
     const backAgain = codecs.electionConstantsCodec.decode(external);
     expect(Either.isRight(backAgain)).toBe(true);
     expect(eitherRightOrFail(backAgain)).toEqual(internalConstants);
+    const contextFromConstants = bigIntContextFromConstants(internalConstants);
+    expect(contextFromConstants?.name ?? 'fail').toEqual(context.name);
+  });
+
+  test('3072-bit production constants from internal', () => {
+    const context = bigIntContext3072();
+    const codecs = getCoreCodecsForContext(context);
+    const internalConstants = context.electionConstants;
+    const external = codecs.electionConstantsCodec.encode(internalConstants);
+    const backAgain = codecs.electionConstantsCodec.decode(external);
+    expect(Either.isRight(backAgain)).toBe(true);
+    expect(eitherRightOrFail(backAgain)).toEqual(internalConstants);
+    const contextFromConstants = bigIntContextFromConstants(internalConstants);
+    expect(contextFromConstants?.name ?? 'fail').toEqual(context.name);
   });
 
   test('4096-bit production constants from external', () => {

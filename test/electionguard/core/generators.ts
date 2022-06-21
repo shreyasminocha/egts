@@ -16,7 +16,7 @@ import {
   DisjunctiveChaumPedersenProofKnownNonce,
 } from '../../../src/electionguard/core/chaum-pedersen';
 import {UInt256} from '../../../src/electionguard/core/uint256';
-import {numberRange} from '../../../src/electionguard';
+import {ElectionConstants, numberRange} from '../../../src/electionguard';
 
 /** Generates arbitrary UInt256 values. */
 export function uInt256(): fc.Arbitrary<UInt256> {
@@ -66,6 +66,13 @@ export function elGamalKeypair(
   context: GroupContext
 ): fc.Arbitrary<ElGamalKeypair> {
   return elementModQ(context, 2).map(x => ElGamalKeypair.createFromSecret(x));
+}
+
+export function electionConstants(
+  context: GroupContext
+): fc.Arbitrary<ElectionConstants> {
+  // there's exactly one set of constants for a given GroupContext
+  return fc.constant(context.electionConstants);
 }
 
 interface ElGamalCiphertextAndContext {

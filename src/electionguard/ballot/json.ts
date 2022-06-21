@@ -62,6 +62,11 @@ class Codecs {
     unknown,
     M.ManifestAnnotatedString
   >;
+  readonly manifestElectionTypeCodec: C.Codec<
+    unknown,
+    unknown,
+    M.ManifestElectionType
+  >;
   readonly manifestContactInformationCodec: C.Codec<
     unknown,
     unknown,
@@ -162,6 +167,28 @@ class Codecs {
     this.manifestInternationalizedTextCodec = C.make(
       manifestInternationalizedTextDecoder,
       manifestInternationalizedTextEncoder
+    );
+
+    const manifestElectionTypeEncoder: E.Encoder<
+      unknown,
+      M.ManifestElectionType
+    > = {
+      encode: input => M.ManifestElectionType[input],
+    };
+
+    const manifestElectionTypeDecoder: D.Decoder<
+      unknown,
+      M.ManifestElectionType
+    > = pipe(
+      D.string,
+      D.map(
+        s => M.ManifestElectionType[s as keyof typeof M.ManifestElectionType]
+      )
+    );
+
+    this.manifestElectionTypeCodec = C.make(
+      manifestElectionTypeDecoder,
+      manifestElectionTypeEncoder
     );
 
     const manifestSelectionDescriptionDecoder: D.Decoder<

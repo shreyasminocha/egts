@@ -2,6 +2,7 @@ import {Arbitrary} from 'fast-check';
 import * as C from 'io-ts/Codec';
 import * as fc from 'fast-check';
 import {
+  electionConstants,
   elementModP,
   elementModQ,
   elGamalCiphertextAndContext,
@@ -19,7 +20,7 @@ import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
 import {HashedElGamalCiphertext} from '../../../src/electionguard/core/hashed-elgamal';
 import {arraysEqual} from '../../../src/electionguard/core/utils';
 
-function testCodecLaws<T>(
+export function testCodecLaws<T>(
   contextName: string,
   typeName: string,
   generator: Arbitrary<T>,
@@ -142,6 +143,13 @@ function testCodecsForContext(context: GroupContext) {
         return HashedElGamalCiphertext.encrypt(kp, bytes, nonce);
       }),
     codecs.hashedElGamalCiphertextCodec,
+    (a, b) => a.equals(b)
+  );
+  testCodecLaws(
+    context.name,
+    'ElectionConstants',
+    electionConstants(context),
+    codecs.electionConstantsCodec,
     (a, b) => a.equals(b)
   );
 }
