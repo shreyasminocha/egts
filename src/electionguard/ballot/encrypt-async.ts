@@ -73,12 +73,16 @@ export class AsyncBallotEncryptor {
 
     const bCodecs = getBallotCodecsForContext(group);
     const cCodecs = getCoreCodecsForContext(group);
+
+    log.info('encrypt-async.create', 'about to decode inputs');
     const manifest = eitherRightOrFail(
       bCodecs.manifestCodec.decode(manifestObj)
     );
+    log.info('encrypt-async.create', 'manifest decoded');
     const context = eitherRightOrFail(
       cCodecs.electionContextCodec.decode(contextObj)
     );
+    log.info('encrypt-async.create', 'electionContext decoded');
 
     if (masterNonce === undefined) masterNonce = group.randQ();
 

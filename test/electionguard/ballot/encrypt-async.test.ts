@@ -1,6 +1,9 @@
 import fc from 'fast-check';
 import * as log from '../../../src/electionguard/core/logging';
-import {bigIntContext3072} from '../../../src/electionguard';
+import {
+  bigIntContext3072,
+  getCoreCodecsForContext,
+} from '../../../src/electionguard';
 import {
   encryptBallot,
   EncryptionState,
@@ -8,13 +11,14 @@ import {
 import {AsyncBallotEncryptor} from '../../../src/electionguard/ballot/encrypt-async';
 import {elementModQ, fcFastConfig} from '../core/generators';
 import {electionAndBallots} from './generators';
+import {getBallotCodecsForContext} from '../../../src/electionguard/ballot/json';
+import * as Either from 'fp-ts/lib/Either';
 
 const groupContext = bigIntContext3072();
 describe('Async encryption wrapper', () => {
   afterAll(() => {
-    const allLogs = log.getAllLogs();
-    console.log('After-action report for async-encryption:');
-    allLogs.forEach(l => console.log(l));
+    console.info('After-action report for async-encryption:');
+    log.consoleAllLogs();
   });
 
   test('Encrypt conventionally & with async; idential result', async () => {
@@ -41,10 +45,25 @@ describe('Async encryption wrapper', () => {
             timestamp
           );
 
+          const bcodecs = getBallotCodecsForContext(groupContext);
+          const ecodecs = getCoreCodecsForContext(groupContext);
+          const manifestJson = bcodecs.manifestCodec.encode(
+            eb.manifest
+          ) as object;
+          const electionContextJson = ecodecs.electionContextCodec.encode(
+            eb.electionContext
+          ) as object;
+
+          const manifestDecoded = bcodecs.manifestCodec.decode(manifestJson);
+          const electionContextDecoded =
+            ecodecs.electionContextCodec.decode(electionContextJson);
+          expect(Either.isRight(manifestDecoded)).toBeTruthy();
+          expect(Either.isRight(electionContextDecoded)).toBeTruthy();
+
           log.info('encrypt-async-test', 'initializing async encryption');
           const asyncEncryptor = AsyncBallotEncryptor.create(
-            eb.manifest,
-            eb.electionContext,
+            manifestJson,
+            electionContextJson,
             true,
             plaintextBallot.ballotStyleId,
             plaintextBallot.ballotId,

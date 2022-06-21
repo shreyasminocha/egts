@@ -71,3 +71,8 @@ function common(
 export function getAllLogs(): string[] {
   return allLogs;
 }
+
+/** Prints all the logs to the console. */
+export function consoleAllLogs() {
+  console.log(allLogs.join('\n'));
+}
