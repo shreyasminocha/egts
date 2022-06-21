@@ -28,11 +28,11 @@ export class Manifest implements CryptoHashableElement {
     readonly electionType: ManifestElectionType,
     readonly startDate: string, // ISO 8601 formatted date/time
     readonly endDate: string, // ISO 8601 formatted date/time
-    readonly geopoliticalUnits: Array<ManifestGeopoliticalUnit>,
-    readonly parties: Array<ManifestParty>,
-    readonly candidates: Array<ManifestCandidate>,
-    readonly contests: Array<ManifestContestDescription>,
-    readonly ballotStyles: Array<ManifestBallotStyle>,
+    readonly geopoliticalUnits: Array<ManifestGeopoliticalUnit | undefined>,
+    readonly parties: Array<ManifestParty | undefined>,
+    readonly candidates: Array<ManifestCandidate | undefined>,
+    readonly contests: Array<ManifestContestDescription | undefined>,
+    readonly ballotStyles: Array<ManifestBallotStyle | undefined>,
     readonly name: ManifestInternationalizedText | undefined,
     readonly contactInformation: ManifestContactInformation | undefined
   ) {
@@ -79,6 +79,7 @@ export class Manifest implements CryptoHashableElement {
     }
 
     const gpIds = mbs.geopoliticalUnitIds;
+    if (gpIds === undefined) return [];
     return this.contests.filter(c => gpIds.includes(c.geopoliticalUnitId));
   }
 }
@@ -348,8 +349,8 @@ export class ManifestBallotStyle
   constructor(
     context: GroupContext,
     readonly ballotStyleId: string,
-    readonly geopoliticalUnitIds: Array<string>,
-    readonly partyIds: Array<string>,
+    readonly geopoliticalUnitIds: Array<string> | undefined,
+    readonly partyIds: Array<string> | undefined,
     readonly imageUri: string | undefined
   ) {
     this.cryptoHashElement = hashElements(
@@ -436,9 +437,9 @@ export class ManifestContactInformation
 
   constructor(
     context: GroupContext,
-    readonly addressLine: Array<string>,
-    readonly email: Array<ManifestAnnotatedString>,
-    readonly phone: Array<ManifestAnnotatedString>,
+    readonly addressLine: Array<string> | undefined,
+    readonly email: Array<ManifestAnnotatedString> | undefined,
+    readonly phone: Array<ManifestAnnotatedString> | undefined,
     readonly name: string | undefined
   ) {
     this.cryptoHashElement = hashElements(
@@ -618,7 +619,7 @@ export class ManifestContestDescription
     readonly geopoliticalUnitId: string,
     readonly voteVariation: ManifestVoteVariationType,
     readonly numberElected: number,
-    readonly votesAllowed: number,
+    readonly votesAllowed: number | undefined,
     readonly name: string,
     readonly selections: Array<ManifestSelectionDescription>,
     readonly ballotTitle: ManifestInternationalizedText | undefined,

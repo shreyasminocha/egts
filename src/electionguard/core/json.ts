@@ -204,9 +204,9 @@ class Codecs {
       unknown,
       EdgeCaseConfiguration
     > = pipe(
-      D.struct({
-        allow_overvotes: D.nullable(D.boolean),
-        max_votes: D.nullable(D.number),
+      D.partial({
+        allow_overvotes: D.boolean,
+        max_votes: D.number,
       }),
       D.map(
         // default values taken from the Python code
@@ -239,19 +239,24 @@ class Codecs {
       D.struct({
         number_of_guardians: D.number,
         quorum: D.number,
-        joint_public_key: elementModPDecoder,
+        elgamal_public_key: elementModPDecoder,
         manifest_hash: elementModQDecoder,
         crypto_base_hash: elementModQDecoder,
         crypto_extended_base_hash: elementModQDecoder,
         commitment_hash: elementModQDecoder,
-        extended_data: D.nullable(D.record(D.string)),
+        configuration: edgeCaseConfigurationDecoder,
       }),
+      D.intersect(
+        D.partial({
+          extended_data: D.nullable(D.record(D.string)),
+        })
+      ),
       D.map(
         s =>
           new ElectionContext(
             s.number_of_guardians,
             s.quorum,
-            new ElGamalPublicKey(s.joint_public_key),
+            new ElGamalPublicKey(s.elgamal_public_key),
             s.manifest_hash,
             s.crypto_base_hash,
             s.crypto_extended_base_hash,
@@ -259,7 +264,8 @@ class Codecs {
             // TODO: verify this is the way handle an optional record field
             s.extended_data === null || s.extended_data === undefined
               ? undefined
-              : s.extended_data
+              : s.extended_data,
+            s.configuration
           )
       )
     );
@@ -269,7 +275,9 @@ class Codecs {
         return {
           number_of_guardians: e.numberOfGuardians,
           quorum: e.quorum,
-          joint_public_key: elementModPEncoder.encode(e.jointPublicKey.element),
+          elgamal_public_key: elementModPEncoder.encode(
+            e.jointPublicKey.element
+          ),
           manifest_hash: elementModQEncoder.encode(e.manifestHash),
           crypto_base_hash: elementModQEncoder.encode(e.cryptoBaseHash),
           crypto_extended_base_hash: elementModQEncoder.encode(
@@ -277,7 +285,11 @@ class Codecs {
           ),
           commitment_hash: elementModQEncoder.encode(e.commitmentHash),
           // TODO: verify this is the way to handle an optional record field
-          extended_data: e.extendedData,
+          extended_data: e.extendedData === undefined ? null : e.extendedData,
+          configuration:
+            e.configuration === undefined
+              ? null
+              : edgeCaseConfigurationEncoder.encode(e.configuration),
         };
       },
     };
@@ -610,7 +622,7 @@ export function getCoreCodecsForContext(context: GroupContext): Codecs {
  */
 export function eitherRightOrFail<E, T>(input: Either.Either<E, T>): T {
   if (Either.isLeft(input)) {
-    throw input.left;
+    throw new Error(`${JSON.stringify(input.left, null, 2)}`);
   } else {
     return input.right;
   }
