@@ -34,7 +34,7 @@ export class CiphertextBallot implements ElectionObjectBase {
     readonly contests: Array<CiphertextContest>,
     readonly timestamp: number,
     readonly cryptoHash: ElementModQ,
-    readonly masterNonce: ElementModQ
+    readonly nonce: ElementModQ
   ) {}
 
   get objectId(): string {
@@ -51,16 +51,16 @@ export class CiphertextBallot implements ElectionObjectBase {
       matchingArraysOfOrderedElectionObjects(other.contests, this.contests) &&
       other.timestamp === this.timestamp &&
       other.cryptoHash.equals(this.cryptoHash) &&
-      other.masterNonce.equals(this.masterNonce)
+      other.nonce.equals(this.nonce)
     );
   }
 
-  ballotNonce(): ElementModQ {
+  hashedBallotNonce(): ElementModQ {
     return hashElements(
-      this.masterNonce.context,
+      this.nonce.context,
       this.manifestHash,
       this.ballotId,
-      this.masterNonce
+      this.nonce
     );
   }
 

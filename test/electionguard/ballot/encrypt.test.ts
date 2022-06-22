@@ -159,7 +159,7 @@ describe('Election / ballot encryption', () => {
           );
 
           const ballotNonces: bigint[] = encryptedBallots.map(ballot =>
-            ballot.ballotNonce().toBigint()
+            ballot.nonce.toBigint()
           );
 
           const allBallotNonces = selectionNonces
