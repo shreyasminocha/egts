@@ -53,8 +53,8 @@ function undefinedToNull<G>(n: G | undefined): G | null {
  * a 4096-bit group and encode to a 3072-bit group, the results are not going to
  * be correct.
  */
-export class Codecs {
-  readonly coreCodecs: CJ.Codecs;
+export class BallotCodecs {
+  readonly coreCodecs: CJ.CoreCodecs;
   readonly manifestLanguageCodec: C.Codec<unknown, unknown, M.ManifestLanguage>;
   readonly manifestInternationalizedTextCodec: C.Codec<
     unknown,
@@ -1179,13 +1179,13 @@ export class Codecs {
   }
 }
 
-const codecs = new Map<string, Codecs>();
+const codecs = new Map<string, BallotCodecs>();
 
-export function getBallotCodecsForContext(context: GroupContext): Codecs {
+export function getBallotCodecsForContext(context: GroupContext): BallotCodecs {
   let result = codecs.get(context.name);
   if (result === undefined) {
-    result = new Codecs(context);
-    codecs.set(context.name, new Codecs(context));
+    result = new BallotCodecs(context);
+    codecs.set(context.name, new BallotCodecs(context));
   }
   return result;
 }

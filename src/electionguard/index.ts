@@ -21,3 +21,8 @@ export * from './ballot/ciphertext-ballot';
 export * from './ballot/election-object-base';
 export * from './ballot/plaintext-ballot';
 export * from './ballot/submitted-ballot';
+export * from './ballot/encrypt';
+export * from './ballot/encrypt-async';
+export * from './ballot/json';
+export * from './ballot/manifest';
+export * from './ballot/decrypt';

@@ -54,7 +54,7 @@ import * as log from './logging';
  * a 4096-bit group and encode to a 3072-bit group, the results are not going to
  * be correct.
  */
-export class Codecs {
+export class CoreCodecs {
   readonly uInt8ArrayCodec: C.Codec<unknown, string, Uint8Array>;
   readonly uInt256Codec: C.Codec<unknown, string, UInt256>;
   readonly elementModPCodec: C.Codec<unknown, string, ElementModP>;
@@ -601,14 +601,14 @@ export class Codecs {
   }
 }
 
-const codecs = new Map<string, Codecs>();
+const codecs = new Map<string, CoreCodecs>();
 
 /** Given a context, returns all the codecs for that context.  */
-export function getCoreCodecsForContext(context: GroupContext): Codecs {
+export function getCoreCodecsForContext(context: GroupContext): CoreCodecs {
   let result = codecs.get(context.name);
   if (result === undefined) {
-    result = new Codecs(context);
-    codecs.set(context.name, new Codecs(context));
+    result = new CoreCodecs(context);
+    codecs.set(context.name, new CoreCodecs(context));
   }
   return result;
 }
