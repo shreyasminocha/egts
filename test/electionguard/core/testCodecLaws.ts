@@ -4,6 +4,7 @@ import * as fc from 'fast-check';
 import {fcFastConfig} from './generators';
 import {eitherRightOrFail} from '../../../src/electionguard/core/json';
 import * as Either from 'fp-ts/lib/Either';
+import * as log from '../../../src/electionguard/core/logging';
 
 /** Evaluates any codec and generator for correctness. */
 export function testCodecLaws<T>(
@@ -20,7 +21,10 @@ export function testCodecLaws<T>(
           const serialized = codec.encode(value);
           const deserialized = codec.decode(serialized);
           if (Either.isLeft(deserialized)) {
-            console.warn(`deserialization failure for ${typeName}`);
+            log.warn(
+              'testCodecLaws',
+              `deserialization failure for ${typeName}`
+            );
           }
 
           const unpacked = eitherRightOrFail(deserialized);
@@ -31,7 +35,8 @@ export function testCodecLaws<T>(
           try {
             serializedStr = JSON.stringify(serialized);
           } catch (e: unknown) {
-            console.warn(
+            log.warn(
+              'testCodecLaws',
               `unexpected JSON stringify failure for ${typeName}: ${serialized}`
             );
             throw e;

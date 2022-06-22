@@ -45,16 +45,22 @@ describe('Async encryption wrapper', () => {
             timestamp
           );
 
+          log.info('encrypt-async-test', 'getting codecs');
           const bcodecs = getBallotCodecsForContext(groupContext);
           const ecodecs = getCoreCodecsForContext(groupContext);
+
+          log.info('encrypt-async-test', 'encoding manifest');
           const manifestJson = bcodecs.manifestCodec.encode(
             eb.manifest
           ) as object;
+          log.info('encrypt-async-test', 'encoding election context');
           const electionContextJson = ecodecs.electionContextCodec.encode(
             eb.electionContext
           ) as object;
 
+          log.info('encrypt-async-test', 'decoding manifest');
           const manifestDecoded = bcodecs.manifestCodec.decode(manifestJson);
+          log.info('encrypt-async-test', 'decoding election context');
           const electionContextDecoded =
             ecodecs.electionContextCodec.decode(electionContextJson);
           expect(Either.isRight(manifestDecoded)).toBeTruthy();

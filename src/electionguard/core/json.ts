@@ -244,11 +244,11 @@ export class Codecs {
         crypto_base_hash: elementModQDecoder,
         crypto_extended_base_hash: elementModQDecoder,
         commitment_hash: elementModQDecoder,
-        configuration: edgeCaseConfigurationDecoder,
       }),
       D.intersect(
         D.partial({
           extended_data: D.nullable(D.record(D.string)),
+          configuration: D.nullable(edgeCaseConfigurationDecoder),
         })
       ),
       D.map(
@@ -262,10 +262,8 @@ export class Codecs {
             s.crypto_extended_base_hash,
             s.commitment_hash,
             // TODO: verify this is the way handle an optional record field
-            s.extended_data === null || s.extended_data === undefined
-              ? undefined
-              : s.extended_data,
-            s.configuration
+            s.extended_data || undefined,
+            s.configuration || undefined
           )
       )
     );
@@ -285,11 +283,11 @@ export class Codecs {
           ),
           commitment_hash: elementModQEncoder.encode(e.commitmentHash),
           // TODO: verify this is the way to handle an optional record field
-          extended_data: e.extendedData === undefined ? null : e.extendedData,
+          extended_data: e.extendedData || null,
           configuration:
-            e.configuration === undefined
-              ? null
-              : edgeCaseConfigurationEncoder.encode(e.configuration),
+            e.configuration !== undefined
+              ? edgeCaseConfigurationEncoder.encode(e.configuration)
+              : undefined,
         };
       },
     };
@@ -622,7 +620,15 @@ export function getCoreCodecsForContext(context: GroupContext): Codecs {
  */
 export function eitherRightOrFail<E, T>(input: Either.Either<E, T>): T {
   if (Either.isLeft(input)) {
-    throw new Error(`${JSON.stringify(input.left, null, 2)}`);
+    // Only printing a few lines of the text, because this can become
+    // enormous for some of the types we're working with; set a breakpoint
+    // here to inspect the data directly, if necessary.
+    throw new Error(
+      `Unexpected failure: ${JSON.stringify(input.left, null, 2).substring(
+        0,
+        200
+      )}`
+    );
   } else {
     return input.right;
   }
