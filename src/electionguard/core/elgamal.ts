@@ -18,10 +18,18 @@ export class ElGamalPublicKey implements CryptoHashableElement {
   readonly inverseKey: ElementModP;
 
   constructor(e: ElementModP) {
+    if (!e.isValidResidue()) {
+      throw new Error(
+        `unexpected ElGamalPublicKey error: given key isn't a valid residue: ${e.toBigint()}`
+      );
+    }
+
     // The public key is frequently used as the base for exponentiation, so
     // we want to do the PowRadix acceleration for it.
     this.element = e.acceleratePow();
-    this.inverseKey = multInvP(e); // not accelerated because not used for pow
+
+    // The inverse isn't used for exponentiation, so no benefit in acceleration.
+    this.inverseKey = multInvP(e);
   }
 
   get cryptoHashElement(): Element {
@@ -99,11 +107,13 @@ export class ElGamalKeypair {
     const context = secretKey.context;
     if (secretKey.lessThan(context.TWO_MOD_Q))
       throw new Error('ElGamal requires the secret key to be at least two');
-    else
-      return new ElGamalKeypair(
+    else {
+      const kp = new ElGamalKeypair(
         new ElGamalPublicKey(context.gPowP(secretKey)),
         new ElGamalSecretKey(secretKey)
       );
+      return kp;
+    }
   }
 
   /** Creates a fresh keypair using a strong, random value. */

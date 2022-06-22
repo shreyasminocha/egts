@@ -26,6 +26,7 @@ import {
 } from './constants';
 import {UInt256} from './uint256';
 import {PowRadix} from './powradix';
+import * as log from './logging';
 
 // This file exports the functions `bigIntContext3072()` and `bigIntContext4096()`, which return
 // instances of the GroupContext interface found in group-common.ts, and which implements all
@@ -172,7 +173,11 @@ class ElementModPImpl implements ElementModP {
       this.context.Q,
       this.context.P
     );
-    return this.isInBounds() && residue === BIG_ONE;
+    const result = residue === BIG_ONE && this.isInBounds();
+    if (!result) {
+      log.warn('GroupBigInt', `invalid residue found for ${this.value}`);
+    }
+    return result;
   }
 
   isZero(): boolean {

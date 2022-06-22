@@ -45,8 +45,8 @@ export interface Element extends CryptoHashableString {
 /**
  * General-purpose holder of elements in [0, Q). The constructor
  * and concrete type are not exposed. Instead use the helper
- * functions, like {@link createElementModQ}, which will check
- * for errors.
+ * functions, like {@link GroupContext[createElementModQ]},
+ * which will check for errors.
  */
 export interface ElementModQ extends Element {
   equals(other: ElementModQ): boolean;
@@ -61,8 +61,8 @@ export interface ElementModQ extends Element {
 /**
  * General-purpose holder of elements in [0, P). The constructor
  * and concrete type are not exposed. Instead use the helper
- * functions, like {@link createElementModP}, which will check
- * for errors.
+ * functions, like {@link GroupContext[createElementModP]},
+ * which will check for errors.
  */
 export interface ElementModP extends Element {
   equals(other: ElementModP): boolean;

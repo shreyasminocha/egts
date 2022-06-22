@@ -1,6 +1,5 @@
 import {ElectionContext} from '../core/constants';
-import {bigIntContext4096} from '../core/group-bigint';
-import {ElementModQ} from '../core/group-common';
+import {ElementModQ, GroupContext} from '../core/group-common';
 import {hashElements} from '../core/hash';
 import {eitherRightOrFail, getCoreCodecsForContext} from '../core/json';
 import {mapFrom, stringSetsEqual} from '../core/utils';
@@ -38,13 +37,14 @@ export class AsyncBallotEncryptor {
   readonly sequenceOrderMap: Map<string, number>;
   readonly contestIds: string[];
   readonly encryptedContests: Map<string, Promise<CiphertextContest>>;
-  readonly primaryNonce: ElementModQ;
+  readonly ballotNonce: ElementModQ;
 
   /**
    * Builds an instance of AsyncBallotEncryptor with good default values
    * when appropriate.
+   * @param group GroupContext for all mathematical operations
    * @param manifestObj A JavaScript object corresponding to an ElectionGuard Manifest.
-   * @param contextObj A JavaScript object corresponding to an ElectionGuard ElectionContext.
+   * @param electionContextObj A JavaScript object corresponding to an ElectionGuard ElectionContext.
    * @param validate Specifies whether each encryption is validated immediately
    *   after it is created. Significant performance penalty, but might catch
    *   one-in-a-million hardware failures on unreliable clients.
@@ -52,25 +52,22 @@ export class AsyncBallotEncryptor {
    *   names the ballot style to be used for this particular ballot.
    * @param ballotId Every ballot needs a string identifier which should be globally
    *   unique.
-   * @param masterNonce The root of all randomness used for encrypting the ballot. If
+   * @param ballotNonce The root of all randomness used for encrypting the ballot. If
    *  not provided, a new random number will be securely generated.
    * @param timestamp Optional timestamp for the ballot, in seconds since the Unix epoch.
    *   If not provided, the current time will be used (Date.now() / 1000) when the
    *   final ballot is completed and returned.
    */
   static create(
+    group: GroupContext,
     manifestObj: object,
-    contextObj: object,
+    electionContextObj: object,
     validate: boolean,
     ballotStyleId: string,
     ballotId: string,
-    masterNonce?: ElementModQ,
+    ballotNonce?: ElementModQ,
     timestamp?: number
   ): AsyncBallotEncryptor {
-    // While ElectionGuard-TypeScript supports 3072-bit encryption as well as 4096-bit encryption,
-    // everybody else just does 4096-bit, so we'll hard-code that here.
-    const group = bigIntContext4096();
-
     const bCodecs = getBallotCodecsForContext(group);
     const cCodecs = getCoreCodecsForContext(group);
 
@@ -78,19 +75,21 @@ export class AsyncBallotEncryptor {
     const manifest = eitherRightOrFail(
       bCodecs.manifestCodec.decode(manifestObj)
     );
+
     log.info('encrypt-async.create', 'manifest decoded');
-    const context = eitherRightOrFail(
-      cCodecs.electionContextCodec.decode(contextObj)
+    const electionContext = eitherRightOrFail(
+      cCodecs.electionContextCodec.decode(electionContextObj)
     );
     log.info('encrypt-async.create', 'electionContext decoded');
 
-    if (masterNonce === undefined) masterNonce = group.randQ();
+    if (ballotNonce === undefined) ballotNonce = group.randQ();
 
     return new AsyncBallotEncryptor(
       manifest,
-      context,
+      electionContext,
       validate,
-      masterNonce,
+      group,
+      ballotNonce,
       ballotStyleId,
       ballotId,
       timestamp
@@ -104,10 +103,11 @@ export class AsyncBallotEncryptor {
    * types like the manifest, and it will let you know if there's
    * a problem.
    * @param manifest Defines everything about the election contests, candidates, etc.
-   * @param context Defines everything about the election cryptographic settings.
+   * @param electionContext Defines everything about the election cryptographic settings.
    * @param validate Specifies whether each encryption is validated immediately
    *   after it is created. Significant performance penalty, but might catch
    *   one-in-a-million hardware failures on unreliable clients.
+   * @param group GroupContext for all mathematical operations
    * @param masterNonce The root of all randomness used for encrypting the ballot.
    * @param ballotStyleId The manifest might specify multiple ballot styles. This
    *   names the ballot style to be used for this particular ballot.
@@ -119,8 +119,9 @@ export class AsyncBallotEncryptor {
    */
   constructor(
     manifest: Manifest,
-    context: ElectionContext,
+    electionContext: ElectionContext,
     validate: boolean,
+    readonly group: GroupContext,
     readonly masterNonce: ElementModQ,
     readonly ballotStyleId: string,
     readonly ballotId: string,
@@ -129,14 +130,14 @@ export class AsyncBallotEncryptor {
     this.encryptionState = new EncryptionState(
       masterNonce.context,
       manifest,
-      context,
+      electionContext,
       validate
     );
 
     // This copies some code in encryptBallot(); the ballotNonce is
     // hashed deeper as we go.
-    this.primaryNonce = hashElements(
-      masterNonce.context,
+    this.ballotNonce = hashElements(
+      group,
       this.encryptionState.manifestHash,
       ballotId,
       masterNonce
@@ -179,6 +180,13 @@ export class AsyncBallotEncryptor {
       );
     }
 
+    if (manifestContestDesc.contestId !== contest.contestId) {
+      log.errorAndThrow(
+        'encrypt-async',
+        `unexpected contestId mismatch between manifest and plaintext (${manifestContestDesc.contestId} vs. ${contest.contestId})`
+      );
+    }
+
     this.encryptedContests.set(
       contest.contestId,
       this.encryptHelper(contest, sequenceOrder, manifestContestDesc)
@@ -191,6 +199,9 @@ export class AsyncBallotEncryptor {
     sequenceOrder: number,
     manifestContestDesc: ManifestContestDescription
   ): Promise<CiphertextContest> {
+    // Privacy note: don't log the entire contest because we don't
+    // want voter preferences to end up on the JavaScript console.
+
     log.info(
       'encrypt-async.encryptHelper',
       `encrypting contest ${contest.contestId}, sequence #${sequenceOrder}`
@@ -208,7 +219,7 @@ export class AsyncBallotEncryptor {
       contest,
       this.ballotId,
       manifestContestDesc,
-      this.primaryNonce
+      this.ballotNonce
     );
   }
 
@@ -276,7 +287,7 @@ export class AsyncBallotEncryptor {
       encryptedContests,
       timestamp,
       cryptoHash,
-      this.primaryNonce
+      this.ballotNonce
     );
 
     return encryptedBallot;

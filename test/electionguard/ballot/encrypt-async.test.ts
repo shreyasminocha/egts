@@ -1,7 +1,8 @@
 import fc from 'fast-check';
 import * as log from '../../../src/electionguard/core/logging';
 import {
-  bigIntContext3072,
+  bigIntContext4096,
+  eitherRightOrFail,
   getCoreCodecsForContext,
 } from '../../../src/electionguard';
 import {
@@ -12,9 +13,12 @@ import {AsyncBallotEncryptor} from '../../../src/electionguard/ballot/encrypt-as
 import {elementModQ, fcFastConfig} from '../core/generators';
 import {electionAndBallots} from './generators';
 import {getBallotCodecsForContext} from '../../../src/electionguard/ballot/json';
-import * as Either from 'fp-ts/lib/Either';
 
-const groupContext = bigIntContext3072();
+// we support the 3072 and 4096-bit contexts, but we're going
+// to test with the bigger context, since it's likely to be
+// how we're deployed.
+const groupContext = bigIntContext4096();
+
 describe('Async encryption wrapper', () => {
   afterAll(() => {
     console.info('After-action report for async-encryption:');
@@ -46,28 +50,34 @@ describe('Async encryption wrapper', () => {
           );
 
           log.info('encrypt-async-test', 'getting codecs');
-          const bcodecs = getBallotCodecsForContext(groupContext);
-          const ecodecs = getCoreCodecsForContext(groupContext);
+          const bCodecs = getBallotCodecsForContext(groupContext);
+          const cCodecs = getCoreCodecsForContext(groupContext);
 
           log.info('encrypt-async-test', 'encoding manifest');
-          const manifestJson = bcodecs.manifestCodec.encode(
+          const manifestJson = bCodecs.manifestCodec.encode(
             eb.manifest
           ) as object;
           log.info('encrypt-async-test', 'encoding election context');
-          const electionContextJson = ecodecs.electionContextCodec.encode(
+          const electionContextJson = cCodecs.electionContextCodec.encode(
             eb.electionContext
           ) as object;
 
           log.info('encrypt-async-test', 'decoding manifest');
-          const manifestDecoded = bcodecs.manifestCodec.decode(manifestJson);
+          /* const manifestDecoded = */ eitherRightOrFail(
+            bCodecs.manifestCodec.decode(manifestJson)
+          );
           log.info('encrypt-async-test', 'decoding election context');
-          const electionContextDecoded =
-            ecodecs.electionContextCodec.decode(electionContextJson);
-          expect(Either.isRight(manifestDecoded)).toBeTruthy();
-          expect(Either.isRight(electionContextDecoded)).toBeTruthy();
+          const electionContextDecoded = eitherRightOrFail(
+            cCodecs.electionContextCodec.decode(electionContextJson)
+          );
+
+          expect(
+            electionContextDecoded.jointPublicKey.element.isValidResidue()
+          ).toBe(true);
 
           log.info('encrypt-async-test', 'initializing async encryption');
           const asyncEncryptor = AsyncBallotEncryptor.create(
+            groupContext,
             manifestJson,
             electionContextJson,
             true,

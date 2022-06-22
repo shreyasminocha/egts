@@ -3,9 +3,10 @@ import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
 import {getBallotCodecsForContext} from '../../../src/electionguard/ballot/json';
 import {testCodecLaws} from '../core/testCodecLaws';
 import * as G from './generators';
+import {getCoreCodecsForContext} from '../../../src/electionguard';
 
 function testBallotCodecsForContext(context: GroupContext) {
-  //   const cCodecs = getCoreCodecsForContext(context);
+  const cCodecs = getCoreCodecsForContext(context);
   const bCodecs = getBallotCodecsForContext(context);
   testCodecLaws(
     context.name,
@@ -115,6 +116,16 @@ function testBallotCodecsForContext(context: GroupContext) {
     G.electionDescription(context),
     bCodecs.manifestCodec,
     (a, b) => a.equals(b)
+  );
+  testCodecLaws(
+    context.name,
+    'ElectionContext',
+    G.electionAndBallots(context, 1).map(eb => eb.electionContext),
+    cCodecs.electionContextCodec,
+    (a, b) =>
+      a.equals(b) &&
+      a.jointPublicKey.element.isValidResidue() &&
+      b.jointPublicKey.element.isValidResidue()
   );
 }
 
