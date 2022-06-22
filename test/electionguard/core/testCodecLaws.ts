@@ -30,7 +30,7 @@ export function testCodecLaws<T>(
           let serializedStr;
           try {
             serializedStr = JSON.stringify(serialized);
-          } catch (e: any) {
+          } catch (e: unknown) {
             console.warn(
               `unexpected JSON stringify failure for ${typeName}: ${serialized}`
             );
