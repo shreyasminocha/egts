@@ -184,17 +184,17 @@ export class AsyncBallotEncryptor {
     const sequenceOrder = this.sequenceOrderMap.get(contest.contestId);
     const manifestContestDesc = this.manifestContests.get(contest.contestId);
 
-    if (sequenceOrder !== contest.sequenceOrder) {
-      log.errorAndThrow(
-        'encrypt-async',
-        `unexpected seequence order: ${sequenceOrder} vs. ${contest.sequenceOrder}`
-      );
-    }
-
     if (manifestContestDesc === undefined || sequenceOrder === undefined) {
       log.errorAndThrow(
         'encrypt-async',
         `unexpected absence of a ManifestContestDescription for ${contest.contestId}`
+      );
+    }
+
+    if (sequenceOrder !== manifestContestDesc.sequenceOrder) {
+      log.warn(
+        'encrypt-async',
+        `unexpected seequence order: ${sequenceOrder} vs. ${manifestContestDesc.sequenceOrder}`
       );
     }
 
@@ -225,10 +225,10 @@ export class AsyncBallotEncryptor {
     // `encrypting contest ${contest.contestId}, sequence #${sequenceOrder}`
     // );
 
-    if (sequenceOrder !== contest.sequenceOrder) {
+    if (sequenceOrder !== manifestContestDesc.sequenceOrder) {
       log.errorAndThrow(
         'encrypt-async.encryptHelper',
-        `wrong sequence number: ${contest.sequenceOrder} vs. ${sequenceOrder}`
+        `wrong sequence number: ${manifestContestDesc.sequenceOrder} vs. ${sequenceOrder}`
       );
     }
 

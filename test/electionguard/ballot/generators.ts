@@ -584,11 +584,7 @@ export function plaintextVotedBallot(manifest: M.Manifest) {
               selectionFrom(selectionDesc.selectionId, false, false)
             )
           );
-        return new PlaintextContest(
-          contest.contestId,
-          contest.sequenceOrder,
-          votedSelections
-        );
+        return new PlaintextContest(contest.contestId, votedSelections);
       });
       return new PlaintextBallot(
         ballotUuid,

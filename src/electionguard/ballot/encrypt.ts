@@ -121,11 +121,7 @@ function contestFrom(mcontest: ManifestContestDescription): PlaintextContest {
   const selections = mcontest.selections.map(it =>
     selectionFrom(it.selectionId, false, false)
   );
-  return new PlaintextContest(
-    mcontest.contestId,
-    mcontest.sequenceOrder,
-    selections
-  );
+  return new PlaintextContest(mcontest.contestId, selections);
 }
 
 /**
@@ -268,7 +264,7 @@ export function encryptContest(
 
   const encryptedContest = new CiphertextContest(
     contest.contestId,
-    contest.sequenceOrder,
+    contestDescription.sequenceOrder,
     contestDescription.cryptoHashElement,
     encryptedSelections,
     ciphertextAccumulation,

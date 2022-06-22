@@ -1075,23 +1075,14 @@ export class BallotCodecs {
     const plaintextContestDecoder: D.Decoder<unknown, PlaintextContest> = pipe(
       D.struct({
         object_id: D.string,
-        sequence_order: D.number,
         ballot_selections: D.array(plaintextSelectionDecoder),
       }),
-      D.map(
-        s =>
-          new PlaintextContest(
-            s.object_id,
-            s.sequence_order,
-            s.ballot_selections
-          )
-      )
+      D.map(s => new PlaintextContest(s.object_id, s.ballot_selections))
     );
 
     const plaintextContestEncoder: E.Encoder<unknown, PlaintextContest> = {
       encode: input => ({
         object_id: input.contestId,
-        sequence_order: input.sequenceOrder,
         ballot_selections: input.selections.map(
           plaintextSelectionEncoder.encode
         ),

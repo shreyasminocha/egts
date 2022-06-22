@@ -65,7 +65,6 @@ function decryptAndVerifyContest(
 
   return new PlaintextContest(
     contest.contestId,
-    contest.sequenceOrder,
     pSelectionsWithoutPlaceholders
   );
 }

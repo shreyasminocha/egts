@@ -1,8 +1,6 @@
 import {
   ElectionObjectBase,
-  matchingArraysOfOrderedElectionObjects,
   matchingArraysOfAnyElectionObjects,
-  OrderedObjectBase,
 } from './election-object-base';
 
 /**
@@ -25,16 +23,15 @@ export class PlaintextBallot implements ElectionObjectBase {
       other instanceof PlaintextBallot &&
       other.ballotId === this.ballotId &&
       other.ballotStyleId === this.ballotStyleId &&
-      matchingArraysOfOrderedElectionObjects(other.contests, this.contests)
+      matchingArraysOfAnyElectionObjects(other.contests, this.contests)
     );
   }
 }
 
 /** The plaintext representation of a voter's selections for one contest. */
-export class PlaintextContest implements OrderedObjectBase {
+export class PlaintextContest implements ElectionObjectBase {
   constructor(
     readonly contestId: string, // matches ContestDescription.contestId
-    readonly sequenceOrder: number,
     readonly selections: Array<PlaintextSelection>
   ) {}
 
@@ -46,7 +43,6 @@ export class PlaintextContest implements OrderedObjectBase {
     return (
       other instanceof PlaintextContest &&
       other.contestId === this.contestId &&
-      other.sequenceOrder === this.sequenceOrder &&
       matchingArraysOfAnyElectionObjects(other.selections, this.selections)
     );
   }
