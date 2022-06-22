@@ -119,7 +119,7 @@ export function encryptBallot(
 
 function contestFrom(mcontest: ManifestContestDescription): PlaintextContest {
   const selections = mcontest.selections.map(it =>
-    selectionFrom(it.selectionId, it.sequenceOrder, false, false)
+    selectionFrom(it.selectionId, false, false)
   );
   return new PlaintextContest(
     mcontest.contestId,
@@ -164,12 +164,7 @@ export function encryptContest(
       // Find the actual selection matching the contest description.
       const plaintextSelection =
         plaintextSelections.get(mselection.selectionId) ??
-        selectionFrom(
-          mselection.selectionId,
-          mselection.sequenceOrder,
-          false,
-          false
-        );
+        selectionFrom(mselection.selectionId, false, false);
       // If no selection was made for this possible value, we explicitly set it to false
 
       // track the selection count so we can append the appropriate number of true placeholder
@@ -178,6 +173,7 @@ export function encryptContest(
       return encryptSelection(
         state,
         plaintextSelection,
+        mselection,
         mselection.cryptoHashElement,
         contestNonce,
         false
@@ -201,8 +197,7 @@ export function encryptContest(
     const sequenceNo = selectionSequenceOrderMax + placeholderNumber;
 
     const plaintextSelection = selectionFrom(
-      `${contestDescription.contestId}-$sequenceNo`,
-      sequenceNo,
+      `${contestDescription.contestId}-${sequenceNo}`,
       true,
       selectionCount < limit
     );
@@ -217,6 +212,7 @@ export function encryptContest(
     return encryptSelection(
       state,
       plaintextSelection,
+      mselection,
       mselection.cryptoHashElement,
       contestNonce,
       true
@@ -286,13 +282,11 @@ export function encryptContest(
 
 export function selectionFrom(
   selectionId: string,
-  sequenceOrder: number,
   isPlaceholder: boolean,
   isAffirmative: boolean
 ): PlaintextSelection {
   return new PlaintextSelection(
     selectionId,
-    sequenceOrder,
     isAffirmative ? 1 : 0,
     isPlaceholder,
     undefined // no extended data
@@ -332,6 +326,7 @@ function generatePlaceholderSelectionFrom(
 export function encryptSelection(
   state: EncryptionState,
   plaintextSelection: PlaintextSelection,
+  selectionDescription: ManifestSelectionDescription,
   manifestSelectionHash: ElementModQ,
   contestNonce: ElementModQ,
   isPlaceholder = false
@@ -350,7 +345,7 @@ export function encryptSelection(
   //     disjunctive_chaum_pedersen_nonce = next(iter(nonce_sequence))
 
   const selectionNonce: ElementModQ = nonceSequence.get(
-    plaintextSelection.sequenceOrder
+    selectionDescription.sequenceOrder
   );
   const disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence.get(0);
 
@@ -380,10 +375,8 @@ export function encryptSelection(
     );
   }
 
-  if (plaintextSelection.extendedData !== undefined) {
-    throw new Error(
-      'encrypting selections with extended data not supported yet'
-    );
+  if (plaintextSelection.writeIn !== undefined) {
+    throw new Error('encrypting selections with write-ins not supported yet');
   }
 
   const cryptoHash = hashElements(
@@ -395,7 +388,7 @@ export function encryptSelection(
 
   const encryptedSelection: CiphertextSelection = new CiphertextSelection(
     plaintextSelection.selectionId,
-    plaintextSelection.sequenceOrder,
+    selectionDescription.sequenceOrder,
     manifestSelectionHash,
     elGamalEncryption,
     cryptoHash,

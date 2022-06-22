@@ -94,7 +94,6 @@ function decryptAndVerifySelection(
 
   return new PlaintextSelection(
     selection.selectionId,
-    selection.sequenceOrder,
     decryption,
     selection.isPlaceholderSelection,
     undefined

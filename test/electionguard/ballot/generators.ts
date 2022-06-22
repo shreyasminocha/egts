@@ -577,21 +577,11 @@ export function plaintextVotedBallot(manifest: M.Manifest) {
 
         const votedSelections = yesVotes
           .map(selectionDesc =>
-            selectionFrom(
-              selectionDesc.selectionId,
-              selectionDesc.sequenceOrder,
-              false,
-              true
-            )
+            selectionFrom(selectionDesc.selectionId, false, true)
           )
           .concat(
             noVotes.map(selectionDesc =>
-              selectionFrom(
-                selectionDesc.selectionId,
-                selectionDesc.sequenceOrder,
-                false,
-                false
-              )
+              selectionFrom(selectionDesc.selectionId, false, false)
             )
           );
         return new PlaintextContest(

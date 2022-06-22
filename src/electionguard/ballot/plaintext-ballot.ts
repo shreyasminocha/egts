@@ -1,6 +1,7 @@
 import {
   ElectionObjectBase,
   matchingArraysOfOrderedElectionObjects,
+  matchingArraysOfAnyElectionObjects,
   OrderedObjectBase,
 } from './election-object-base';
 
@@ -46,19 +47,18 @@ export class PlaintextContest implements OrderedObjectBase {
       other instanceof PlaintextContest &&
       other.contestId === this.contestId &&
       other.sequenceOrder === this.sequenceOrder &&
-      matchingArraysOfOrderedElectionObjects(other.selections, this.selections)
+      matchingArraysOfAnyElectionObjects(other.selections, this.selections)
     );
   }
 }
 
 /** The plaintext representation of one selection for a particular contest. */
-export class PlaintextSelection implements OrderedObjectBase {
+export class PlaintextSelection implements ElectionObjectBase {
   constructor(
     readonly selectionId: string, // matches SelectionDescription.selectionId
-    readonly sequenceOrder: number,
     readonly vote: number,
     readonly isPlaceholderSelection: boolean,
-    readonly extendedData?: ExtendedData
+    readonly writeIn?: string
   ) {}
 
   get objectId(): string {
@@ -69,15 +69,9 @@ export class PlaintextSelection implements OrderedObjectBase {
     return (
       other instanceof PlaintextSelection &&
       other.selectionId === this.selectionId &&
-      other.sequenceOrder === this.sequenceOrder &&
       other.vote === this.vote &&
-      other.isPlaceholderSelection === this.isPlaceholderSelection
+      other.isPlaceholderSelection === this.isPlaceholderSelection &&
+      other.writeIn === this.writeIn
     );
-    // ignoring extended data
   }
-}
-
-/** Used to indicate a write-in candidate. */
-export class ExtendedData {
-  constructor(readonly value: string, readonly length: number) {}
 }

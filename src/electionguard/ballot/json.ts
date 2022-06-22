@@ -18,7 +18,6 @@ import {
   PlaintextContest,
   PlaintextBallot,
   PlaintextSelection,
-  ExtendedData,
 } from './plaintext-ballot';
 import * as CJ from '../core/json';
 import {EncryptionState} from './encrypt';
@@ -132,7 +131,6 @@ export class BallotCodecs {
   >;
   readonly ciphertextContestCodec: C.Codec<unknown, unknown, CiphertextContest>;
   readonly ciphertextBallotCodec: C.Codec<unknown, unknown, CiphertextBallot>;
-  readonly extendedDataCodec: C.Codec<unknown, unknown, ExtendedData>;
   readonly plaintextSelectionCodec: C.Codec<
     unknown,
     unknown,
@@ -1037,44 +1035,25 @@ export class BallotCodecs {
       ciphertextBallotEncoder
     );
 
-    const extendedDataDecoder: D.Decoder<unknown, ExtendedData> = pipe(
-      D.struct({
-        value: D.string,
-        length: D.number,
-      }),
-      D.map(s => new ExtendedData(s.value, s.length))
-    );
-
-    const extendedDataEncoder: E.Encoder<unknown, ExtendedData> = {
-      encode: input => ({
-        value: input.value,
-        length: input.length,
-      }),
-    };
-
-    this.extendedDataCodec = C.make(extendedDataDecoder, extendedDataEncoder);
-
     const plaintextSelectionDecoder: D.Decoder<unknown, PlaintextSelection> =
       pipe(
         D.struct({
           object_id: D.string,
-          sequence_order: D.number,
           vote: D.literal(0, 1),
         }),
         D.intersect(
           D.partial({
             is_placeholder_selection: D.boolean,
-            extended_data: D.nullable(extendedDataDecoder),
+            write_in: D.nullable(D.string),
           })
         ),
         D.map(
           s =>
             new PlaintextSelection(
               s.object_id,
-              s.sequence_order,
               s.vote,
               !!s.is_placeholder_selection,
-              s.extended_data === null ? undefined : s.extended_data
+              s.write_in === null ? undefined : s.write_in
             )
         )
       );
@@ -1082,10 +1061,9 @@ export class BallotCodecs {
     const plaintextSelectionEncoder: E.Encoder<unknown, PlaintextSelection> = {
       encode: input => ({
         object_id: input.selectionId,
-        sequence_order: input.sequenceOrder,
         vote: input.vote,
         is_placeholder_selection: input.isPlaceholderSelection,
-        extended_data: input.extendedData && extendedDataEncoder,
+        write_in: input.writeIn,
       }),
     };
 
