@@ -28,7 +28,7 @@ describe('Async encryption wrapper', () => {
   test('Encrypt conventionally & with async; identical result', async () => {
     await fc.assert(
       fc.asyncProperty(
-        electionAndBallots(groupContext),
+        electionAndBallots(groupContext, 1),
         elementModQ(groupContext),
         async (eb, seed) => {
           log.info('encrypt-async-test', 'starting test');
@@ -41,62 +41,63 @@ describe('Async encryption wrapper', () => {
           );
 
           log.info('encrypt-async-test', 'starting conventional encryption');
-          const plaintextBallot = eb.ballots[0];
-          const encryptedBallot = encryptBallot(
-            encryptionState,
-            plaintextBallot,
-            seed,
-            timestamp
-          );
+          for (const plaintextBallot of eb.ballots) {
+            const encryptedBallot = encryptBallot(
+              encryptionState,
+              plaintextBallot,
+              seed,
+              timestamp
+            );
 
-          log.info('encrypt-async-test', 'getting codecs');
-          const bCodecs = getBallotCodecsForContext(groupContext);
-          const cCodecs = getCoreCodecsForContext(groupContext);
+            log.info('encrypt-async-test', 'getting codecs');
+            const bCodecs = getBallotCodecsForContext(groupContext);
+            const cCodecs = getCoreCodecsForContext(groupContext);
 
-          log.info('encrypt-async-test', 'encoding manifest');
-          const manifestJson = bCodecs.manifestCodec.encode(
-            eb.manifest
-          ) as object;
-          log.info('encrypt-async-test', 'encoding election context');
-          const electionContextJson = cCodecs.electionContextCodec.encode(
-            eb.electionContext
-          ) as object;
+            log.info('encrypt-async-test', 'encoding manifest');
+            const manifestJson = bCodecs.manifestCodec.encode(
+              eb.manifest
+            ) as object;
+            log.info('encrypt-async-test', 'encoding election context');
+            const electionContextJson = cCodecs.electionContextCodec.encode(
+              eb.electionContext
+            ) as object;
 
-          log.info('encrypt-async-test', 'decoding manifest');
-          /* const manifestDecoded = */ eitherRightOrFail(
-            bCodecs.manifestCodec.decode(manifestJson)
-          );
-          log.info('encrypt-async-test', 'decoding election context');
-          const electionContextDecoded = eitherRightOrFail(
-            cCodecs.electionContextCodec.decode(electionContextJson)
-          );
+            log.info('encrypt-async-test', 'decoding manifest');
+            /* const manifestDecoded = */ eitherRightOrFail(
+              bCodecs.manifestCodec.decode(manifestJson)
+            );
+            log.info('encrypt-async-test', 'decoding election context');
+            const electionContextDecoded = eitherRightOrFail(
+              cCodecs.electionContextCodec.decode(electionContextJson)
+            );
 
-          expect(
-            electionContextDecoded.jointPublicKey.element.isValidResidue()
-          ).toBe(true);
+            expect(
+              electionContextDecoded.jointPublicKey.element.isValidResidue()
+            ).toBe(true);
 
-          log.info('encrypt-async-test', 'initializing async encryption');
-          const asyncEncryptor = AsyncBallotEncryptor.create(
-            groupContext,
-            manifestJson,
-            electionContextJson,
-            true,
-            plaintextBallot.ballotStyleId,
-            plaintextBallot.ballotId,
-            seed,
-            timestamp
-          );
+            log.info('encrypt-async-test', 'initializing async encryption');
+            const asyncEncryptor = AsyncBallotEncryptor.create(
+              groupContext,
+              manifestJson,
+              electionContextJson,
+              true,
+              plaintextBallot.ballotStyleId,
+              plaintextBallot.ballotId,
+              seed,
+              timestamp
+            );
 
-          log.info('encrypt-async-test', 'launching async encryption');
-          // launches encryption on each contest: note the absence of return values
-          plaintextBallot.contests.forEach(contest =>
-            asyncEncryptor.encrypt(contest)
-          );
+            log.info('encrypt-async-test', 'launching async encryption');
+            // launches encryption on each contest: note the absence of return values
+            plaintextBallot.contests.forEach(contest =>
+              asyncEncryptor.encrypt(contest)
+            );
 
-          const encryptedBallot2 = await asyncEncryptor.getEncryptedBallot();
-          log.info('encrypt-async-test', 'async tasks complete');
+            const encryptedBallot2 = await asyncEncryptor.getEncryptedBallot();
+            log.info('encrypt-async-test', 'async tasks complete');
 
-          expect(encryptedBallot.equals(encryptedBallot2)).toBe(true);
+            expect(encryptedBallot.equals(encryptedBallot2)).toBe(true);
+          }
         }
       ),
       fcFastConfig
