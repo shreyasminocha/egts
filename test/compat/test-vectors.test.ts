@@ -81,7 +81,7 @@ describe('compat', () => {
         '..',
         'election_private_data',
         'plaintext_ballots',
-        'plaintext_ballot_ballot-ddf5a59a-73f3-11ec-aaed-acde48001122.json'
+        'plaintext_ballot_ballot-8a27eaa6-f1c3-11ec-b605-aaf53b701db4.json'
       ),
       'utf-8'
     );
@@ -99,7 +99,7 @@ describe('compat', () => {
         '..',
         'election_private_data',
         'ciphertext_ballots',
-        'ciphertext_ballot_ballot-ddf5a59a-73f3-11ec-aaed-acde48001122.json'
+        'ciphertext_ballot_ballot-8a27eaa6-f1c3-11ec-b605-aaf53b701db4.json'
       ),
       'utf-8'
     );
@@ -115,7 +115,7 @@ describe('compat', () => {
       path.join(
         dir,
         'submitted_ballots',
-        'submitted_ballot_ballot-ddf5a59a-73f3-11ec-aaed-acde48001122.json'
+        'submitted_ballot_ballot-8a27eaa6-f1c3-11ec-b605-aaf53b701db4.json'
       ),
       'utf-8'
     );
