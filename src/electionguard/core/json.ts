@@ -618,17 +618,11 @@ export function getCoreCodecsForContext(context: GroupContext): CoreCodecs {
  * either gives us the actual value or throws an error. Useful for tests
  * or when we really do want to throw an error.
  */
-export function eitherRightOrFail<E, T>(input: Either.Either<E, T>): T {
+export function eitherRightOrFail<T>(
+  input: Either.Either<D.DecodeError, T>
+): T {
   if (Either.isLeft(input)) {
-    // Only printing a few lines of the text, because this can become
-    // enormous for some of the types we're working with; set a breakpoint
-    // here to inspect the data directly, if necessary.
-    throw new Error(
-      `Unexpected failure: ${JSON.stringify(input.left, null, 2).substring(
-        0,
-        200
-      )}`
-    );
+    throw new Error(D.draw(input.left as D.DecodeError));
   } else {
     return input.right;
   }
