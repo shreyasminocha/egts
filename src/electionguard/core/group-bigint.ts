@@ -121,7 +121,10 @@ class ElementModQImpl implements ElementModQ {
   }
 
   toHex(): string {
-    return this.value.toString(16).toUpperCase();
+    return this.value
+      .toString(16)
+      .toUpperCase()
+      .padStart(this.context.Q.toString(16).length, '0');
   }
 }
 
@@ -185,7 +188,10 @@ class ElementModPImpl implements ElementModP {
   }
 
   toHex(): string {
-    return this.value.toString(16).toUpperCase();
+    return this.value
+      .toString(16)
+      .toUpperCase()
+      .padStart(this.context.P.toString(16).length, '0');
   }
 
   greaterThan(other: ElementModP): boolean {
