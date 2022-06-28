@@ -421,6 +421,7 @@ export class CoreCodecs {
         challenge: elementModQDecoder,
         response: elementModQDecoder,
         constant: D.number,
+        usage: D.string,
       }),
       D.map(
         s =>
@@ -431,7 +432,8 @@ export class CoreCodecs {
               s.challenge,
               s.response
             ),
-            s.constant
+            s.constant,
+            s.usage
           )
       )
     );
@@ -447,6 +449,7 @@ export class CoreCodecs {
           challenge: elementModQEncoder.encode(input.proof.c),
           response: elementModQEncoder.encode(input.proof.r),
           constant: input.constant,
+          usage: input.usage,
         };
       },
     };
@@ -515,6 +518,7 @@ export class CoreCodecs {
         proof_one_challenge: elementModQDecoder,
         proof_one_response: elementModQDecoder,
         challenge: elementModQDecoder,
+        usage: D.string,
       }),
       D.map(
         s =>
@@ -531,7 +535,8 @@ export class CoreCodecs {
               s.proof_one_challenge,
               s.proof_one_response
             ),
-            s.challenge
+            s.challenge,
+            s.usage
           )
       )
     );
@@ -551,6 +556,7 @@ export class CoreCodecs {
           proof_one_challenge: elementModQEncoder.encode(input.proof1.c),
           proof_one_response: elementModQEncoder.encode(input.proof1.r),
           challenge: elementModQEncoder.encode(input.c),
+          usage: input.usage !== undefined ? input.usage : null,
         };
       },
     };

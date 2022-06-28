@@ -154,7 +154,7 @@ export const ManifestElectionTypeStrings = [
   'other',
 ];
 
-/** typed union of aceptable strings */
+/** typed union of acceptable strings */
 export type ManifestElectionType = typeof ManifestElectionTypeStrings[number];
 
 /**
@@ -274,7 +274,7 @@ export const ManifestReportingUnitTypeStrings = [
   'other',
 ];
 
-/** typed union of aceptable strings */
+/** typed union of acceptable strings */
 export type ManifestReportingUnitType =
   typeof ManifestReportingUnitTypeStrings[number];
 
@@ -343,7 +343,7 @@ export const ManifestVoteVariationTypeStrings = [
   'other',
 ];
 
-/** typed union of aceptable strings */
+/** typed union of acceptable strings */
 export type ManifestVoteVariationType =
   typeof ManifestVoteVariationTypeStrings[number];
 

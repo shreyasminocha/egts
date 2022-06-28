@@ -18,7 +18,8 @@ import * as log from './logging';
 export class ConstantChaumPedersenProofKnownNonce {
   constructor(
     readonly proof: ExpandedGenericChaumPedersenProof,
-    readonly constant: number
+    readonly constant: number,
+    readonly usage: ProofUsage = 'Unknown'
   ) {}
 
   /**
@@ -124,7 +125,8 @@ export class ConstantChaumPedersenProofKnownNonce {
 export class ConstantChaumPedersenProofKnownSecretKey {
   constructor(
     readonly proof: ExpandedGenericChaumPedersenProof,
-    readonly constant: number
+    readonly constant: number,
+    readonly usage: ProofUsage = 'Unknown'
   ) {}
 
   /**
@@ -228,7 +230,8 @@ export class DisjunctiveChaumPedersenProofKnownNonce {
   constructor(
     readonly proof0: ExpandedGenericChaumPedersenProof,
     readonly proof1: ExpandedGenericChaumPedersenProof,
-    readonly c: ElementModQ
+    readonly c: ElementModQ,
+    readonly usage: ProofUsage = 'Unknown'
   ) {}
 
   /**
@@ -720,3 +723,13 @@ export class ExpandedGenericChaumPedersenProof {
     );
   }
 }
+
+export const ProofUsageStrings = [
+  'Unknown',
+  'Prove knowledge of secret value',
+  "Prove value within selection's limit",
+  "Prove selection's value (0 or 1)",
+];
+
+/** typed union of acceptable strings */
+export type ProofUsage = typeof ProofUsageStrings[number];
