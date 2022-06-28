@@ -754,6 +754,7 @@ export class BallotCodecs {
           this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec.encode(
             input.proof
           ),
+        nonce: null,
       }),
     };
 
@@ -812,6 +813,7 @@ export class BallotCodecs {
           this.coreCodecs.hashedElGamalCiphertextCodec.encode(
             input.extendedData
           ),
+        nonce: null,
       }),
     };
 
@@ -857,13 +859,14 @@ export class BallotCodecs {
           input.manifestHash
         ),
         code_seed: this.coreCodecs.elementModQCodec.encode(input.codeSeed),
-        contests: this.coreCodecs.elementModQCodec.encode(input.code),
-        code: input.contests.map(submittedContestEncoder.encode),
+        code: this.coreCodecs.elementModQCodec.encode(input.code),
+        contests: input.contests.map(submittedContestEncoder.encode),
         timestamp: input.timestamp,
         crypto_hash: this.coreCodecs.elementModQCodec.encode(
           input.cryptoHashElement
         ),
         state: input.state,
+        nonce: null,
       }),
     };
 
@@ -918,6 +921,10 @@ export class BallotCodecs {
             this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec.encode(
               input.proof
             ),
+          nonce:
+            input.selectionNonce !== undefined
+              ? this.coreCodecs.elementModQCodec.encode(input.selectionNonce)
+              : null,
         }),
       };
 
@@ -979,6 +986,10 @@ export class BallotCodecs {
           this.coreCodecs.hashedElGamalCiphertextCodec.encode(
             input.extendedData
           ),
+        nonce:
+          input.contestNonce !== undefined
+            ? this.coreCodecs.elementModQCodec.encode(input.contestNonce)
+            : null,
       }),
     };
 
@@ -1023,10 +1034,14 @@ export class BallotCodecs {
           input.manifestHash
         ),
         code_seed: this.coreCodecs.elementModQCodec.encode(input.codeSeed),
-        contests: this.coreCodecs.elementModQCodec.encode(input.code),
-        code: input.contests.map(ciphertextContestEncoder.encode),
+        code: this.coreCodecs.elementModQCodec.encode(input.code),
+        contests: input.contests.map(ciphertextContestEncoder.encode),
         timestamp: input.timestamp,
         crypto_hash: this.coreCodecs.elementModQCodec.encode(input.cryptoHash),
+        nonce:
+          input.nonce !== undefined
+            ? this.coreCodecs.elementModQCodec.encode(input.nonce)
+            : null,
       }),
     };
 

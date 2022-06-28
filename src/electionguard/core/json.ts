@@ -574,17 +574,12 @@ export class CoreCodecs {
         pad: elementModPDecoder,
         data: uInt8ArrayDecoder,
         mac: uInt256Decoder,
-        numBytes: D.number,
+        numBytes: D.number, // TODO: remove
       }),
       D.map(s => {
         return new HashedElGamalCiphertext(s.pad, s.data, s.mac, s.numBytes);
       })
     );
-
-    // readonly c0: ElementModP,
-    // readonly c1: Uint8Array,
-    // readonly c2: UInt256,
-    // readonly numBytes: number
 
     const hashedElGamalCiphertextEncoder: E.Encoder<
       unknown,
