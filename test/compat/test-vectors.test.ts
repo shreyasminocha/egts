@@ -57,15 +57,18 @@ describe('compat', () => {
     if (groupContext === undefined) {
       throw new Error('oop');
     }
-    // bigIntContextFromConstants
+
+    const bCodecs = getBallotCodecsForContext(groupContext);
+    const cCodecs = getCoreCodecsForContext(groupContext);
 
     content = await fs.readFile(path.join(dir, 'manifest.json'), 'utf-8');
     const manifestJson = JSON.parse(content);
-    const possiblyManifest = getBallotCodecsForContext(
-      groupContext as GroupContext
-    ).manifestCodec.decode(manifestJson);
+    const possiblyManifest = bCodecs.manifestCodec.decode(manifestJson);
     const manifest = eitherRightOrFail(possiblyManifest);
     expect(manifest).toBeTruthy();
+    // expect(
+    //   bCodecs.manifestCodec.encode(manifest)
+    // ).toStrictEqual(manifestJson);
 
     content = await fs.readFile(path.join(dir, 'context.json'), 'utf-8');
     const contextJson = JSON.parse(content);
@@ -74,6 +77,9 @@ describe('compat', () => {
     ).electionContextCodec.decode(contextJson);
     const context = eitherRightOrFail(possiblyContext);
     expect(context).toBeTruthy();
+    expect(cCodecs.electionContextCodec.encode(context)).toStrictEqual(
+      contextJson
+    );
 
     content = await fs.readFile(
       path.join(
@@ -92,6 +98,9 @@ describe('compat', () => {
       );
     const plaintextBallot = eitherRightOrFail(possiblyPlaintextBallot);
     expect(plaintextBallot).toBeTruthy();
+    // expect(
+    //   bCodecs.plaintextBallotCodec.encode(plaintextBallot)
+    // ).toStrictEqual(plaintextBallotJson);
 
     content = await fs.readFile(
       path.join(
@@ -105,11 +114,13 @@ describe('compat', () => {
     );
     const ciphertextBallotJson = JSON.parse(content);
     const possiblyCiphertextBallot =
-      getBallotCodecsForContext(groupContext).ciphertextBallotCodec.decode(
-        ciphertextBallotJson
-      );
+      bCodecs.ciphertextBallotCodec.decode(ciphertextBallotJson);
     const ciphertextBallot = eitherRightOrFail(possiblyCiphertextBallot);
     expect(ciphertextBallot).toBeTruthy();
+
+    expect(
+      bCodecs.ciphertextBallotCodec.encode(ciphertextBallot)
+    ).toStrictEqual(ciphertextBallotJson);
 
     content = await fs.readFile(
       path.join(
@@ -121,10 +132,12 @@ describe('compat', () => {
     );
     const submittedBallotJson = JSON.parse(content);
     const possiblySubmittedBallot =
-      getBallotCodecsForContext(groupContext).submittedBallotCodec.decode(
-        submittedBallotJson
-      );
+      bCodecs.submittedBallotCodec.decode(submittedBallotJson);
     const submittedBallot = eitherRightOrFail(possiblySubmittedBallot);
     expect(submittedBallot).toBeTruthy();
+
+    expect(bCodecs.submittedBallotCodec.encode(submittedBallot)).toStrictEqual(
+      submittedBallotJson
+    );
   });
 });
