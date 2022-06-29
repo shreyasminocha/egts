@@ -341,3 +341,13 @@ export function shuffleArray<T>(
 
   return result;
 }
+
+/** Returns `undefined` if `x` is `null`. Else, returns `x` itself. */
+export function nullToUndefined<T>(x: T | null): T | undefined {
+  return x === null ? undefined : x;
+}
+
+/** Returns `null` if `x` is `undefined`. Else, returns `x` itself. */
+export function undefinedToNull<T>(x: T | undefined): T | null {
+  return x === undefined ? null : x;
+}

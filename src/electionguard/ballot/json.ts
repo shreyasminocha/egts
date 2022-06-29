@@ -19,16 +19,9 @@ import {
   PlaintextBallot,
   PlaintextSelection,
 } from './plaintext-ballot';
+import {nullToUndefined, undefinedToNull} from '../core/utils';
 import * as CJ from '../core/json';
 import {EncryptionState} from './encrypt';
-
-function nullToUndefined<G>(n: G | null): G | undefined {
-  return n === null ? undefined : n;
-}
-
-function undefinedToNull<G>(n: G | undefined): G | null {
-  return n === undefined ? null : n;
-}
 
 // These JSON importer/exporter things are using the io-ts package:
 // https://github.com/gcanti/io-ts/
@@ -395,11 +388,9 @@ export class BallotCodecs {
         name: input.name,
         type: input.type,
         contact_information:
-          input.contactInformation === undefined
-            ? null
-            : manifestContactInformationEncoder.encode(
-                input.contactInformation
-              ),
+          input.contactInformation !== undefined
+            ? manifestContactInformationEncoder.encode(input.contactInformation)
+            : null,
       }),
     };
 
@@ -423,9 +414,9 @@ export class BallotCodecs {
               context,
               s.object_id,
               s.name,
-              s.party_id === null ? undefined : s.party_id,
-              s.image_uri === null ? undefined : s.image_uri,
-              s.is_write_in === null ? undefined : s.is_write_in
+              nullToUndefined(s.party_id),
+              nullToUndefined(s.image_uri),
+              nullToUndefined(s.is_write_in)
             )
         )
       );
@@ -434,9 +425,9 @@ export class BallotCodecs {
       encode: input => ({
         object_id: input.candidateId,
         name: manifestInternationalizedTextEncoder.encode(input.name),
-        party_id: input.partyId === undefined ? null : input.partyId,
-        image_uri: input.imageUri === undefined ? null : input.imageUri,
-        is_write_in: input.isWriteIn === undefined ? null : input.isWriteIn,
+        party_id: undefinedToNull(input.partyId),
+        image_uri: undefinedToNull(input.imageUri),
+        is_write_in: undefinedToNull(input.isWriteIn),
       }),
     };
 
@@ -459,9 +450,9 @@ export class BallotCodecs {
             context,
             s.object_id,
             s.name,
-            s.abbreviation === null ? undefined : s.abbreviation,
-            s.color === null ? undefined : s.color,
-            s.logo_uri === null ? undefined : s.logo_uri
+            nullToUndefined(s.abbreviation),
+            nullToUndefined(s.color),
+            nullToUndefined(s.logo_uri)
           )
       )
     );
@@ -470,10 +461,9 @@ export class BallotCodecs {
       encode: input => ({
         object_id: input.partyId,
         name: manifestInternationalizedTextEncoder.encode(input.name),
-        abbreviation:
-          input.abbreviation === undefined ? null : input.abbreviation,
-        color: input.color === undefined ? null : input.color,
-        logo_uri: input.logoUri === undefined ? null : input.logoUri,
+        abbreviation: undefinedToNull(input.abbreviation),
+        color: undefinedToNull(input.color),
+        logo_uri: undefinedToNull(input.logoUri),
       }),
     };
 
@@ -497,11 +487,9 @@ export class BallotCodecs {
           new M.ManifestBallotStyle(
             context,
             s.object_id,
-            s.geopolitical_unit_ids === null
-              ? undefined
-              : s.geopolitical_unit_ids,
-            s.party_ids === null ? undefined : s.party_ids,
-            s.image_uri === null ? undefined : s.image_uri
+            nullToUndefined(s.geopolitical_unit_ids),
+            nullToUndefined(s.party_ids),
+            nullToUndefined(s.image_uri)
           )
       )
     );
@@ -512,12 +500,9 @@ export class BallotCodecs {
     > = {
       encode: input => ({
         object_id: input.ballotStyleId,
-        geopolitical_unit_ids:
-          input.geopoliticalUnitIds === undefined
-            ? null
-            : input.geopoliticalUnitIds,
-        party_ids: input.partyIds === undefined ? null : input.partyIds,
-        image_uri: input.imageUri === undefined ? null : input.imageUri,
+        geopolitical_unit_ids: undefinedToNull(input.geopoliticalUnitIds),
+        party_ids: undefinedToNull(input.partyIds),
+        image_uri: undefinedToNull(input.imageUri),
       }),
     };
 
@@ -618,9 +603,9 @@ export class BallotCodecs {
             s.votes_allowed,
             s.name,
             s.ballot_selections,
-            s.ballot_title || undefined,
-            s.ballot_subtitle || undefined,
-            s.primary_party_ids || undefined
+            nullToUndefined(s.ballot_title),
+            nullToUndefined(s.ballot_subtitle),
+            nullToUndefined(s.primary_party_ids)
           )
       )
     );
@@ -786,7 +771,7 @@ export class BallotCodecs {
             s.ciphertext_accumulation,
             s.crypto_hash,
             s.proof,
-            s.extended_data || undefined
+            nullToUndefined(s.extended_data)
           )
       )
     );
@@ -899,7 +884,7 @@ export class BallotCodecs {
               s.crypto_hash,
               s.is_placeholder_selection,
               s.proof,
-              s.nonce || undefined
+              nullToUndefined(s.nonce)
             )
         )
       );
@@ -961,7 +946,7 @@ export class BallotCodecs {
               s.crypto_hash,
               s.proof,
               s.nonce,
-              s.extended_data || undefined
+              nullToUndefined(s.extended_data)
             )
         )
       );
@@ -1070,7 +1055,7 @@ export class BallotCodecs {
               s.object_id,
               s.vote,
               !!s.is_placeholder_selection,
-              s.write_in === null ? undefined : s.write_in
+              nullToUndefined(s.write_in)
             )
         )
       );
@@ -1080,7 +1065,7 @@ export class BallotCodecs {
         object_id: input.selectionId,
         vote: input.vote,
         is_placeholder_selection: input.isPlaceholderSelection,
-        write_in: input.writeIn === undefined ? null : input.writeIn,
+        write_in: undefinedToNull(input.writeIn),
       }),
     };
 

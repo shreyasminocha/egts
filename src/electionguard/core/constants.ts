@@ -74,15 +74,16 @@ export class ElectionConstants implements Eq<ElectionConstants> {
  * ignored by the current ElectionGuard-TypeScript implementation.
  */
 export class EdgeCaseConfiguration implements Eq<EdgeCaseConfiguration> {
+  // default values taken from the Python code
   constructor(
     /** Allow overvotes, votes exceeding selection limit, for the election. */
-    readonly allowOvervotes: boolean,
+    readonly allowOvervotes = true,
 
     /**
      * Maximum votes, the maximum votes allowed on a selection for an aggregate ballot or tally.
      * This can also be seen as the maximum ballots where a selection on a ballot can only have one vote.
      */
-    readonly maxVotes: number
+    readonly maxVotes = 1_000_000
   ) {}
 
   equals(other: EdgeCaseConfiguration): boolean {
@@ -129,7 +130,7 @@ export class ElectionContext implements Eq<ElectionContext> {
     readonly extendedData?: Record<string, string>,
 
     /** Configuration for the election edge cases. */
-    readonly configuration?: EdgeCaseConfiguration
+    readonly configuration = new EdgeCaseConfiguration()
   ) {}
 
   equals(other: ElectionContext): boolean {

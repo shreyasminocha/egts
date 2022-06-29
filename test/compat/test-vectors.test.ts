@@ -66,9 +66,7 @@ describe('compat', () => {
     const possiblyManifest = bCodecs.manifestCodec.decode(manifestJson);
     const manifest = eitherRightOrFail(possiblyManifest);
     expect(manifest).toBeTruthy();
-    expect(
-      bCodecs.manifestCodec.encode(manifest)
-    ).toStrictEqual(manifestJson);
+    expect(bCodecs.manifestCodec.encode(manifest)).toStrictEqual(manifestJson);
 
     content = await fs.readFile(path.join(dir, 'context.json'), 'utf-8');
     const contextJson = JSON.parse(content);
@@ -98,9 +96,9 @@ describe('compat', () => {
       );
     const plaintextBallot = eitherRightOrFail(possiblyPlaintextBallot);
     expect(plaintextBallot).toBeTruthy();
-    expect(
-      bCodecs.plaintextBallotCodec.encode(plaintextBallot)
-    ).toStrictEqual(plaintextBallotJson);
+    expect(bCodecs.plaintextBallotCodec.encode(plaintextBallot)).toStrictEqual(
+      plaintextBallotJson
+    );
 
     content = await fs.readFile(
       path.join(

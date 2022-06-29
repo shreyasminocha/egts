@@ -26,6 +26,8 @@ import {
   hexToUint8Array,
   uint8ArrayToBigInt,
   uint8ArrayToHex,
+  undefinedToNull,
+  nullToUndefined,
 } from './utils';
 import {
   HashedElGamalCiphertext,
@@ -216,14 +218,7 @@ export class CoreCodecs {
         allow_overvotes: D.boolean,
         max_votes: D.number,
       }),
-      D.map(
-        // default values taken from the Python code
-        s =>
-          new EdgeCaseConfiguration(
-            s.allow_overvotes || true,
-            s.max_votes || 1_000_000
-          )
-      )
+      D.map(s => new EdgeCaseConfiguration(s.allow_overvotes, s.max_votes))
     );
 
     const edgeCaseConfigurationEncoder: E.Encoder<
@@ -269,9 +264,8 @@ export class CoreCodecs {
             s.crypto_base_hash,
             s.crypto_extended_base_hash,
             s.commitment_hash,
-            // TODO: verify this is the way handle an optional record field
-            s.extended_data || undefined,
-            s.configuration || undefined
+            nullToUndefined(s.extended_data),
+            nullToUndefined(s.configuration)
           )
       )
     );
@@ -290,12 +284,8 @@ export class CoreCodecs {
             e.cryptoExtendedBaseHash
           ),
           commitment_hash: elementModQEncoder.encode(e.commitmentHash),
-          // TODO: verify this is the way to handle an optional record field
-          extended_data: e.extendedData || null,
-          configuration:
-            e.configuration !== undefined
-              ? edgeCaseConfigurationEncoder.encode(e.configuration)
-              : undefined,
+          extended_data: undefinedToNull(e.extendedData),
+          configuration: edgeCaseConfigurationEncoder.encode(e.configuration),
         };
       },
     };
@@ -564,7 +554,7 @@ export class CoreCodecs {
           proof_one_challenge: elementModQEncoder.encode(input.proof1.c),
           proof_one_response: elementModQEncoder.encode(input.proof1.r),
           challenge: elementModQEncoder.encode(input.c),
-          usage: input.usage !== undefined ? input.usage : null,
+          usage: undefinedToNull(input.usage),
         };
       },
     };
