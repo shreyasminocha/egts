@@ -140,6 +140,25 @@ export class HashedElGamalCiphertext {
   }
 }
 
+/*
+ * https://github.com/danwallach/ElectionGuard-TypeScript/issues/26
+ */
+export class HashedElGamalCiphertextCompat {
+  constructor(
+    readonly c0: ElementModP,
+    readonly c1: Uint8Array,
+    readonly c2: UInt256
+  ) {}
+
+  equals(other: HashedElGamalCiphertextCompat): boolean {
+    return (
+      this.c0.equals(other.c0) &&
+      arraysEqual(this.c1, other.c1) &&
+      this.c2.equals(other.c2)
+    );
+  }
+}
+
 /**
  * NIST 800-108-compliant key derivation function (KDF) state.
  * [See the spec](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf),

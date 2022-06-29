@@ -5,7 +5,7 @@ import {
 import {ElGamalCiphertext} from '../core/elgamal';
 import {ElementModQ} from '../core/group-common';
 import {CryptoHashableElement} from '../core/hash';
-import {HashedElGamalCiphertext} from '../core/hashed-elgamal';
+import {HashedElGamalCiphertextCompat} from '../core/hashed-elgamal';
 import {
   ElectionObjectBase,
   matchingArraysOfAnyElectionObjects,
@@ -57,7 +57,7 @@ export class SubmittedContest
     readonly ciphertextAccumulation: ElGamalCiphertext,
     readonly cryptoHashElement: ElementModQ,
     readonly proof: ConstantChaumPedersenProofKnownNonce,
-    readonly extendedData?: HashedElGamalCiphertext
+    readonly extendedData?: HashedElGamalCiphertextCompat
   ) {}
 
   get objectId(): string {

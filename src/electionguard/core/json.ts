@@ -27,7 +27,10 @@ import {
   uint8ArrayToBigInt,
   uint8ArrayToHex,
 } from './utils';
-import {HashedElGamalCiphertext} from './hashed-elgamal';
+import {
+  HashedElGamalCiphertext,
+  HashedElGamalCiphertextCompat,
+} from './hashed-elgamal';
 import {UInt256} from './uint256';
 import * as Either from 'fp-ts/lib/Either';
 import * as log from './logging';
@@ -82,6 +85,11 @@ export class CoreCodecs {
     unknown,
     unknown,
     HashedElGamalCiphertext
+  >;
+  readonly hashedElGamalCiphertextCompatCodec: C.Codec<
+    unknown,
+    unknown,
+    HashedElGamalCiphertextCompat
   >;
   readonly electionConstantsCodec: C.Codec<unknown, unknown, ElectionConstants>;
   readonly electionContextCodec: C.Codec<unknown, unknown, ElectionContext>;
@@ -574,7 +582,7 @@ export class CoreCodecs {
         pad: elementModPDecoder,
         data: uInt8ArrayDecoder,
         mac: uInt256Decoder,
-        numBytes: D.number, // TODO: remove
+        numBytes: D.number,
       }),
       D.map(s => {
         return new HashedElGamalCiphertext(s.pad, s.data, s.mac, s.numBytes);
@@ -598,6 +606,38 @@ export class CoreCodecs {
     this.hashedElGamalCiphertextCodec = C.make(
       hashedElGamalCiphertextDecoder,
       hashedElGamalCiphertextEncoder
+    );
+
+    const hashedElGamalCiphertextCompatDecoder: D.Decoder<
+      unknown,
+      HashedElGamalCiphertextCompat
+    > = pipe(
+      D.struct({
+        pad: elementModPDecoder,
+        data: uInt8ArrayDecoder,
+        mac: uInt256Decoder,
+      }),
+      D.map(s => {
+        return new HashedElGamalCiphertextCompat(s.pad, s.data, s.mac);
+      })
+    );
+
+    const hashedElGamalCiphertextCompatEncoder: E.Encoder<
+      unknown,
+      HashedElGamalCiphertextCompat
+    > = {
+      encode: input => {
+        return {
+          pad: elementModPEncoder.encode(input.c0),
+          data: uInt8ArrayEncoder.encode(input.c1),
+          mac: uInt256Encoder.encode(input.c2),
+        };
+      },
+    };
+
+    this.hashedElGamalCiphertextCompatCodec = C.make(
+      hashedElGamalCiphertextCompatDecoder,
+      hashedElGamalCiphertextCompatEncoder
     );
   }
 }

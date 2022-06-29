@@ -14,9 +14,20 @@ function testHashedElGamalEncryption(context: GroupContext) {
           elementModQ(context, 2),
           fc.uint8Array({min: 0, max: 255, minLength: 4, maxLength: 128}),
           (kp, nonce, plaintext) => {
-            const ciphertext =
-              HashedElGamalCiphertext.encrypt(kp, plaintext, nonce) || fail();
-            const plaintextAgain = ciphertext.decrypt(kp) || fail();
+            const ciphertext = HashedElGamalCiphertext.encrypt(
+              kp,
+              plaintext,
+              nonce
+            );
+            if (ciphertext === undefined) {
+              throw new Error('encryption failed');
+            }
+
+            const plaintextAgain = ciphertext.decrypt(kp);
+            if (plaintextAgain === undefined) {
+              throw new Error('decryption failed');
+            }
+
             const samePlaintext = arraysEqual(plaintextAgain, plaintext);
             expect(samePlaintext).toBe(true);
 

@@ -11,7 +11,10 @@ import {
 import {getCoreCodecsForContext} from '../../../src/electionguard/core/json';
 import {GroupContext} from '../../../src/electionguard/core/group-common';
 import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
-import {HashedElGamalCiphertext} from '../../../src/electionguard/core/hashed-elgamal';
+import {
+  HashedElGamalCiphertext,
+  HashedElGamalCiphertextCompat,
+} from '../../../src/electionguard/core/hashed-elgamal';
 import {arraysEqual} from '../../../src/electionguard/core/utils';
 import {testCodecLaws} from './testCodecLaws';
 
@@ -110,6 +113,16 @@ function testCodecsForContext(context: GroupContext) {
         return HashedElGamalCiphertext.encrypt(kp, bytes, nonce);
       }),
     codecs.hashedElGamalCiphertextCodec,
+    (a, b) => a.equals(b)
+  );
+  testCodecLaws(
+    context.name,
+    'HashedElGamalCiphertextCompat',
+    fc.tuple(elementModP(context), uint8ArrayReasonable(), uInt256()).map(t => {
+      const [pad, bytes, mac] = t;
+      return new HashedElGamalCiphertextCompat(pad, bytes, mac);
+    }),
+    codecs.hashedElGamalCiphertextCompatCodec,
     (a, b) => a.equals(b)
   );
   testCodecLaws(
