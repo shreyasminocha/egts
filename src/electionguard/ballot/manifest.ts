@@ -430,9 +430,9 @@ export class ManifestCandidate
     context: GroupContext,
     readonly candidateId: string,
     readonly name: ManifestInternationalizedText,
-    readonly partyId: string | undefined,
-    readonly imageUri: string | undefined,
-    readonly isWriteIn: boolean
+    readonly partyId?: string,
+    readonly imageUri?: string,
+    readonly isWriteIn?: boolean
   ) {
     this.cryptoHashElement = hashElements(
       context,

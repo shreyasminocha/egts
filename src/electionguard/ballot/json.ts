@@ -425,7 +425,7 @@ export class BallotCodecs {
               s.name,
               s.party_id === null ? undefined : s.party_id,
               s.image_uri === null ? undefined : s.image_uri,
-              !!s.is_write_in
+              s.is_write_in === null ? undefined : s.is_write_in
             )
         )
       );
@@ -436,7 +436,7 @@ export class BallotCodecs {
         name: manifestInternationalizedTextEncoder.encode(input.name),
         party_id: input.partyId === undefined ? null : input.partyId,
         image_uri: input.imageUri === undefined ? null : input.imageUri,
-        is_write_in: input.isWriteIn,
+        is_write_in: input.isWriteIn === undefined ? null : input.isWriteIn,
       }),
     };
 
@@ -1080,7 +1080,7 @@ export class BallotCodecs {
         object_id: input.selectionId,
         vote: input.vote,
         is_placeholder_selection: input.isPlaceholderSelection,
-        write_in: input.writeIn,
+        write_in: input.writeIn === undefined ? null : input.writeIn,
       }),
     };
 
