@@ -72,18 +72,20 @@ export function encryptBallot(
 
   const pcontests = associateBy(ballot.contests, c => c.contestId);
 
-  const encryptedContests = state.manifest.contests.map(mcontest => {
-    const pcontest: PlaintextContest =
-      pcontests.get(mcontest.contestId) ?? contestFrom(mcontest);
-    // If no contest on the ballot, so create a placeholder
-    return encryptContest(
-      state,
-      pcontest,
-      ballot.ballotId,
-      mcontest,
-      ballotNonce
-    );
-  });
+  const encryptedContests = state.manifest
+    .getContests(ballot.ballotStyleId)
+    .map(mcontest => {
+      const pcontest: PlaintextContest =
+        pcontests.get(mcontest.contestId) ?? contestFrom(mcontest);
+      // If no contest on the ballot, so create a placeholder
+      return encryptContest(
+        state,
+        pcontest,
+        ballot.ballotId,
+        mcontest,
+        ballotNonce
+      );
+    });
 
   const cryptoHash = hashElements(
     state.group,
