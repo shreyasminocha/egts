@@ -1,6 +1,6 @@
 import {ElementModQ, GroupContext} from '../core/group-common';
 import {CryptoHashableElement, hashElements} from '../core/hash';
-import {arraysEqual} from '../core/utils';
+import {arraysEqual, dateToISOString} from '../core/utils';
 import {
   ElectionObjectBase,
   Eq,
@@ -40,8 +40,8 @@ export class Manifest implements CryptoHashableElement, Eq<Manifest> {
       context,
       electionScopeId,
       electionType, // gets string name from enum
-      startDate,
-      endDate,
+      dateToISOString(new Date(startDate)),
+      dateToISOString(new Date(endDate)),
       name,
       contactInformation,
       geopoliticalUnits,

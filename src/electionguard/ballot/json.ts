@@ -669,8 +669,8 @@ export class BallotCodecs {
         election_scope_id: input.electionScopeId,
         spec_version: input.specVersion,
         type: input.electionType,
-        start_date: input.startDate,
-        end_date: input.endDate,
+        start_date: input.startDate, // Should we normalize to ISO 8601?
+        end_date: input.endDate, // Should we normalize to ISO 8601?
         geopolitical_units: input.geopoliticalUnits.map(
           manifestGeopoliticalUnitEncoder.encode
         ),

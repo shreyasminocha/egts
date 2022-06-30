@@ -351,3 +351,8 @@ export function nullToUndefined<T>(x: T | null): T | undefined {
 export function undefinedToNull<T>(x: T | undefined): T | null {
   return x === undefined ? null : x;
 }
+
+/** Converts a date to an ISO 8601-formatted string (without milliseconds). */
+export function dateToISOString(date: Date) {
+  return `${date.toISOString().split('.')[0]}Z`;
+}
