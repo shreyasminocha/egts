@@ -16,11 +16,14 @@ import * as log from './logging';
 
 /** Proof that the ciphertext is a given constant. */
 export class ConstantChaumPedersenProofKnownNonce {
+  readonly usage: ProofUsage;
+
   constructor(
     readonly proof: ExpandedGenericChaumPedersenProof,
-    readonly constant: number,
-    readonly usage: ProofUsage = 'Unknown'
-  ) {}
+    readonly constant: number
+  ) {
+    this.usage = "Prove value within selection's limit";
+  }
 
   /**
    * Produces a proof that a given ElGamal encryption corresponds to a specific total value. This
@@ -58,7 +61,7 @@ export class ConstantChaumPedersenProofKnownNonce {
       context,
       seed,
       qbar,
-      'constant-chaum-pedersen-proof-known-nonce'
+      'constant-chaum-pedersen-proof'
     );
 
     return new ConstantChaumPedersenProofKnownNonce(
@@ -123,11 +126,14 @@ export class ConstantChaumPedersenProofKnownNonce {
 
 /** Proof that the ciphertext is a given constant. */
 export class ConstantChaumPedersenProofKnownSecretKey {
+  readonly usage: ProofUsage;
+
   constructor(
     readonly proof: ExpandedGenericChaumPedersenProof,
-    readonly constant: number,
-    readonly usage: ProofUsage = 'Unknown'
-  ) {}
+    readonly constant: number
+  ) {
+    this.usage = "Prove value within selection's limit";
+  }
 
   /**
    * Produces a proof that a given ElGamal encryption corresponds to a specific total value. This
@@ -227,12 +233,15 @@ export class ConstantChaumPedersenProofKnownSecretKey {
 
 /** Proof that the ciphertext is either zero or one.  */
 export class DisjunctiveChaumPedersenProofKnownNonce {
+  readonly usage: ProofUsage;
+
   constructor(
     readonly proof0: ExpandedGenericChaumPedersenProof,
     readonly proof1: ExpandedGenericChaumPedersenProof,
-    readonly c: ElementModQ,
-    readonly usage: ProofUsage = 'Unknown'
-  ) {}
+    readonly c: ElementModQ
+  ) {
+    this.usage = "Prove selection's value (0 or 1)";
+  }
 
   /**
    * Produces a proof that a given ElGamal encryption corresponds to either zero or one. This requires

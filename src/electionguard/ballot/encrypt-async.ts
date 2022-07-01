@@ -56,6 +56,8 @@ export class AsyncBallotEncryptor {
    *   names the ballot style to be used for this particular ballot.
    * @param ballotId Every ballot needs a string identifier which should be globally
    *   unique.
+   * @param codeSeed The hash of the previous ballot. Initially set to the hash of the
+   *   encryption device.
    * @param seed The root of all randomness used for encrypting the ballot. If
    *  not provided, a new random number will be securely generated.
    * @param timestamp Optional timestamp for the ballot, in seconds since the Unix epoch.
@@ -69,6 +71,7 @@ export class AsyncBallotEncryptor {
     validate: boolean,
     ballotStyleId: string,
     ballotId: string,
+    codeSeed: ElementModQ,
     seed?: ElementModQ,
     timestamp?: number
   ): AsyncBallotEncryptor {
@@ -93,6 +96,7 @@ export class AsyncBallotEncryptor {
       electionContext,
       validate,
       group,
+      codeSeed,
       seed,
       ballotStyleId,
       ballotId,
@@ -126,6 +130,7 @@ export class AsyncBallotEncryptor {
     electionContext: ElectionContext,
     validate: boolean,
     group: GroupContext,
+    readonly codeSeed: ElementModQ,
     readonly seed: ElementModQ,
     readonly ballotStyleId: string,
     readonly ballotId: string,
@@ -138,6 +143,7 @@ export class AsyncBallotEncryptor {
       electionContext.cryptoExtendedBaseHash,
       electionContext.manifestHash,
       manifest.cryptoHashElement,
+      codeSeed,
       seed
     );
     if (sameGroup.name !== group.name) {
@@ -283,7 +289,7 @@ export class AsyncBallotEncryptor {
       this.encryptionState.group,
       this.ballotId,
       this.encryptionState.manifestHash,
-      encryptedContests
+      ...encryptedContests
     );
 
     const timestamp =
@@ -291,7 +297,7 @@ export class AsyncBallotEncryptor {
 
     const ballotCode = hashElements(
       this.encryptionState.group,
-      this.encryptionState.group.ZERO_MOD_Q, // tracking hash of prior ballot
+      this.codeSeed,
       timestamp,
       cryptoHash
     );
@@ -300,7 +306,7 @@ export class AsyncBallotEncryptor {
       this.ballotId,
       this.ballotStyleId,
       this.encryptionState.manifestHash,
-      this.encryptionState.group.ZERO_MOD_Q, // tracking hash of prior ballot
+      this.codeSeed,
       ballotCode,
       encryptedContests,
       timestamp,

@@ -24,6 +24,7 @@ import {
   PlaintextSelection,
 } from './plaintext-ballot';
 import * as log from '../core/logging';
+import {sortedArrayOfOrderedElectionObjects} from './election-object-base';
 
 /** State used for all encryption functions, wrapped into a single class. */
 export class EncryptionState {
@@ -60,6 +61,7 @@ export class EncryptionState {
 export function encryptBallot(
   state: EncryptionState,
   ballot: PlaintextBallot,
+  ballotCodeSeed: ElementModQ,
   ballotEncryptionSeed: ElementModQ,
   timestamp?: number
 ): CiphertextBallot {
@@ -91,7 +93,7 @@ export function encryptBallot(
     state.group,
     ballot.ballotId,
     state.manifestHash,
-    encryptedContests
+    ...sortedArrayOfOrderedElectionObjects(encryptedContests)
   );
 
   // Ticks are defined here as number of seconds since the unix epoch (00:00:00 UTC on 1
@@ -100,7 +102,7 @@ export function encryptBallot(
 
   const ballotCode = hashElements(
     state.group,
-    state.group.ZERO_MOD_Q, // tracking hash of prior ballot
+    ballotCodeSeed,
     timestamp,
     cryptoHash
   );
@@ -109,7 +111,7 @@ export function encryptBallot(
     ballot.ballotId,
     ballot.ballotStyleId,
     state.manifestHash,
-    state.group.ZERO_MOD_Q, // tracking hash of prior ballot
+    ballotCodeSeed,
     ballotCode,
     encryptedContests,
     timestamp,
@@ -195,7 +197,7 @@ export function encryptContest(
     const sequenceNo = selectionSequenceOrderMax + placeholderNumber;
 
     const plaintextSelection = selectionFrom(
-      `${contestDescription.contestId}-${sequenceNo}`,
+      `${contestDescription.contestId}-${sequenceNo}-placeholder`,
       true,
       selectionCount < limit
     );
@@ -225,7 +227,7 @@ export function encryptContest(
     state.group,
     contest.contestId,
     contestDescriptionHash,
-    encryptedSelections
+    ...sortedArrayOfOrderedElectionObjects(encryptedSelections)
   );
 
   const texts = encryptedSelections.map(it => it.ciphertext);

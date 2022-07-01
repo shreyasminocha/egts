@@ -14,6 +14,8 @@ import {
   ConstantChaumPedersenProofKnownSecretKey,
   DisjunctiveChaumPedersenProofKnownNonce,
   ExpandedGenericChaumPedersenProof,
+  ProofUsage,
+  ProofUsageStrings,
 } from './chaum-pedersen';
 import {
   EdgeCaseConfiguration,
@@ -305,6 +307,7 @@ export class CoreCodecs {
       D.map(
         s =>
           new EncryptionDevice(
+            context,
             s.device_id,
             s.session_id,
             s.launch_code,
@@ -419,7 +422,13 @@ export class CoreCodecs {
         challenge: elementModQDecoder,
         response: elementModQDecoder,
         constant: D.number,
-        usage: D.string,
+        usage: pipe(
+          D.string,
+          D.refine(
+            (s): s is ProofUsage => ProofUsageStrings.includes(s),
+            'valid string'
+          )
+        ),
       }),
       D.map(
         s =>
@@ -430,8 +439,7 @@ export class CoreCodecs {
               s.challenge,
               s.response
             ),
-            s.constant,
-            s.usage
+            s.constant
           )
       )
     );
@@ -516,7 +524,13 @@ export class CoreCodecs {
         proof_one_challenge: elementModQDecoder,
         proof_one_response: elementModQDecoder,
         challenge: elementModQDecoder,
-        usage: D.string,
+        usage: pipe(
+          D.string,
+          D.refine(
+            (s): s is ProofUsage => ProofUsageStrings.includes(s),
+            'valid string'
+          )
+        ),
       }),
       D.map(
         s =>
@@ -533,8 +547,7 @@ export class CoreCodecs {
               s.proof_one_challenge,
               s.proof_one_response
             ),
-            s.challenge,
-            s.usage
+            s.challenge
           )
       )
     );

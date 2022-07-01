@@ -30,7 +30,8 @@ describe('Async encryption wrapper', () => {
       fc.asyncProperty(
         electionAndBallots(groupContext, 1),
         elementModQ(groupContext),
-        async (eb, seed) => {
+        elementModQ(groupContext),
+        async (eb, prev, seed) => {
           const timestamp = Date.now() / 1000;
           const encryptionState = new EncryptionState(
             groupContext,
@@ -44,6 +45,7 @@ describe('Async encryption wrapper', () => {
             const encryptedBallot = encryptBallot(
               encryptionState,
               plaintextBallot,
+              prev,
               seed,
               timestamp
             );
@@ -77,6 +79,7 @@ describe('Async encryption wrapper', () => {
               true,
               plaintextBallot.ballotStyleId,
               plaintextBallot.ballotId,
+              prev,
               seed,
               timestamp
             );
