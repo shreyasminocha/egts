@@ -141,6 +141,9 @@ describe('compat', () => {
       ciphertextBallot.nonce,
       ciphertextBallot.timestamp
     );
+    // expect(bCodecs.ciphertextBallotCodec.encode(ourCiphertext)).toStrictEqual(
+    //   bCodecs.ciphertextBallotCodec.encode(ciphertextBallot)
+    // );
     expect(ourCiphertext.equals(ciphertextBallot)).toBe(true);
 
     content = await fs.readFile(
@@ -160,5 +163,5 @@ describe('compat', () => {
     expect(bCodecs.submittedBallotCodec.encode(submittedBallot)).toStrictEqual(
       submittedBallotJson
     );
-  });
+  }, 10_000);
 });

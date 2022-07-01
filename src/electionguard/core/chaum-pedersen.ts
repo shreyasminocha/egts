@@ -57,12 +57,13 @@ export class ConstantChaumPedersenProofKnownNonce {
     // TODO: How much flexibility do we have on where this value comes from, specifically
     //   for the VBM application where we want to deterministically recreate the ballots
     //   later on? The spec seems silent on this.
-    const proofW = hashElements(
-      context,
-      seed,
-      qbar,
-      'constant-chaum-pedersen-proof'
-    );
+    const proofW = new Nonces(seed, 'constant-chaum-pedersen-proof').get(0);
+    // const proofW = hashElements(
+    //   context,
+    //   seed,
+    //   qbar,
+    //   'constant-chaum-pedersen-proof'
+    // );
 
     return new ConstantChaumPedersenProofKnownNonce(
       ExpandedGenericChaumPedersenProof.create(
@@ -70,7 +71,7 @@ export class ConstantChaumPedersenProofKnownNonce {
         context.G_MOD_P, // g
         publicKey.publicKeyElement, // h
         nonce, // x
-        [qbar, publicKey.publicKeyElement, ciphertext.pad, ciphertext.data] // hashHeader
+        [qbar, ciphertext.pad, ciphertext.data] // hashHeader
       ),
       plaintext
     );
@@ -113,7 +114,7 @@ export class ConstantChaumPedersenProofKnownNonce {
         ciphertext.pad, // gx
         publicKey.publicKeyElement, // h
         multP(ciphertext.data, context.gPowP(negativeC)), // hx
-        [qbar, publicKey.publicKeyElement, ciphertext.pad, ciphertext.data] // hashHeader
+        [qbar, ciphertext.pad, ciphertext.data] // hashHeader
       ) &&
       (expectedConstant !== -1 ? this.constant === expectedConstant : true)
     );
@@ -162,12 +163,13 @@ export class ConstantChaumPedersenProofKnownSecretKey {
     // TODO: How much flexibility do we have on where this value comes from, specifically
     //   for the VBM application where we want to deterministically recreate the ballots
     //   later on? The spec seems silent on this.
-    const proofW = hashElements(
-      context,
-      seed,
-      qbar,
-      'constant-chaum-pedersen-proof-known-secret-key'
-    );
+    const proofW = new Nonces(seed, 'constant-chaum-pedersen-proof').get(0);
+    // const proofW = hashElements(
+    //   context,
+    //   seed,
+    //   qbar,
+    //   'constant-chaum-pedersen-proof-known-secret-key'
+    // );
 
     return new ConstantChaumPedersenProofKnownSecretKey(
       ExpandedGenericChaumPedersenProof.create(
@@ -175,7 +177,7 @@ export class ConstantChaumPedersenProofKnownSecretKey {
         context.G_MOD_P, // g
         ciphertext.pad, // h = g^r
         keypair.secretKeyElement, // x = a
-        [qbar, keypair.publicKeyElement, ciphertext.pad, ciphertext.data] // hashHeader
+        [qbar, ciphertext.pad, ciphertext.data] // hashHeader
       ),
       plaintext
     );
@@ -220,7 +222,7 @@ export class ConstantChaumPedersenProofKnownSecretKey {
         publicKey.publicKeyElement, // gx = g^a
         ciphertext.pad, // h = g^r
         multP(ciphertext.data, context.gPowP(negateQ(constantQ))), // hx = g^{ar}g^m / g^m = g^ar
-        [qbar, publicKey.publicKeyElement, ciphertext.pad, ciphertext.data] // hashHeader
+        [qbar, ciphertext.pad, ciphertext.data] // hashHeader
       ) &&
       (expectedConstant !== -1 ? this.constant === expectedConstant : true)
     );
