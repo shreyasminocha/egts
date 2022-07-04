@@ -4,6 +4,9 @@ import {
   bigIntContext3072,
   matchingArraysOfAnyElectionObjects,
   Nonces,
+  PlaintextBallot,
+  PlaintextContest,
+  shuffleArray,
 } from '../../../src/electionguard';
 import {decryptAndVerifyBallot} from '../../../src/electionguard/ballot/decrypt';
 import {
@@ -222,6 +225,58 @@ describe('Election / ballot encryption', () => {
             .concat(chaumPedersenBigintsCR);
 
           expect(noRepeatingBigints(absolutelyEverything)).toBe(true);
+        }
+      ),
+      fcFastConfig
+    );
+  });
+  test("Shuffling plaintext doesn't affect ciphertext ballots", () => {
+    fc.assert(
+      fc.property(
+        electionAndBallots(groupContext, 1),
+        elementModQ(groupContext),
+        elementModQ(groupContext),
+        (eb, prev, seed) => {
+          const timestamp = Date.now() / 1000;
+          const nonces = new Nonces(seed);
+          const encryptionState = new EncryptionState(
+            groupContext,
+            eb.manifest,
+            eb.electionContext,
+            true
+          );
+
+          const [ballot] = eb.ballots;
+          const ciphertextBallot = encryptBallot(
+            encryptionState,
+            ballot,
+            prev,
+            nonces.get(0),
+            timestamp
+          );
+
+          const copy = new PlaintextBallot(
+            ballot.ballotId,
+            ballot.ballotStyleId,
+            shuffleArray(
+              ballot.contests.map(
+                contest =>
+                  new PlaintextContest(
+                    contest.contestId,
+                    shuffleArray(contest.selections)
+                  )
+              )
+            )
+          );
+          const copyCiphertextBallot = encryptBallot(
+            encryptionState,
+            copy,
+            prev,
+            nonces.get(0),
+            timestamp
+          );
+
+          expect(copyCiphertextBallot.equals(ciphertextBallot)).toBe(true);
         }
       ),
       fcFastConfig

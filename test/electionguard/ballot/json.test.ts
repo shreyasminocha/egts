@@ -127,6 +127,13 @@ function testBallotCodecsForContext(context: GroupContext) {
       a.jointPublicKey.element.isValidResidue() &&
       b.jointPublicKey.element.isValidResidue()
   );
+  testCodecLaws(
+    context.name,
+    'EncryptionState',
+    G.encryptionState(context),
+    bCodecs.encryptionStateCodec,
+    (a, b) => a.equals(b)
+  );
 }
 
 testBallotCodecsForContext(bigIntContext3072());

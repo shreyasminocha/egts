@@ -1,4 +1,5 @@
-import seedrandom = require('seedrandom');
+import {zip} from 'fp-ts/lib/Array';
+import seedrandom from 'seedrandom';
 
 // source for useful functions to and from uint8Array:
 // https://coolaj86.com/articles/convert-js-bigints-to-typedarrays/
@@ -214,11 +215,7 @@ export function associateBy<T>(
   input: Array<T>,
   keyFn: (element: T) => string
 ): Map<string, T> {
-  const result = new Map<string, T>();
-  input.forEach(v => {
-    result.set(keyFn(v), v);
-  });
-  return result;
+  return mapFrom(input, keyFn, value => value);
 }
 
 /**
@@ -227,12 +224,15 @@ export function associateBy<T>(
  */
 export function numberRange(start: number, end: number, delta = 1): number[] {
   const result = new Array<number>();
-  let current = start;
+  if (delta < 1) {
+    throw new Error('zero and negative numbers not supported');
+  }
   if (end < start) {
     const tmp = start;
     start = end;
     end = tmp;
   }
+  let current = start;
   while (current >= start && current <= end) {
     result.push(current);
     current += delta;
@@ -253,33 +253,7 @@ export function mapFrom<T, R>(
   keyFn: (input: T) => string,
   valueFn: (input: T) => R
 ): Map<string, R> {
-  const result = new Map<string, R>();
-  input.forEach(i => {
-    const key = keyFn(i);
-    const value = valueFn(i);
-    result.set(key, value);
-  });
-  return result;
-}
-
-/**
- * Given a map and a key, returns the value in the map corresponding
- * to the key. If it's missing, an Error is thrown with the optional
- * error string included. DON'T USE UNLESS ERRORS INDICATE CODE BUGS.
- * As in, only use when you really know the key is present and you
- * just don't NEED to deal with error handling.
- */
-export function getOrFail<T>(
-  map: Map<string, T>,
-  key: string,
-  err = 'missing key'
-): T {
-  const result = map.get(key);
-  if (result === undefined) {
-    throw new Error(err);
-  } else {
-    return result;
-  }
+  return new Map(zip(input.map(keyFn), input.map(valueFn)));
 }
 
 /**

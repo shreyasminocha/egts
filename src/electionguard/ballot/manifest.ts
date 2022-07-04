@@ -690,13 +690,8 @@ export class ManifestContestDescription
       this.votesAllowed === other.votesAllowed &&
       this.name === other.name &&
       matchingArraysOfAnyElectionObjects(this.selections, other.selections) &&
-      ((this.ballotTitle === undefined && other.ballotTitle === undefined) ||
-        (this.ballotTitle !== undefined &&
-          objEqualsOrUndefEquals(this.ballotTitle, other.ballotTitle))) &&
-      ((this.ballotSubtitle === undefined &&
-        other.ballotSubtitle === undefined) ||
-        (this.ballotSubtitle !== undefined &&
-          objEqualsOrUndefEquals(this.ballotSubtitle, other.ballotSubtitle)))
+      objEqualsOrUndefEquals(this.ballotTitle, other.ballotTitle) &&
+      objEqualsOrUndefEquals(this.ballotSubtitle, other.ballotSubtitle)
     );
   }
 
@@ -722,7 +717,7 @@ export class ManifestContestDescription
       validVotesAllowed &&
       noRepeatCandidateIds &&
       noRepeatSelectionIds &&
-      noRepeatSelectionIds;
+      noRepeatSequenceIds;
 
     if (!success) {
       log.warn(
@@ -756,7 +751,7 @@ export class ManifestReferendumContestDescription extends ManifestContestDescrip
     geopoliticalUnitId: string,
     voteVariation: ManifestVoteVariationType,
     numberElected: number,
-    votesAllowed: number,
+    votesAllowed: number | undefined,
     name: string,
     selections: Array<ManifestSelectionDescription>,
     ballotTitle: ManifestInternationalizedText | undefined,
@@ -796,7 +791,7 @@ export class ManifestCandidateContestDescription extends ManifestContestDescript
     geopoliticalUnitId: string,
     voteVariation: ManifestVoteVariationType,
     numberElected: number,
-    votesAllowed: number,
+    votesAllowed: number | undefined,
     name: string,
     selections: Array<ManifestSelectionDescription>,
     ballotTitle: ManifestInternationalizedText | undefined,

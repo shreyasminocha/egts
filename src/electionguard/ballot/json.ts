@@ -527,22 +527,35 @@ export class BallotCodecs {
         ballot_title: D.nullable(manifestInternationalizedTextDecoder),
         ballot_subtitle: D.nullable(manifestInternationalizedTextDecoder),
       }),
-      D.map(
-        s =>
-          new M.ManifestContestDescription(
+      D.intersect(
+        D.partial({
+          primary_party_ids: D.nullable(D.array(D.string)),
+        })
+      ),
+      D.map(s => {
+        const props = [
+          s.object_id,
+          s.sequence_order,
+          s.electoral_district_id,
+          s.vote_variation,
+          s.number_elected,
+          nullToUndefined(s.votes_allowed),
+          s.name,
+          s.ballot_selections,
+          nullToUndefined(s.ballot_title),
+          nullToUndefined(s.ballot_subtitle),
+        ] as const;
+
+        if (s.primary_party_ids !== undefined) {
+          return new M.ManifestCandidateContestDescription(
             context,
-            s.object_id,
-            s.sequence_order,
-            s.electoral_district_id,
-            s.vote_variation,
-            s.number_elected,
-            nullToUndefined(s.votes_allowed),
-            s.name,
-            s.ballot_selections,
-            nullToUndefined(s.ballot_title),
-            nullToUndefined(s.ballot_subtitle)
-          )
-      )
+            ...props,
+            nullToUndefined(s.primary_party_ids)
+          );
+        }
+
+        return new M.ManifestContestDescription(context, ...props);
+      })
     );
 
     const manifestContestDescriptionEncoder: E.Encoder<
@@ -555,17 +568,19 @@ export class BallotCodecs {
         electoral_district_id: input.geopoliticalUnitId,
         vote_variation: input.voteVariation,
         number_elected: input.numberElected,
-        votes_allowed: input.votesAllowed,
+        votes_allowed: undefinedToNull(input.votesAllowed),
         name: input.name,
         ballot_selections: input.selections.map(
           manifestSelectionDescriptionEncoder.encode
         ),
         ballot_title:
-          input.ballotTitle &&
-          manifestInternationalizedTextEncoder.encode(input.ballotTitle),
+          input.ballotTitle !== undefined
+            ? manifestInternationalizedTextEncoder.encode(input.ballotTitle)
+            : null,
         ballot_subtitle:
-          input.ballotSubtitle &&
-          manifestInternationalizedTextEncoder.encode(input.ballotSubtitle),
+          input.ballotSubtitle !== undefined
+            ? manifestInternationalizedTextEncoder.encode(input.ballotSubtitle)
+            : null,
       }),
     };
 
@@ -584,7 +599,7 @@ export class BallotCodecs {
         electoral_district_id: D.string,
         vote_variation: manifestVoteVariationTypeDecoder,
         number_elected: D.number,
-        votes_allowed: D.number,
+        votes_allowed: D.nullable(D.number),
         name: D.string,
         ballot_selections: D.array(manifestSelectionDescriptionDecoder),
         ballot_title: D.nullable(manifestInternationalizedTextDecoder),
@@ -600,7 +615,7 @@ export class BallotCodecs {
             s.electoral_district_id,
             s.vote_variation,
             s.number_elected,
-            s.votes_allowed,
+            nullToUndefined(s.votes_allowed),
             s.name,
             s.ballot_selections,
             nullToUndefined(s.ballot_title),
@@ -616,7 +631,7 @@ export class BallotCodecs {
     > = {
       encode: input => ({
         ...(manifestContestDescriptionEncoder.encode(input) as Object),
-        primary_party_ids: input.primaryPartyIds,
+        primary_party_ids: undefinedToNull(input.primaryPartyIds),
       }),
     };
 
@@ -669,27 +684,27 @@ export class BallotCodecs {
         election_scope_id: input.electionScopeId,
         spec_version: input.specVersion,
         type: input.electionType,
-        start_date: input.startDate, // Should we normalize to ISO 8601?
-        end_date: input.endDate, // Should we normalize to ISO 8601?
+        start_date: input.startDate, // TODO: Should we normalize to ISO 8601?
+        end_date: input.endDate, // TODO: Should we normalize to ISO 8601?
         geopolitical_units: input.geopoliticalUnits.map(
           manifestGeopoliticalUnitEncoder.encode
         ),
         parties: input.parties.map(manifestPartyEncoder.encode),
         candidates: input.candidates.map(manifestCandidateEncoder.encode),
-        contests: input.contests.map(manifestContestDescriptionEncoder.encode),
+        contests: input.contests.map(c =>
+          c instanceof M.ManifestCandidateContestDescription
+            ? manifestCandidateContestDescriptionEncoder.encode(c)
+            : manifestContestDescriptionEncoder.encode(c)
+        ),
         ballot_styles: input.ballotStyles.map(
           manifestBallotStyleEncoder.encode
         ),
         name:
-          input.name === undefined
-            ? null
-            : manifestInternationalizedTextEncoder.encode(input.name),
+          input.name && manifestInternationalizedTextEncoder.encode(input.name),
         contact_information:
-          input.contactInformation === undefined
-            ? null
-            : manifestContactInformationEncoder.encode(
-                input.contactInformation
-              ),
+          input.contactInformation !== undefined
+            ? manifestContactInformationEncoder.encode(input.contactInformation)
+            : null,
       }),
     };
 

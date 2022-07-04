@@ -41,6 +41,15 @@ export class EncryptionState {
     this.extendedBaseHash = context.cryptoExtendedBaseHash;
     this.manifestHash = manifest.cryptoHashElement;
   }
+
+  equals(other: EncryptionState): boolean {
+    return (
+      other instanceof EncryptionState &&
+      other.manifest.equals(this.manifest) &&
+      other.context.equals(this.context) &&
+      other.validate === this.validate
+    );
+  }
 }
 
 /**

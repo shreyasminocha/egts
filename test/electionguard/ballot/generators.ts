@@ -8,6 +8,7 @@ import {
   PlaintextContest,
   shuffleArray,
   zipMap4,
+  EncryptionState,
 } from '../../../src/electionguard';
 import * as M from '../../../src/electionguard/ballot/manifest';
 import {
@@ -199,10 +200,23 @@ export function voteVariationType(): fc.Arbitrary<M.ManifestVoteVariationType> {
 export function contactInformation(
   context: GroupContext
 ): fc.Arbitrary<M.ManifestContactInformation> {
-  return fc.tuple(emailAnnotatedString(context), humanName()).map(t => {
-    const [email, name] = t;
-    return new M.ManifestContactInformation(context, [], [email], [], name);
-  });
+  return fc
+    .tuple(
+      fc.option(fc.array(fc.string()), {nil: undefined}),
+      fc.option(fc.array(emailAnnotatedString(context)), {nil: undefined}),
+      fc.option(fc.array(annotatedString(context)), {nil: undefined}),
+      humanName()
+    )
+    .map(t => {
+      const [address, email, phone, name] = t;
+      return new M.ManifestContactInformation(
+        context,
+        address,
+        email,
+        phone,
+        name
+      );
+    });
 }
 
 export function stringToInternational(
@@ -244,7 +258,7 @@ export function partyLists(
 
   return fc
     .tuple(
-      fc.array(fc.uuid(), {minLength: numParties, maxLength: numParties}),
+      fc.uniqueArray(fc.uuid(), {minLength: numParties, maxLength: numParties}),
       fc.array(fc.webUrl(), {minLength: numParties, maxLength: numParties})
     )
     .map(t => {
@@ -303,7 +317,7 @@ export function candidate(
       fc.uuid(),
       internationalizedHumanName(context),
       pidArb,
-      fc.oneof(fc.webUrl(), fc.constant(undefined))
+      fc.option(fc.webUrl(), {nil: undefined})
     )
     .map(t => {
       const [uuid, name, partyId, url] = t;
@@ -367,8 +381,8 @@ export function candidateContestDescription(
               fc.uuid(),
               fc.constantFrom(...geoUnits).map(it => it.objectId),
               fc.string(),
-              internationalizedText(context),
-              internationalizedText(context)
+              fc.option(internationalizedText(context), {nil: undefined}),
+              fc.option(internationalizedText(context), {nil: undefined})
             )
             .map(t => {
               const [
@@ -392,7 +406,7 @@ export function candidateContestDescription(
                   selectionDescriptions,
                   ballotTitle,
                   ballotSubtitle,
-                  partyIds
+                  partyIds // TODO: make this also optional
                 ),
               };
             });
@@ -442,8 +456,8 @@ export function referendumContestDescription(
             fc.uuid(),
             fc.constantFrom(...geoUnits).map(it => it.objectId),
             fc.string(),
-            internationalizedText(context),
-            internationalizedText(context)
+            fc.option(internationalizedText(context), {nil: undefined}),
+            fc.option(internationalizedText(context), {nil: undefined})
           )
           .map(t => {
             const [
@@ -497,7 +511,7 @@ export function electionDescription(
 
   return fc
     .tuple(
-      fc.array(geopoliticalUnit(context), {minLength: 1, maxLength: 1}),
+      fc.uniqueArray(geopoliticalUnit(context), {minLength: 1, maxLength: 1}),
       fc.integer({min: 1, max: maxNumParties}),
       fc.integer({min: 1, max: maxNumContests})
     )
@@ -507,10 +521,11 @@ export function electionDescription(
         fc
           .tuple(
             ballotStyle(context, parties, geoUnits),
+            electionType(),
             fc.date(),
             fc.emailAddress(),
-            internationalizedText(context),
-            contactInformation(context),
+            fc.option(internationalizedText(context), {nil: undefined}),
+            fc.option(contactInformation(context), {nil: undefined}),
             arrayIndexedArbitrary(
               i => contestDescription(context, i + 1, parties, geoUnits),
               numContests
@@ -519,6 +534,7 @@ export function electionDescription(
           .map(t => {
             const [
               styles,
+              type,
               date,
               scopeId,
               electionName,
@@ -532,14 +548,14 @@ export function electionDescription(
               context,
               `electionScopeId/${scopeId}`,
               '1.02',
-              'general',
+              type,
               date.toISOString(),
               date.toISOString(),
               geoUnits,
               parties,
               candidates,
               contests,
-              [styles],
+              [styles], // TODO: test with multiple ballot styles
               electionName,
               contactInfo
             );
@@ -629,6 +645,18 @@ export function ciphertextElection(
         ),
       };
     });
+}
+
+export function encryptionState(
+  context: GroupContext
+): fc.Arbitrary<EncryptionState> {
+  return electionDescription(context).chain(manifest => {
+    return fc
+      .tuple(ciphertextElection(context, manifest))
+      .map(([{electionContext}]) => {
+        return new EncryptionState(context, manifest, electionContext, true);
+      });
+  });
 }
 
 interface ElectionAndBallots {

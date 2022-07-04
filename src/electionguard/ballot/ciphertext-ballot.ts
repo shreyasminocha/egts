@@ -83,7 +83,7 @@ export class CiphertextContest
   implements CryptoHashableElement, OrderedObjectBase
 {
   constructor(
-    readonly contestId: string, // matches ContestDescription.contestIdd
+    readonly contestId: string, // matches ContestDescription.contestId
     readonly sequenceOrder: number, // matches ContestDescription.sequenceOrder
     readonly contestHash: ElementModQ, // matches ContestDescription.cryptoHash
     readonly selections: Array<CiphertextSelection>,
