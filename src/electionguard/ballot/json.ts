@@ -275,7 +275,7 @@ export class BallotCodecs {
       M.ManifestSelectionDescription
     > = {
       encode: input => ({
-        object_id: input.selectionId,
+        object_id: input.objectId,
         sequence_order: input.sequenceOrder,
         candidate_id: input.candidateId,
       }),
@@ -423,7 +423,7 @@ export class BallotCodecs {
 
     const manifestCandidateEncoder: E.Encoder<unknown, M.ManifestCandidate> = {
       encode: input => ({
-        object_id: input.candidateId,
+        object_id: input.objectId,
         name: manifestInternationalizedTextEncoder.encode(input.name),
         party_id: undefinedToNull(input.partyId),
         image_uri: undefinedToNull(input.imageUri),
@@ -459,7 +459,7 @@ export class BallotCodecs {
 
     const manifestPartyEncoder: E.Encoder<unknown, M.ManifestParty> = {
       encode: input => ({
-        object_id: input.partyId,
+        object_id: input.objectId,
         name: manifestInternationalizedTextEncoder.encode(input.name),
         abbreviation: undefinedToNull(input.abbreviation),
         color: undefinedToNull(input.color),
@@ -499,7 +499,7 @@ export class BallotCodecs {
       M.ManifestBallotStyle
     > = {
       encode: input => ({
-        object_id: input.ballotStyleId,
+        object_id: input.objectId,
         geopolitical_unit_ids: undefinedToNull(input.geopoliticalUnitIds),
         party_ids: undefinedToNull(input.partyIds),
         image_uri: undefinedToNull(input.imageUri),
@@ -563,7 +563,7 @@ export class BallotCodecs {
       M.ManifestContestDescription
     > = {
       encode: input => ({
-        object_id: input.contestId,
+        object_id: input.objectId,
         sequence_order: input.sequenceOrder,
         electoral_district_id: input.geopoliticalUnitId,
         vote_variation: input.voteVariation,
@@ -738,7 +738,7 @@ export class BallotCodecs {
 
     const submittedSelectionEncoder: E.Encoder<unknown, SubmittedSelection> = {
       encode: input => ({
-        object_id: input.selectionId,
+        object_id: input.objectId,
         sequence_order: input.sequenceOrder,
         description_hash: this.coreCodecs.elementModQCodec.encode(
           input.selectionHash
@@ -793,7 +793,7 @@ export class BallotCodecs {
 
     const submittedContestEncoder: E.Encoder<unknown, SubmittedContest> = {
       encode: input => ({
-        object_id: input.contestId,
+        object_id: input.objectId,
         sequence_order: input.sequenceOrder,
         description_hash: this.coreCodecs.elementModQCodec.encode(
           input.contestHash
@@ -855,7 +855,7 @@ export class BallotCodecs {
 
     const submittedBallotEncoder: E.Encoder<unknown, SubmittedBallot> = {
       encode: input => ({
-        object_id: input.ballotId,
+        object_id: input.objectId,
         style_id: input.ballotStyleId,
         manifest_hash: this.coreCodecs.elementModQCodec.encode(
           input.manifestHash
@@ -907,7 +907,7 @@ export class BallotCodecs {
     const ciphertextSelectionEncoder: E.Encoder<unknown, CiphertextSelection> =
       {
         encode: input => ({
-          object_id: input.selectionId,
+          object_id: input.objectId,
           sequence_order: input.sequenceOrder,
           description_hash: this.coreCodecs.elementModQCodec.encode(
             input.selectionHash
@@ -968,7 +968,7 @@ export class BallotCodecs {
 
     const ciphertextContestEncoder: E.Encoder<unknown, CiphertextContest> = {
       encode: input => ({
-        object_id: input.contestId,
+        object_id: input.objectId,
         sequence_order: input.sequenceOrder,
         description_hash: this.coreCodecs.elementModQCodec.encode(
           input.contestHash
@@ -1030,7 +1030,7 @@ export class BallotCodecs {
 
     const ciphertextBallotEncoder: E.Encoder<unknown, CiphertextBallot> = {
       encode: input => ({
-        object_id: input.ballotId,
+        object_id: input.objectId,
         style_id: input.ballotStyleId,
         manifest_hash: this.coreCodecs.elementModQCodec.encode(
           input.manifestHash
@@ -1077,7 +1077,7 @@ export class BallotCodecs {
 
     const plaintextSelectionEncoder: E.Encoder<unknown, PlaintextSelection> = {
       encode: input => ({
-        object_id: input.selectionId,
+        object_id: input.objectId,
         vote: input.vote,
         is_placeholder_selection: input.isPlaceholderSelection,
         write_in: undefinedToNull(input.writeIn),
@@ -1099,7 +1099,7 @@ export class BallotCodecs {
 
     const plaintextContestEncoder: E.Encoder<unknown, PlaintextContest> = {
       encode: input => ({
-        object_id: input.contestId,
+        object_id: input.objectId,
         ballot_selections: input.selections.map(
           plaintextSelectionEncoder.encode
         ),
@@ -1122,7 +1122,7 @@ export class BallotCodecs {
 
     const plaintextBallotEncoder: E.Encoder<unknown, PlaintextBallot> = {
       encode: input => ({
-        object_id: input.ballotId,
+        object_id: input.objectId,
         style_id: input.ballotStyleId,
         contests: input.contests.map(plaintextContestEncoder.encode),
       }),

@@ -457,6 +457,21 @@ export class ManifestCandidate
       this.isWriteIn === other.isWriteIn
     );
   }
+
+  /**
+   * Constructs a {@link ManifestCandidate} object for a simple candidate with a string ID and leaves the
+   * rest empty.
+   */
+  static simpleCandidate(
+    context: GroupContext,
+    candidateId: string
+  ): ManifestCandidate {
+    return new ManifestCandidate(
+      context,
+      candidateId,
+      ManifestInternationalizedText.emptyInternationalizedText(context)
+    );
+  }
 }
 
 /**
@@ -562,6 +577,32 @@ export class ManifestInternationalizedText
       matchingArraysWithEquals(this.text, other.text)
     );
   }
+
+  /** Constructs a {@link ManifestInternationalizedText} object for a single value and single language. */
+  static simpleInternationalText(
+    context: GroupContext,
+    value: string,
+    language: string
+  ): ManifestInternationalizedText {
+    return new ManifestInternationalizedText(context, [
+      new ManifestLanguage(context, value, language),
+    ]);
+  }
+
+  /** Constructs an empty {@link ManifestInternationalizedText} object. */
+  static emptyInternationalizedText(
+    context: GroupContext
+  ): ManifestInternationalizedText {
+    return new ManifestInternationalizedText(context, []);
+  }
+
+  /** Constructs an empty {@link ManifestInternationalizedTest} object with an "unknown" language. */
+  static internationalizedTextUnknown(
+    context: GroupContext
+  ): ManifestInternationalizedText {
+    const text = [new ManifestLanguage(context, 'unknown', 'en')];
+    return new ManifestInternationalizedText(context, text);
+  }
 }
 
 /**
@@ -606,9 +647,9 @@ export class ManifestParty
     context: GroupContext,
     readonly partyId: string,
     readonly name: ManifestInternationalizedText,
-    readonly abbreviation: string | undefined,
-    readonly color: string | undefined,
-    readonly logoUri: string | undefined
+    readonly abbreviation?: string,
+    readonly color?: string,
+    readonly logoUri?: string
   ) {
     this.cryptoHashElement = hashElements(
       context,
@@ -632,6 +673,18 @@ export class ManifestParty
       other.abbreviation === this.abbreviation &&
       other.color === this.color &&
       other.logoUri === this.logoUri
+    );
+  }
+
+  /**
+   * Constructs a {@link ManifestParty} object for a single party identifier string and leaves the rest
+   * empty.
+   */
+  static simpleParty(context: GroupContext, partyId: string): ManifestParty {
+    return new ManifestParty(
+      context,
+      partyId,
+      ManifestInternationalizedText.emptyInternationalizedText(context)
     );
   }
 }
@@ -860,66 +913,4 @@ export class ManifestSelectionDescription
       other.candidateId === this.candidateId
     );
   }
-}
-
-/** Constructs a {@link ManifestInternationalizedText} object for a single value and single language. */
-export function simpleInternationalText(
-  context: GroupContext,
-  value: string,
-  language: string
-): ManifestInternationalizedText {
-  return new ManifestInternationalizedText(context, [
-    new ManifestLanguage(context, value, language),
-  ]);
-}
-
-/**
- * Constructs a {@link ManifestParty} object for a single party identifier string and leaves the rest
- * empty.
- */
-export function simpleParty(
-  context: GroupContext,
-  partyId: string
-): ManifestParty {
-  return new ManifestParty(
-    context,
-    partyId,
-    emptyInternationalizedText(context),
-    undefined,
-    undefined,
-    undefined
-  );
-}
-
-/**
- * Constructs a {@link ManifestCandidate} object for a simple candidate with a string ID and leaves the
- * rest empty.
- */
-export function simpleCandidate(
-  context: GroupContext,
-  candidateId: string
-): ManifestCandidate {
-  return new ManifestCandidate(
-    context,
-    candidateId,
-    emptyInternationalizedText(context),
-    undefined,
-    undefined,
-    false
-  );
-}
-
-/** Constructs an empty {@link ManifestInternationalizedText} object. */
-export function emptyInternationalizedText(
-  context: GroupContext
-): ManifestInternationalizedText {
-  return new ManifestInternationalizedText(context, []);
-}
-
-/** Constructs an empty {@link ManifestInternationalizedTest} object with an "unknown" language. */
-export function internationalizedTextUnknown(
-  context: GroupContext
-): ManifestInternationalizedText {
-  const text = [new ManifestLanguage(context, 'unknown', 'en')];
-  return new ManifestInternationalizedText(context, text);
 }
