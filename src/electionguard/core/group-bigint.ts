@@ -1,5 +1,5 @@
 import * as bigintModArith from 'bigint-mod-arith';
-import * as crypto from 'crypto';
+import randomBytes from 'randombytes';
 import {bigIntToUint8Array, uint8ArrayToBigInt} from './utils';
 import {DLogger} from './dlog';
 import {
@@ -431,7 +431,7 @@ class BigIntProductionContext implements GroupContext {
   }
 
   randQ(minimum?: number): ElementModQ {
-    const bytes: Uint8Array = crypto.randomBytes(32);
+    const bytes: Uint8Array = randomBytes(32);
     const bigInt = uint8ArrayToBigInt(bytes);
     return this.createElementModQSafe(bigInt, minimum);
   }

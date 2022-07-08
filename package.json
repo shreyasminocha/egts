@@ -1,5 +1,5 @@
 {
-  "name": "ElectionGuard-TypeScript",
+  "name": "electionguard-typescript",
   "version": "0.6.0",
   "description": "Client-side implementation of ElectionGuard for ballot encryption",
   "author": "Arthur Wu <wuwenqin200613@gmail.com>",
@@ -10,49 +10,55 @@
     "electionguard",
     "esbuild"
   ],
-  "browser": {
-    "crypto": "crypto-browserify",
-    "assert": "assert-browserify",
-    "stream": "stream-browserify",
-    "fs": "brfs",
-    "path": "path-browserify"
-  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "dist/index.js",
+  "browser": "dist/electionguard.mjs",
   "devDependencies": {
     "@babel/preset-typescript": "^7.17.12",
+    "@rollup/plugin-commonjs": "^22.0.1",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@types/create-hash": "^1.2.2",
+    "@types/create-hmac": "^1.1.0",
     "@types/jest": "^27.5.1",
     "@types/node": "^14.11.2",
+    "@types/randombytes": "^2.0.0",
     "@types/seedrandom": "^3.0.2",
+    "@types/workerpool": "^6.1.0",
     "fast-check": "^2.25.0",
     "gts": "^3.1.0",
     "jest": "^28.1.0",
+    "rollup": "^2.76.0",
+    "rollup-plugin-polyfill-node": "^0.10.1",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-ts": "^3.0.2",
     "ts-jest": "^28.0.2",
     "ts-node": "^10.7.0",
     "typedoc": "^0.22.16",
     "typescript": "^4.7.2"
   },
   "dependencies": {
-    "@types/workerpool": "^6.1.0",
     "bigint-mod-arith": "^3.0.2",
-    "brfs": "^2.0.2",
-    "buffer": "^6.0.3",
-    "crypto-browserify": "^3.12.0",
-    "events": "^3.3.0",
+    "create-hash": "^1.2.0",
+    "create-hmac": "^1.1.7",
     "fp-ts": "^2.12.1",
     "io-ts": "^2.2.16",
-    "moment": "^2.29.1",
-    "path-browserify": "^1.0.1",
-    "seedrandom": "^3.0.5",
-    "stream-browserify": "^3.0.0"
+    "randombytes": "^2.1.0",
+    "seedrandom": "^3.0.5"
   },
   "scripts": {
     "docs": "typedoc",
     "lint": "gts lint",
     "clean": "gts clean",
     "compile": "tsc",
+    "build": "rollup -c rollup.config.js",
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run lint",
+    "posttest": "npm run lint && npm run build",
     "test": "jest",
     "coverage": "jest --coverage",
     "elgamal-bench": "node build/bench/elgamal-benchmark"
@@ -60,5 +66,5 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "type": "commonjs"
+  "type": "module"
 }

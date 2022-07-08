@@ -131,7 +131,6 @@ export function encryptBallot(
 }
 
 function contestFrom(mcontest: ManifestContestDescription): PlaintextContest {
-  console.log('amogus');
   const selections = mcontest.selections.map(it =>
     selectionFrom(it.selectionId, false, false)
   );

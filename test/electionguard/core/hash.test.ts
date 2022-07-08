@@ -1,12 +1,12 @@
 import * as fc from 'fast-check';
-import * as crypto from 'crypto';
+import createHash from 'create-hash';
 import {UInt256} from '../../../src/electionguard/core/uint256';
 import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
 import {hashElements} from '../../../src/electionguard/core/hash';
 
 const groupContext = bigIntContext3072();
 
-const h = crypto.createHash('sha256');
+const h = createHash('sha256');
 h.update('|null|', 'utf-8');
 const nullHash = new UInt256(h.digest()).toElementModQ(groupContext);
 
@@ -36,7 +36,7 @@ describe('hash', () => {
   test('strings', () => {
     fc.assert(
       fc.property(fc.array(fc.string(), {minLength: 1}), strings => {
-        const h = crypto.createHash('sha256');
+        const h = createHash('sha256');
         h.update(`|${strings.join('|')}|`, 'utf-8');
         const expected = new UInt256(h.digest()).toElementModQ(groupContext);
 
@@ -46,7 +46,7 @@ describe('hash', () => {
       })
     );
 
-    const h = crypto.createHash('sha256');
+    const h = createHash('sha256');
     h.update('||', 'utf-8');
     const expected = new UInt256(h.digest()).toElementModQ(groupContext);
     expect(hashElements(groupContext, '').equals(expected)).toBe(true);
@@ -56,7 +56,7 @@ describe('hash', () => {
       fc.property(
         fc.stringOf(fc.constantFrom(...'0123456789'.split(''))),
         numStr => {
-          const h = crypto.createHash('sha256');
+          const h = createHash('sha256');
           h.update(`|${numStr}|`, 'utf-8');
           const expected = new UInt256(h.digest()).toElementModQ(groupContext);
           expect(hashElements(groupContext, BigInt(numStr)).equals(expected));

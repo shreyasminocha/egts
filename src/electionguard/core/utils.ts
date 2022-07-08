@@ -1,4 +1,3 @@
-import {zip} from 'fp-ts/lib/Array';
 import seedrandom from 'seedrandom';
 
 // source for useful functions to and from uint8Array:
@@ -257,18 +256,22 @@ export function chunkArray<T>(
 }
 
 /**
- * Given an array of any type, builds a map from string to anything.
+ * Given an array of any type, builds a map from anything to anything.
  * @param input Arbitrary array of type T.
- * @param keyFn Function from T to string (the key of the resulting map)
- * @param valueFn Function from T to R (the value of the resulting map)
- * @returns a map from string to R
+ * @param keyFn Function from T to A (the key of the resulting map)
+ * @param valueFn Function from T to B (the value of the resulting map)
+ * @returns a map from A to B
  */
-export function mapFrom<T, R>(
+export function mapFrom<T, A, B>(
   input: Array<T>,
-  keyFn: (input: T) => string,
-  valueFn: (input: T) => R
-): Map<string, R> {
-  return new Map(zip(input.map(keyFn), input.map(valueFn)));
+  keyFn: (input: T) => A,
+  valueFn: (input: T) => B
+): Map<A, B> {
+  const result = new Map<A, B>();
+  input.forEach(v => {
+    result.set(keyFn(v), valueFn(v));
+  });
+  return result;
 }
 
 /**

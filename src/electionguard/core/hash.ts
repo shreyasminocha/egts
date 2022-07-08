@@ -1,5 +1,6 @@
 import {GroupContext, Element, ElementModQ} from './group-common';
-import * as crypto from 'crypto';
+import createHash from 'create-hash';
+import createHmac from 'create-hmac';
 import {UInt256} from './uint256';
 
 /**
@@ -29,7 +30,7 @@ export type CryptoHashable =
 
 /** Computes the SHA256 hash of a string or binary byte array. */
 export function sha256(input: string | Uint8Array): UInt256 {
-  const h = crypto.createHash('sha256');
+  const h = createHash('sha256');
   switch (typeof input) {
     case 'string':
       h.update(input, 'utf-8');
@@ -44,7 +45,7 @@ export function sha256(input: string | Uint8Array): UInt256 {
 
 /** Computes the HMAC-SHA256 hash of a string or binary byte array. */
 export function hmacSha256(key: UInt256, input: string | Uint8Array): UInt256 {
-  const h = crypto.createHmac('sha256', key.bytes);
+  const h = createHmac('sha256', Buffer.from(key.bytes.buffer));
   switch (typeof input) {
     case 'string':
       h.update(input, 'utf-8');
