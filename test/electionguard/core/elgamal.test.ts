@@ -3,6 +3,7 @@ import {elementModQ, elGamalKeypair, fcFastConfig} from './generators';
 import {
   elGamalAdd,
   elGamalEncrypt,
+  ElGamalKeypair,
 } from '../../../src/electionguard/core/elgamal';
 import {
   bigIntContext3072,
@@ -41,6 +42,46 @@ function testElGamal(context: GroupContext) {
         ),
         fcFastConfig
       );
+    });
+    test('elGamalEncrypt edge cases', () => {
+      fc.assert(
+        fc.property(
+          elGamalKeypair(context),
+          fc.nat(1000),
+          elementModQ(context, 2),
+          (keypair, p, nonce) => {
+            expect(() =>
+              elGamalEncrypt(keypair, p, context.ZERO_MOD_Q)
+            ).toThrow();
+            expect(() =>
+              elGamalEncrypt(keypair, p, context.ONE_MOD_Q)
+            ).toThrow();
+            expect(() => elGamalEncrypt(keypair, 0, nonce)).not.toThrow();
+            expect(() => elGamalEncrypt(keypair, -1, nonce)).toThrow();
+            expect(() => elGamalEncrypt(keypair, 3.14, nonce)).toThrow();
+          }
+        )
+      );
+    });
+    test('elGamalAdd edge cases', () => {
+      expect(() => elGamalAdd()).toThrow();
+    });
+  });
+
+  describe(`${context.name}: ElGamalKeypair`, () => {
+    test('createFromSecret', () => {
+      expect(() =>
+        ElGamalKeypair.createFromSecret(context.ZERO_MOD_Q)
+      ).toThrow();
+      expect(() =>
+        ElGamalKeypair.createFromSecret(context.ONE_MOD_Q)
+      ).toThrow();
+    });
+    test('inversePublicKeyElement', () => {
+      const keypair = ElGamalKeypair.createRandom(context);
+      const pkInverse = keypair.inversePublicKeyElement;
+      const pk = keypair.publicKeyElement;
+      expect(context.multP(pk, pkInverse).equals(context.ONE_MOD_P)).toBe(true);
     });
   });
 }

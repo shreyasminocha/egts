@@ -8,6 +8,7 @@ import {
   associateBy,
   numberRange,
   shuffleArray,
+  chunkArray,
   undefinedToNull,
   nullToUndefined,
   dateToISOString,
@@ -86,6 +87,19 @@ describe('utils', () => {
           }).toThrow();
         }
       )
+    );
+  });
+  test('chunkArray', () => {
+    fc.assert(
+      fc.property(fc.array(fc.anything()), fc.integer({min: 1}), (arr, n) => {
+        fc.pre(n <= arr.length);
+
+        const slices = chunkArray(arr, n);
+        expect(slices.length).toBe(n);
+
+        const joined = ([] as unknown[]).concat(...slices);
+        expect(new Set(joined)).toStrictEqual(new Set(arr));
+      })
     );
   });
   test('shuffleArray', () => {

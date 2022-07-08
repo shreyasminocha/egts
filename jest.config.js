@@ -7,4 +7,5 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
   },
+  collectCoverageFrom: ['src/**/{!(logging),}.(ts|tsx|js)'],
 };

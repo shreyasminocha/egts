@@ -7,6 +7,7 @@ import {
   PlaintextBallot,
   PlaintextContest,
   shuffleArray,
+  chunkArray,
   zipMap4,
   EncryptionState,
 } from '../../../src/electionguard';
@@ -16,7 +17,7 @@ import {
   elementModQNoZero,
   elGamalKeypair,
 } from '../core/generators';
-import seedrandom = require('seedrandom');
+import seedrandom from 'seedrandom';
 import {selectionFrom} from '../../../src/electionguard/ballot/encrypt';
 
 const _first_names = [
@@ -243,6 +244,50 @@ export function ballotStyle(
     const [url, uuid] = t;
     return new M.ManifestBallotStyle(context, uuid, gpUnitIds, partyIds, url);
   });
+}
+
+export function ballotStyles(
+  context: GroupContext,
+  parties: Array<M.ManifestParty>,
+  geoUnits: Array<M.ManifestGeopoliticalUnit>
+): fc.Arbitrary<Array<M.ManifestBallotStyle>> {
+  if (parties.length === 0 || geoUnits.length === 0) {
+    throw new Error('non-zero length inputs required for ballotStyles');
+  }
+  const maxNumBallotStyles = Math.min(parties.length, geoUnits.length);
+  return fc
+    .integer({min: 1, max: maxNumBallotStyles})
+    .chain(numBallotStyles => {
+      return fc
+        .tuple(
+          fc.uniqueArray(fc.uuid(), {
+            minLength: numBallotStyles,
+            maxLength: numBallotStyles,
+          }),
+          fc.array(fc.webUrl(), {
+            minLength: numBallotStyles,
+            maxLength: numBallotStyles,
+          })
+        )
+        .map(([uuids, urls]) => {
+          const partySets = chunkArray(parties, numBallotStyles);
+          const geoUnitSets = chunkArray(geoUnits, numBallotStyles);
+          return zipMap4(
+            uuids,
+            geoUnitSets,
+            partySets,
+            urls,
+            (uuid, gs, ps, url) =>
+              new M.ManifestBallotStyle(
+                context,
+                uuid,
+                gs.map(g => g.objectId),
+                ps.map(p => p.objectId),
+                url
+              )
+          );
+        });
+    });
 }
 
 export function partyLists(
@@ -503,64 +548,79 @@ export function contestDescription(
 export function electionDescription(
   context: GroupContext,
   maxNumParties = 3,
+  maxNumGeopoliticalUnits = 3,
   maxNumContests = 3
 ): fc.Arbitrary<M.Manifest> {
-  if (maxNumParties <= 0 || maxNumContests <= 0) {
-    throw new Error('must have at least one party and at least one contest');
+  if (
+    maxNumParties <= 0 ||
+    maxNumGeopoliticalUnits <= 0 ||
+    maxNumContests <= 0
+  ) {
+    throw new Error(
+      'must have at least one party, one contest, and one geopolitical unit'
+    );
   }
 
   return fc
     .tuple(
-      fc.uniqueArray(geopoliticalUnit(context), {minLength: 1, maxLength: 1}),
       fc.integer({min: 1, max: maxNumParties}),
+      fc.integer({min: 1, max: maxNumGeopoliticalUnits}),
       fc.integer({min: 1, max: maxNumContests})
     )
     .chain(t => {
-      const [geoUnits, numParties, numContests] = t;
-      return partyLists(context, numParties).chain(parties =>
-        fc
-          .tuple(
-            ballotStyle(context, parties, geoUnits),
-            electionType(),
-            fc.date(),
-            fc.emailAddress(),
-            fc.option(internationalizedText(context), {nil: undefined}),
-            fc.option(contactInformation(context), {nil: undefined}),
-            arrayIndexedArbitrary(
-              i => contestDescription(context, i + 1, parties, geoUnits),
-              numContests
-            )
-          )
-          .map(t => {
-            const [
-              styles,
-              type,
-              date,
-              scopeId,
-              electionName,
-              contactInfo,
-              candidateContests,
-            ] = t;
-            const candidates = candidateContests.flatMap(c => c.candidates);
-            const contests = candidateContests.map(c => c.contestDescription);
-
-            return new M.Manifest(
-              context,
-              `electionScopeId/${scopeId}`,
-              '1.02',
-              type,
-              date.toISOString(),
-              date.toISOString(),
-              geoUnits,
-              parties,
-              candidates,
-              contests,
-              [styles], // TODO: test with multiple ballot styles
-              electionName,
-              contactInfo
-            );
+      const [numParties, numGeopoliticalUnits, numContests] = t;
+      return fc
+        .tuple(
+          partyLists(context, numParties),
+          fc.uniqueArray(geopoliticalUnit(context), {
+            minLength: numGeopoliticalUnits,
+            maxLength: numGeopoliticalUnits,
           })
-      );
+        )
+        .chain(([parties, geoUnits]) =>
+          fc
+            .tuple(
+              ballotStyles(context, parties, geoUnits),
+              electionType(),
+              fc.date(),
+              fc.emailAddress(),
+              fc.option(internationalizedText(context), {nil: undefined}),
+              fc.option(contactInformation(context), {nil: undefined}),
+              arrayIndexedArbitrary(
+                i => contestDescription(context, i + 1, parties, geoUnits),
+                numContests
+              )
+            )
+            .map(t => {
+              const [
+                styles,
+                type,
+                date,
+                scopeId,
+                electionName,
+                contactInfo,
+                candidateContests,
+              ] = t;
+              const candidates = candidateContests.flatMap(c => c.candidates);
+              const contests = candidateContests.map(c => c.contestDescription);
+
+              return new M.Manifest(
+                context,
+                `electionScopeId/${scopeId}`,
+                '1.02',
+                type,
+                date.toISOString(),
+                date.toISOString(),
+                geoUnits,
+                parties,
+                candidates,
+                contests,
+                styles,
+                electionName,
+                contactInfo
+              );
+            })
+        );
     });
 }
 
@@ -570,15 +630,17 @@ export function plaintextVotedBallot(manifest: M.Manifest) {
   }
 
   return fc
-    .tuple(fc.uuid(), fc.constantFrom(...manifest.ballotStyles), fc.string())
+    .tuple(
+      fc.uuid(),
+      fc
+        .constantFrom(...manifest.ballotStyles)
+        .filter(bs => manifest.getContests(bs.ballotStyleId).length >= 1),
+      fc.string()
+    )
     .map(t => {
       const [ballotUuid, ballotStyle, rngSeed] = t;
       const rng = seedrandom(rngSeed);
       const contests = manifest.getContests(ballotStyle.ballotStyleId);
-
-      if (contests.length < 1) {
-        throw new Error('need at least one contest matching the ballot style');
-      }
 
       const votedContests = contests.map(contest => {
         if (!contest.isValid()) {

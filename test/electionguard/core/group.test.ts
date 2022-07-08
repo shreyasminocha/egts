@@ -7,6 +7,7 @@ import {
 } from './generators';
 import {
   addQ,
+  compatibleContextOrFail,
   divP,
   GroupContext,
   multInvP,
@@ -343,3 +344,15 @@ export function testGroup(context: GroupContext): void {
 
 testGroup(bigIntContext4096());
 testGroup(bigIntContext3072());
+
+test('compatibleContextOrFail', () => {
+  const context1 = bigIntContext3072();
+  const context2 = bigIntContext4096();
+  expect(() => compatibleContextOrFail()).toThrow();
+  expect(compatibleContextOrFail(context1.randQ(), context1.randQ()).name).toBe(
+    context1.name
+  );
+  expect(() =>
+    compatibleContextOrFail(context1.randQ(), context2.randQ())
+  ).toThrow();
+});

@@ -88,7 +88,7 @@ export function encryptBallot(
     .map(mcontest => {
       const pcontest: PlaintextContest =
         pcontests.get(mcontest.contestId) ?? contestFrom(mcontest);
-      // If no contest on the ballot, so create a placeholder
+      // If no contest on the ballot, create a placeholder
       return encryptContest(
         state,
         pcontest,
@@ -131,6 +131,7 @@ export function encryptBallot(
 }
 
 function contestFrom(mcontest: ManifestContestDescription): PlaintextContest {
+  console.log('amogus');
   const selections = mcontest.selections.map(it =>
     selectionFrom(it.selectionId, false, false)
   );
@@ -183,7 +184,6 @@ export function encryptContest(
         state,
         plaintextSelection,
         mselection,
-        mselection.cryptoHashElement,
         contestNonce,
         false
       );
@@ -222,7 +222,6 @@ export function encryptContest(
       state,
       plaintextSelection,
       mselection,
-      mselection.cryptoHashElement,
       contestNonce,
       true
     );
@@ -328,21 +327,25 @@ function generatePlaceholderSelectionFrom(
 /**
  * Encrypt a PlaintextSelection into a CiphertextSelection
  *
- * @param selectionDescription: the Manifest selection
- * @param contestNonce: aka "nonce seed"
- * @param isPlaceholder: if this is a placeholder selection
+ * @param state
+ * @param plaintextSelection the selection to be encrypted
+ * @param selectionDescription the Manifest selection
+ * @param contestNonce aka "nonce seed"
+ * @param isPlaceholder if this is a placeholder selection
  */
 export function encryptSelection(
   state: EncryptionState,
   plaintextSelection: PlaintextSelection,
   selectionDescription: ManifestSelectionDescription,
-  manifestSelectionHash: ElementModQ,
   contestNonce: ElementModQ,
   isPlaceholder = false
 ): CiphertextSelection {
   // See "NOTE" in encryptContest. Same issue applies here.
 
-  const nonceSequence = new Nonces(manifestSelectionHash, contestNonce);
+  const nonceSequence = new Nonces(
+    selectionDescription.cryptoHashElement,
+    contestNonce
+  );
 
   // BUG-FOR-BUG COMPATIBILITY WARNING: the Python code is doing something
   // wonky to get the disjunctive-cp-nonce. Needs further investigation,
@@ -391,14 +394,14 @@ export function encryptSelection(
   const cryptoHash = hashElements(
     state.group,
     plaintextSelection.selectionId,
-    manifestSelectionHash,
+    selectionDescription.cryptoHashElement,
     elGamalEncryption.cryptoHashElement
   );
 
   const encryptedSelection: CiphertextSelection = new CiphertextSelection(
     plaintextSelection.selectionId,
     selectionDescription.sequenceOrder,
-    manifestSelectionHash,
+    selectionDescription.cryptoHashElement,
     elGamalEncryption,
     cryptoHash,
     isPlaceholder,

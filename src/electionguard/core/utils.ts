@@ -242,6 +242,21 @@ export function numberRange(start: number, end: number, delta = 1): number[] {
 }
 
 /**
+ * Given an array of any type, splits the array into a given number of parts.
+ */
+export function chunkArray<T>(
+  array: Array<T>,
+  numParts: number
+): Array<Array<T>> {
+  const pieces: Array<Array<T>> = [];
+  const arrayCopy = [...array];
+  for (let i = numParts; i > 0; i--) {
+    pieces.push(arrayCopy.splice(0, Math.ceil(arrayCopy.length / i)));
+  }
+  return pieces;
+}
+
+/**
  * Given an array of any type, builds a map from string to anything.
  * @param input Arbitrary array of type T.
  * @param keyFn Function from T to string (the key of the resulting map)

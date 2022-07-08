@@ -1,8 +1,11 @@
 import * as fc from 'fast-check';
 import {
   ElectionObjectBase,
+  OrderedObjectBase,
   matchingArraysOfAnyElectionObjects,
   sortedArrayOfAnyElectionObjects,
+  matchingArraysOfOrderedElectionObjects,
+  sortedArrayOfOrderedElectionObjects,
 } from '../../../src/electionguard/ballot/election-object-base';
 
 class TestElectionObject implements ElectionObjectBase {
@@ -15,9 +18,21 @@ class TestElectionObject implements ElectionObjectBase {
   }
 }
 
-function isSorted(a: string[]): boolean {
+class TestOrderedObject implements OrderedObjectBase {
+  constructor(readonly objectId: string, readonly sequenceOrder: number) {}
+
+  equals(other: OrderedObjectBase): boolean {
+    return (
+      other instanceof TestOrderedObject &&
+      other.objectId === this.objectId &&
+      other.sequenceOrder === this.sequenceOrder
+    );
+  }
+}
+
+function isSorted<T>(a: T[], compare: (a: T, b: T) => boolean): boolean {
   for (let i = 1; i < a.length; i++) {
-    if (a[i - 1].localeCompare(a[i]) > 0) {
+    if (!compare(a[i - 1], a[i])) {
       return false;
     }
   }
@@ -51,6 +66,19 @@ describe('ElectionObjectBase: basics', () => {
         expect(matches).toBe(true);
       })
     );
+
+    expect(
+      matchingArraysOfAnyElectionObjects(
+        ['a', 'b', 'c'].map(s => new TestElectionObject(s)),
+        ['d', 'e', 'f'].map(s => new TestElectionObject(s))
+      )
+    ).toBe(false);
+    expect(
+      matchingArraysOfAnyElectionObjects(
+        ['a', 'b', 'c'].map(s => new TestElectionObject(s)),
+        ['a', 'b'].map(s => new TestElectionObject(s))
+      )
+    ).toBe(false);
   });
   test('sorting by objectId', () => {
     fc.assert(
@@ -61,16 +89,83 @@ describe('ElectionObjectBase: basics', () => {
 
         const sortedTestObjects = sortedArrayOfAnyElectionObjects(testObjects);
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const objectIds = sortedTestObjects.map((v, i, a) => v.objectId);
-        expect(isSorted(objectIds)).toBe(true);
+        const objectIds = sortedTestObjects.map(v => v.objectId);
+        expect(isSorted(objectIds, (a, b) => a.localeCompare(b) <= 0)).toBe(
+          true
+        );
 
         testObjects.reverse();
         const sortedTestObjects2 = sortedArrayOfAnyElectionObjects(testObjects);
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const objectIds2 = sortedTestObjects2.map((v, i, a) => v.objectId);
-        expect(isSorted(objectIds2)).toBe(true);
+        const objectIds2 = sortedTestObjects2.map(v => v.objectId);
+        expect(isSorted(objectIds2, (a, b) => a.localeCompare(b) <= 0)).toBe(
+          true
+        );
+      })
+    );
+  });
+});
+
+describe('OrderedObjectBase: basics', () => {
+  test('array contents equality', () => {
+    fc.assert(
+      fc.property(fc.array(fc.string()), strArray => {
+        const testObjects: TestOrderedObject[] = strArray.map(
+          (s, i) => new TestOrderedObject(s, i)
+        );
+
+        // identical values, but different objects
+        const testObjects2: TestOrderedObject[] = strArray.map(
+          (s, i) => new TestOrderedObject(s, i)
+        );
+
+        expect(
+          matchingArraysOfOrderedElectionObjects(testObjects, testObjects2)
+        ).toBe(true);
+
+        testObjects2.reverse(); // mutates
+
+        const matches = matchingArraysOfOrderedElectionObjects(
+          testObjects,
+          testObjects2
+        );
+
+        expect(matches).toBe(true);
+      })
+    );
+
+    expect(
+      matchingArraysOfOrderedElectionObjects(
+        ['a', 'b', 'c'].map((s, i) => new TestOrderedObject(s, i)),
+        ['d', 'e', 'f'].map((s, i) => new TestOrderedObject(s, i))
+      )
+    ).toBe(false);
+    expect(
+      matchingArraysOfOrderedElectionObjects(
+        ['a', 'b', 'c'].map((s, i) => new TestOrderedObject(s, i)),
+        ['a', 'b'].map((s, i) => new TestOrderedObject(s, i))
+      )
+    ).toBe(false);
+  });
+  test('sorting by sequenceOrder', () => {
+    fc.assert(
+      fc.property(fc.array(fc.string()), strArray => {
+        const testObjects: TestOrderedObject[] = strArray.map(
+          (s, i) => new TestOrderedObject(s, i)
+        );
+
+        const sortedTestObjects =
+          sortedArrayOfOrderedElectionObjects(testObjects);
+
+        const sequenceOrder = sortedTestObjects.map(v => v.sequenceOrder);
+        expect(isSorted(sequenceOrder, (a, b) => a <= b)).toBe(true);
+
+        testObjects.reverse();
+        const sortedTestObjects2 =
+          sortedArrayOfOrderedElectionObjects(testObjects);
+
+        const sequenceOrder2 = sortedTestObjects2.map(v => v.sequenceOrder);
+        expect(isSorted(sequenceOrder2, (a, b) => a <= b)).toBe(true);
       })
     );
   });

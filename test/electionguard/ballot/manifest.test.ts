@@ -42,7 +42,21 @@ describe('Manifest', () => {
   });
   test.todo('getContest');
   test.todo('getBallotStyle');
-  test.todo('getContests');
+  test('getContests', () => {
+    fc.assert(
+      fc.property(electionDescription(groupContext), manifest => {
+        manifest.ballotStyles.forEach(ballotStyle => {
+          expect(
+            manifest.getContests(ballotStyle.ballotStyleId).forEach(contest => {
+              expect(ballotStyle.geopoliticalUnitIds).toContain(
+                contest.geopoliticalUnitId
+              );
+            })
+          );
+        });
+      })
+    );
+  });
 });
 
 describe('ManifestContestDescription', () => {

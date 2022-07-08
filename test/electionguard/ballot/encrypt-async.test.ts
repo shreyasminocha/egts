@@ -100,4 +100,6 @@ describe('Async encryption wrapper', () => {
       fcFastConfig
     );
   });
+
+  test.todo('incompatible contexts');
 });
