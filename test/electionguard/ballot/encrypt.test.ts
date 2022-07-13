@@ -75,7 +75,8 @@ describe('Election / ballot encryption', () => {
       fc.property(
         electionAndBallots(groupContext, 1),
         elementModQ(groupContext),
-        (eb, seed) => {
+        elementModQ(groupContext),
+        (eb, codeSeed, encryptionSeed) => {
           const bCodecs = getBallotCodecsForContext(groupContext);
           const encryptionState = new EncryptionState(
             groupContext,
@@ -86,8 +87,8 @@ describe('Election / ballot encryption', () => {
           const submittedBallot = encryptBallot(
             encryptionState,
             eb.ballots[0],
-            seed,
-            BallotState.CAST
+            codeSeed,
+            encryptionSeed
           ).submit(BallotState.CAST);
 
           const serializedBallot =

@@ -174,7 +174,7 @@ describe('compatibility with electionguard-python', () => {
       state,
       plaintextBallot,
       device.cryptoHashElement, // That's the initial value of the ballot code seed
-      ciphertextBallot.nonce,
+      ciphertextBallot.ballotEncryptionSeed, // called 'nonce' in the standard
       ciphertextBallot.timestamp
     );
 

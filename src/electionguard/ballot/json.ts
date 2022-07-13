@@ -770,10 +770,14 @@ export class BallotCodecs {
         ciphertext_accumulation: this.coreCodecs.elGamalCiphertextCodec,
         crypto_hash: this.coreCodecs.elementModQCodec,
         proof: this.coreCodecs.constantChaumPedersenProofKnownNonceCodec,
-        extended_data: D.nullable(
-          this.coreCodecs.hashedElGamalCiphertextCompatCodec
-        ),
       }),
+      D.intersect(
+        D.partial({
+          extended_data: D.nullable(
+            this.coreCodecs.hashedElGamalCiphertextCompatCodec
+          ),
+        })
+      ),
       D.map(
         s =>
           new SubmittedContest(
@@ -940,10 +944,14 @@ export class BallotCodecs {
           crypto_hash: this.coreCodecs.elementModQCodec,
           nonce: this.coreCodecs.elementModQCodec,
           proof: this.coreCodecs.constantChaumPedersenProofKnownNonceCodec,
-          extended_data: D.nullable(
-            this.coreCodecs.hashedElGamalCiphertextCompatCodec
-          ),
         }),
+        D.intersect(
+          D.partial({
+            extended_data: D.nullable(
+              this.coreCodecs.hashedElGamalCiphertextCompatCodec
+            ),
+          })
+        ),
         D.map(
           s =>
             new CiphertextContest(
