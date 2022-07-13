@@ -14,6 +14,24 @@ import {getBallotCodecsForContext} from './json';
 import {Manifest, ManifestContestDescription} from './manifest';
 import {PlaintextContest} from './plaintext-ballot';
 import * as log from '../core/logging';
+import {BallotState} from './submitted-ballot';
+
+/**
+ * This data structure represents the successful results of encrypting a ballot,
+ * represented as a vanilla JavaScript object, suitable for converting to JSON
+ * text and transmitting to a server. Also included are the hash of the ballot
+ * (which can be used as a voter receipt) and the "seed" used to create the
+ * ballot (which allows the ballot ciphertext to be deterministically recreated
+ * from the plaintext; it also allows the entire ciphertext to be decrypted, so
+ * this normally shouldn't be passed across a network).
+ */
+export class SerializedEncryptedBallot {
+  constructor(
+    readonly serializedEncryptedBallot: object,
+    readonly ballotHash: bigint,
+    readonly ballotSeed: bigint
+  ) {}
+}
 
 /**
  * This class wraps all the state and machinery necessary to offload encryption
@@ -29,6 +47,10 @@ import * as log from '../core/logging';
  * all the contest encryption is complete, and will then return the encrypted
  * ballot. This call has the potential to fail, for example, if you haven't
  * encrypted all the necessary contests for the given ballot style.
+ *
+ * For truly all-in-one behavior, you can instead call getSerializedEncryptedBallot(),
+ * which returns an instance of SerializedEncryptedBallot, or might again throw an
+ * exception if something went wrong.
  *
  * Also of note: while elsewhere in the ElectionGuard-Python codebase, errors
  * are indicated by returning undefined, here it's different. Errors are indicated
@@ -106,7 +128,7 @@ export class AsyncBallotEncryptor {
 
   /**
    * Builds an instance of AsyncBallotEncryptor. For ease
-   * of use, you may prefer the static create() method instead,
+   * of use, you may prefer the static {@link AsyncBallotEncryptor#create} method instead,
    * which allows you to pass in JavaScript objects for external
    * types like the manifest, and it will let you know if there's
    * a problem.
@@ -129,7 +151,7 @@ export class AsyncBallotEncryptor {
     manifest: Manifest,
     electionContext: ElectionContext,
     validate: boolean,
-    group: GroupContext,
+    readonly group: GroupContext,
     readonly codeSeed: ElementModQ,
     readonly seed: ElementModQ,
     readonly ballotStyleId: string,
@@ -249,8 +271,32 @@ export class AsyncBallotEncryptor {
 
   /**
    * Fetches the encrypted ballot, possibly blocking until all the async
+   * computation is complete, and doing all the necessary work to serialize
+   * it. Returns that ballot (as a vanilla JavaScript object suitable for
+   * conversion to JSON) plus the ballot hash and the cryptographic seed.
+   *
+   * @see SerializedEncryptedBallot
+   */
+  async getSerializedEncryptedBallot(): Promise<SerializedEncryptedBallot> {
+    const result = await this.getEncryptedBallot();
+    const submitted = result.submit(BallotState.CAST);
+    const bCodecs = getBallotCodecsForContext(this.group);
+    const encoded = bCodecs.submittedBallotCodec.encode(submitted);
+    const hash = result.cryptoHash.toBigint();
+    const seed = result.ballotEncryptionSeed.toBigint();
+
+    return new SerializedEncryptedBallot(encoded as object, hash, seed);
+  }
+
+  /**
+   * Fetches the encrypted ballot, possibly blocking until all the async
    * computation is complete. If a contest wasn't submitted, then it's
    * not possible to derive the result, so an Error is thrown.
+   *
+   * For one-stop-shopping, to get exactly what you need for printing
+   * something, writing something to disk, sending something across
+   * the network, etc., you might prefer to use
+   * {@link AsyncBallotEncryptor#getSerializedEncryptedBallot}.
    */
   async getEncryptedBallot(): Promise<CiphertextBallot> {
     if (

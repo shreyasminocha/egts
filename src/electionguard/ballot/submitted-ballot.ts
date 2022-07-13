@@ -22,12 +22,16 @@ export class SubmittedBallot
     readonly code: ElementModQ,
     readonly contests: Array<SubmittedContest>,
     readonly timestamp: number,
-    readonly cryptoHashElement: ElementModQ,
+    readonly cryptoHash: ElementModQ,
     readonly state: BallotState
   ) {}
 
   get objectId(): string {
     return this.ballotId;
+  }
+
+  get cryptoHashElement(): ElementModQ {
+    return this.cryptoHash;
   }
 
   equals(other: SubmittedBallot): boolean {
@@ -40,7 +44,7 @@ export class SubmittedBallot
       this.code.equals(other.code) &&
       matchingArraysOfAnyElectionObjects(this.contests, other.contests) &&
       this.timestamp === other.timestamp &&
-      this.cryptoHashElement.equals(other.cryptoHashElement) &&
+      this.cryptoHash.equals(other.cryptoHash) &&
       this.state === other.state
     );
   }
@@ -55,13 +59,17 @@ export class SubmittedContest
     readonly contestHash: ElementModQ, // matches ContestDescription.cryptoHash
     readonly selections: Array<SubmittedSelection>,
     readonly ciphertextAccumulation: ElGamalCiphertext,
-    readonly cryptoHashElement: ElementModQ,
+    readonly cryptoHash: ElementModQ,
     readonly proof: ConstantChaumPedersenProofKnownNonce,
     readonly extendedData?: HashedElGamalCiphertextCompat
   ) {}
 
   get objectId(): string {
     return this.contestId;
+  }
+
+  get cryptoHashElement(): ElementModQ {
+    return this.cryptoHash;
   }
 
   equals(other: SubmittedContest): boolean {
@@ -86,13 +94,17 @@ export class SubmittedSelection
     readonly sequenceOrder: number, // matches SelectionDescription.sequenceOrder
     readonly selectionHash: ElementModQ, // matches SelectionDescription.cryptoHash
     readonly ciphertext: ElGamalCiphertext,
-    readonly cryptoHashElement: ElementModQ,
+    readonly cryptoHash: ElementModQ,
     readonly isPlaceholderSelection: boolean,
     readonly proof: DisjunctiveChaumPedersenProofKnownNonce
   ) {}
 
   get objectId(): string {
     return this.selectionId;
+  }
+
+  get cryptoHashElement(): ElementModQ {
+    return this.cryptoHash;
   }
 
   equals(other: SubmittedSelection): boolean {
@@ -104,7 +116,7 @@ export class SubmittedSelection
       this.ciphertext.equals(other.ciphertext) &&
       this.isPlaceholderSelection === other.isPlaceholderSelection &&
       this.proof.equals(other.proof) &&
-      this.cryptoHashElement.equals(other.cryptoHashElement)
+      this.cryptoHash.equals(other.cryptoHash)
     );
   }
 }

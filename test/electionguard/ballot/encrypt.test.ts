@@ -2,6 +2,8 @@ import fc from 'fast-check';
 import {
   BallotState,
   bigIntContext3072,
+  eitherRightOrFail,
+  getBallotCodecsForContext,
   matchingArraysOfAnyElectionObjects,
   Nonces,
   PlaintextBallot,
@@ -68,7 +70,41 @@ describe('Election / ballot encryption', () => {
       fcFastConfig
     );
   });
-  test('Encrypt the same election twice; identical result', () => {
+  test('Encryption serialization/deserialization', () => {
+    fc.assert(
+      fc.property(
+        electionAndBallots(groupContext, 1),
+        elementModQ(groupContext),
+        (eb, seed) => {
+          const bCodecs = getBallotCodecsForContext(groupContext);
+          const encryptionState = new EncryptionState(
+            groupContext,
+            eb.manifest,
+            eb.electionContext,
+            false
+          );
+          const submittedBallot = encryptBallot(
+            encryptionState,
+            eb.ballots[0],
+            seed,
+            BallotState.CAST
+          ).submit(BallotState.CAST);
+
+          const serializedBallot =
+            bCodecs.submittedBallotCodec.encode(submittedBallot);
+
+          const deserializedBallotMaybe =
+            bCodecs.submittedBallotCodec.decode(serializedBallot);
+
+          const deserializedBallot = eitherRightOrFail(deserializedBallotMaybe);
+
+          expect(submittedBallot.equals(deserializedBallot)).toBe(true);
+        }
+      ),
+      fcFastConfig
+    );
+  });
+  test('Encrypt the same election twice; idential result', () => {
     fc.assert(
       fc.property(
         electionAndBallots(groupContext),
@@ -77,15 +113,12 @@ describe('Election / ballot encryption', () => {
         (eb, prev, seed) => {
           const timestamp = Date.now() / 1000;
           const nonces = new Nonces(seed);
-          // This ends up running the verification twice: once while encrypting, and once while decrypting.
-          // This is fine, because we'd like to catch verification errors at encryption time, if possible,
-          // but we'll take them wherever we can get them.
 
           const encryptionState = new EncryptionState(
             groupContext,
             eb.manifest,
             eb.electionContext,
-            true
+            false
           );
           const submittedBallots1 = eb.ballots.map((b, i) =>
             encryptBallot(
@@ -123,15 +156,12 @@ describe('Election / ballot encryption', () => {
         elementModQ(groupContext),
         (eb, prev, seed) => {
           const nonces = new Nonces(seed);
-          // This ends up running the verification twice: once while encrypting, and once while decrypting.
-          // This is fine, because we'd like to catch verification errors at encryption time, if possible,
-          // but we'll take them wherever we can get them.
 
           const encryptionState = new EncryptionState(
             groupContext,
             eb.manifest,
             eb.electionContext,
-            true
+            false
           );
 
           const selectionHashes = eb.manifest.contests.flatMap(contest =>
@@ -173,7 +203,7 @@ describe('Election / ballot encryption', () => {
           );
 
           const ballotNonces: bigint[] = encryptedBallots.map(ballot =>
-            ballot.nonce.toBigint()
+            ballot.ballotEncryptionSeed.toBigint()
           );
 
           const allBallotNonces = selectionNonces

@@ -746,9 +746,7 @@ export class BallotCodecs {
         ciphertext: this.coreCodecs.elGamalCiphertextCodec.encode(
           input.ciphertext
         ),
-        crypto_hash: this.coreCodecs.elementModQCodec.encode(
-          input.cryptoHashElement
-        ),
+        crypto_hash: this.coreCodecs.elementModQCodec.encode(input.cryptoHash),
         is_placeholder_selection: input.isPlaceholderSelection,
         proof:
           this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec.encode(
@@ -804,9 +802,7 @@ export class BallotCodecs {
         ciphertext_accumulation: this.coreCodecs.elGamalCiphertextCodec.encode(
           input.ciphertextAccumulation
         ),
-        crypto_hash: this.coreCodecs.elementModQCodec.encode(
-          input.cryptoHashElement
-        ),
+        crypto_hash: this.coreCodecs.elementModQCodec.encode(input.cryptoHash),
         proof: this.coreCodecs.constantChaumPedersenProofKnownNonceCodec.encode(
           input.proof
         ),
@@ -864,9 +860,7 @@ export class BallotCodecs {
         code: this.coreCodecs.elementModQCodec.encode(input.code),
         contests: input.contests.map(submittedContestEncoder.encode),
         timestamp: input.timestamp,
-        crypto_hash: this.coreCodecs.elementModQCodec.encode(
-          input.cryptoHashElement
-        ),
+        crypto_hash: this.coreCodecs.elementModQCodec.encode(input.cryptoHash),
         state: input.state,
         nonce: null,
       }),
@@ -1041,8 +1035,10 @@ export class BallotCodecs {
         timestamp: input.timestamp,
         crypto_hash: this.coreCodecs.elementModQCodec.encode(input.cryptoHash),
         nonce:
-          input.nonce !== undefined
-            ? this.coreCodecs.elementModQCodec.encode(input.nonce)
+          input.ballotEncryptionSeed !== undefined
+            ? this.coreCodecs.elementModQCodec.encode(
+                input.ballotEncryptionSeed
+              )
             : null,
       }),
     };

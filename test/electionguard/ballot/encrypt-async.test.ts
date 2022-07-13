@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 import {
+  BallotState,
   bigIntContext4096,
   eitherRightOrFail,
   getCoreCodecsForContext,
@@ -94,6 +95,22 @@ describe('Async encryption wrapper', () => {
             // log.info('encrypt-async-test', 'async tasks complete');
 
             expect(encryptedBallot.equals(encryptedBallot2)).toBe(true);
+
+            // now, fetch the result from the serialized version and compare
+            const encryptedBallot3 =
+              await asyncEncryptor.getSerializedEncryptedBallot();
+
+            const deserializedSubmittedBallot = eitherRightOrFail(
+              bCodecs.submittedBallotCodec.decode(
+                encryptedBallot3.serializedEncryptedBallot
+              )
+            );
+
+            expect(
+              deserializedSubmittedBallot.equals(
+                encryptedBallot2.submit(BallotState.CAST)
+              )
+            ).toBe(true);
           }
         }
       ),
