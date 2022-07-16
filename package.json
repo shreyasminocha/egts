@@ -39,7 +39,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-ts": "^3.0.2",
     "ts-jest": "^28.0.2",
-    "ts-node": "^10.7.0",
+    "ts-node": "^10.9.1",
     "typedoc": "^0.22.16",
     "typescript": "^4.7.2"
   },
@@ -56,15 +56,12 @@
     "docs": "typedoc",
     "lint": "gts lint",
     "clean": "gts clean && rimraf ./dist",
-    "compile": "tsc",
     "build": "rollup -c rollup.config.js",
     "fix": "gts fix",
-    "prepare": "npm run compile",
-    "pretest": "npm run compile",
     "posttest": "npm run lint",
     "test": "jest",
     "coverage": "jest --coverage",
-    "elgamal-bench": "node build/bench/elgamal-benchmark"
+    "elgamal-bench": "ts-node build/bench/elgamal-benchmark"
   },
   "engines": {
     "node": ">=14.0.0"

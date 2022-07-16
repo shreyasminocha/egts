@@ -3,8 +3,11 @@
   "ts-node": {
     // these options are overrides used only by ts-node
     "compilerOptions": {
-      "module": "commonjs"
-    }
+      "module": "ES2020",
+      "moduleResolution": "node",
+    },
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
   },
   "compilerOptions": {
     "target": "es6",
