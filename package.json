@@ -16,7 +16,7 @@
     "LICENSE"
   ],
   "main": "dist/index.js",
-  "browser": "dist/electionguard.mjs",
+  "browser": "dist/electionguard.js",
   "devDependencies": {
     "@babel/preset-typescript": "^7.17.12",
     "@rollup/plugin-commonjs": "^22.0.1",
@@ -52,7 +52,7 @@
   "scripts": {
     "docs": "typedoc",
     "lint": "gts lint",
-    "clean": "gts clean",
+    "clean": "gts clean && rimraf ./dist",
     "compile": "tsc",
     "build": "rollup -c rollup.config.js",
     "fix": "gts fix",
