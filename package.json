@@ -44,7 +44,7 @@
     "typescript": "^4.7.2"
   },
   "dependencies": {
-    "bigint-mod-arith": "^3.0.2",
+    "bigint-mod-arith": "github:ukstv/bigint-mod-arith#17c8f51f48f2f84a5f52c0346930ac6082f2a306",
     "create-hash": "^1.2.0",
     "create-hmac": "^1.1.7",
     "fp-ts": "^2.12.1",
