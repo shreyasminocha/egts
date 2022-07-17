@@ -39,13 +39,13 @@ export function sha256(input: string | Uint8Array): UInt256 {
       h.update(input);
       break;
   }
-  const result: Buffer = h.digest(); // Buffer should be compatible with Uint8Array
+  const result = new Uint8Array(h.digest());
   return new UInt256(result);
 }
 
 /** Computes the HMAC-SHA256 hash of a string or binary byte array. */
 export function hmacSha256(key: UInt256, input: string | Uint8Array): UInt256 {
-  const h = createHmac('sha256', Buffer.from(key.bytes.buffer));
+  const h = createHmac('sha256', key.bytes.toString());
   switch (typeof input) {
     case 'string':
       h.update(input, 'utf-8');
@@ -54,7 +54,7 @@ export function hmacSha256(key: UInt256, input: string | Uint8Array): UInt256 {
       h.update(input);
       break;
   }
-  const result: Buffer = h.digest(); // Buffer should be compatible with Uint8Array
+  const result = new Uint8Array(h.digest());
   return new UInt256(result);
 }
 

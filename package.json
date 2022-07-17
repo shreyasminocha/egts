@@ -15,7 +15,10 @@
     "README.md",
     "LICENSE"
   ],
+  "type": "module",
   "main": "dist/index.js",
+  "exports": "./dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": "dist/electionguard.js",
   "devDependencies": {
     "@babel/preset-typescript": "^7.17.12",
@@ -65,6 +68,5 @@
   },
   "engines": {
     "node": ">=14.0.0"
-  },
-  "type": "module"
+  }
 }
