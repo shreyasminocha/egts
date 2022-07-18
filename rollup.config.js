@@ -6,17 +6,27 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import polyfill from 'rollup-plugin-polyfill-node';
 import {terser} from 'rollup-plugin-terser';
+import deno from 'rollup-plugin-deno';
 import pkg from './package.json';
 
 const clean = {comments: /[^\w\W]/};
 
+// somewhat hacky, but official, way to prevent redundant declaration files
+const suppressDuplicateDeclarations = {
+  outputPath: (path, kind) =>
+    kind === 'declaration' ? './dist/index.d.ts' : path,
+};
+
 const builds = [
   {
     input: 'src/electionguard/index.ts',
-    output: {file: pkg.main, format: 'esm'},
+    output: [
+      {file: pkg.exports.import, format: 'esm'},
+      {file: pkg.exports.require, format: 'cjs'},
+    ],
     plugins: [
       commonjs(),
-      typescript(),
+      typescript({hook: suppressDuplicateDeclarations}),
       terser({
         output: clean,
       }),
@@ -35,6 +45,21 @@ const builds = [
   },
   {
     input: 'src/electionguard/index.ts',
+    output: [{file: 'dist/mod.js', format: 'esm'}],
+    context: 'this',
+    plugins: [
+      commonjs(),
+      resolve({preferBuiltins: false, browser: false}),
+      typescript({hook: suppressDuplicateDeclarations}),
+      deno(),
+      terser({
+        output: clean,
+      }),
+    ],
+    external: ['https://deno.land/std@0.90.0/node/crypto.ts'],
+  },
+  {
+    input: 'src/electionguard/index.ts',
     output: [
       {file: pkg.browser, format: 'esm'},
       {
@@ -48,13 +73,7 @@ const builds = [
       commonjs(),
       resolve({preferBuiltins: false, browser: true}),
       polyfill(),
-      typescript({
-        // somewhat hacky, but official, way to prevent redundant declaration files
-        hook: {
-          outputPath: (path, kind) =>
-            kind === 'declaration' ? './dist/index.d.ts' : path,
-        },
-      }),
+      typescript({hook: suppressDuplicateDeclarations}),
       terser({
         output: clean,
       }),
