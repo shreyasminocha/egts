@@ -1,15 +1,15 @@
 import * as fc from 'fast-check';
-import {elementModQ, elGamalKeypair, fcFastConfig} from './generators';
+import {
+  ElGamalKeypair,
+  bigIntContext3072,
+  bigIntContext4096,
+  GroupContext,
+} from '../../../src/electionguard';
 import {
   elGamalAdd,
   elGamalEncrypt,
-  ElGamalKeypair,
 } from '../../../src/electionguard/core/elgamal';
-import {
-  bigIntContext3072,
-  bigIntContext4096,
-} from '../../../src/electionguard/core/group-bigint';
-import {GroupContext} from '../../../src/electionguard/core/group-common';
+import {elementModQ, elGamalKeypair, fcFastConfig} from './generators';
 
 function testElGamal(context: GroupContext) {
   describe(`${context.name}: ElGamal properties`, () => {

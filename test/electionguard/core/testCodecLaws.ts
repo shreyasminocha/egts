@@ -1,16 +1,15 @@
-import {Arbitrary} from 'fast-check';
-import * as C from 'io-ts/Codec';
 import * as fc from 'fast-check';
-import {fcFastConfig} from './generators';
-import {eitherRightOrFail} from '../../../src/electionguard/core/json';
+import * as C from 'io-ts/Codec';
 import * as Either from 'fp-ts/lib/Either';
+import {eitherRightOrFail} from '../../../src/electionguard';
 import * as log from '../../../src/electionguard/core/logging';
+import {fcFastConfig} from './generators';
 
 /** Evaluates any codec and generator for correctness. */
 export function testCodecLaws<T>(
   contextName: string,
   typeName: string,
-  generator: Arbitrary<T>,
+  generator: fc.Arbitrary<T>,
   codec: C.Codec<unknown, unknown, T>,
   equality: (a: T, b: T) => boolean
 ) {

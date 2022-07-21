@@ -1,27 +1,25 @@
 import * as fc from 'fast-check';
 import {
-  elementModQ,
-  elGamalKeypair,
-  fcFastConfig,
-  validElementModP,
-} from './generators';
-import {
-  elGamalEncrypt,
   ElGamalKeypair,
-} from '../../../src/electionguard/core/elgamal';
+  GroupContext,
+  bigIntContext3072,
+  CompactGenericChaumPedersenProof,
+  ExpandedGenericChaumPedersenProof,
+} from '../../../src/electionguard';
+import {elGamalEncrypt} from '../../../src/electionguard/core/elgamal';
 import * as CP from '../../../src/electionguard/core/chaum-pedersen';
-import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
 import {
   divP,
-  GroupContext,
   multP,
   negateQ,
   powP,
 } from '../../../src/electionguard/core/group-common';
 import {
-  CompactGenericChaumPedersenProof,
-  ExpandedGenericChaumPedersenProof,
-} from '../../../src/electionguard/core/chaum-pedersen';
+  elementModQ,
+  elGamalKeypair,
+  fcFastConfig,
+  validElementModP,
+} from './generators';
 
 function testChaumPedersen(context: GroupContext) {
   describe(`${context.name}: generics`, () => {

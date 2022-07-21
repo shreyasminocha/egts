@@ -1,15 +1,13 @@
 import * as fc from 'fast-check';
 import {
-  elementModQ,
-  elementModP,
-  validElementModP,
-  fcFastConfig,
-} from './generators';
+  bigIntContext4096,
+  bigIntContext3072,
+  compatibleContextOrFail,
+  GroupContext,
+} from '../../../src/electionguard';
 import {
   addQ,
-  compatibleContextOrFail,
   divP,
-  GroupContext,
   multInvP,
   multInvQ,
   multP,
@@ -19,9 +17,11 @@ import {
   subQ,
 } from '../../../src/electionguard/core/group-common';
 import {
-  bigIntContext4096,
-  bigIntContext3072,
-} from '../../../src/electionguard/core/group-bigint';
+  elementModQ,
+  elementModP,
+  validElementModP,
+  fcFastConfig,
+} from './generators';
 
 /**
  * General-purpose tester for anything that implements the GroupContext interface.

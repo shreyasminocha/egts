@@ -4,16 +4,14 @@ import {
   bigIntContext4096,
   eitherRightOrFail,
   getCoreCodecsForContext,
-} from '../../../src/electionguard';
-import {
   encryptBallot,
   EncryptionState,
-} from '../../../src/electionguard/ballot/encrypt';
-import {AsyncBallotEncryptor} from '../../../src/electionguard/ballot/encrypt-async';
+  AsyncBallotEncryptor,
+  getBallotCodecsForContext,
+} from '../../../src/electionguard';
+// import * as log from '../../../src/electionguard/core/logging';
 import {elementModQ, fcFastConfig} from '../core/generators';
 import {electionAndBallots} from './generators';
-import {getBallotCodecsForContext} from '../../../src/electionguard/ballot/json';
-// import * as log from '../../../src/electionguard/core/logging';
 
 // we support the 3072 and 4096-bit contexts, but we're going
 // to test with the bigger context, since it's likely to be

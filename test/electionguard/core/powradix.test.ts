@@ -1,20 +1,20 @@
+import * as fc from 'fast-check';
 import {
   GroupContext,
+  bigIntContext3072,
+  bigIntContext4096,
+} from '../../../src/electionguard';
+import {
   multInvP,
   negateQ,
   powP,
 } from '../../../src/electionguard/core/group-common';
-import {
-  bigIntContext3072,
-  bigIntContext4096,
-} from '../../../src/electionguard/core/group-bigint';
 import {elementModQToLittleEndianBytes} from '../../../src/electionguard/core/powradix';
 import {
   arraysEqual,
   uint8ArrayToBigInt,
 } from '../../../src/electionguard/core/utils';
 import {elementModQ, fcFastConfig} from './generators';
-import * as fc from 'fast-check';
 
 function testPowRadix(context: GroupContext) {
   describe(`${context.name}: bitslicing`, () => {

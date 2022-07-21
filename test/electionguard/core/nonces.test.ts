@@ -1,10 +1,10 @@
-import {GroupContext} from '../../../src/electionguard/core/group-common';
+import fc from 'fast-check';
 import {
+  GroupContext,
   bigIntContext3072,
   bigIntContext4096,
-} from '../../../src/electionguard/core/group-bigint';
+} from '../../../src/electionguard';
 import {Nonces} from '../../../src/electionguard/core/nonces';
-import fc from 'fast-check';
 import {elementModQ} from './generators';
 
 function testNonces(context: GroupContext) {

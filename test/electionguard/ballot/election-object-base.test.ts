@@ -2,6 +2,8 @@ import * as fc from 'fast-check';
 import {
   ElectionObjectBase,
   OrderedObjectBase,
+} from '../../../src/electionguard';
+import {
   matchingArraysOfAnyElectionObjects,
   sortedArrayOfAnyElectionObjects,
   matchingArraysOfOrderedElectionObjects,

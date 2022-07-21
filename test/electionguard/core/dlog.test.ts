@@ -1,10 +1,10 @@
 import * as fc from 'fast-check';
-import {fcFastConfig} from './generators';
-import {GroupContext} from '../../../src/electionguard/core/group-common';
 import {
+  GroupContext,
   bigIntContext3072,
   bigIntContext4096,
-} from '../../../src/electionguard/core/group-bigint';
+} from '../../../src/electionguard';
+import {fcFastConfig} from './generators';
 
 function testDLog(context: GroupContext) {
   describe(`${context.name}: DLog properties`, () => {

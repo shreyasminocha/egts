@@ -1,3 +1,4 @@
+import * as Either from 'fp-ts/lib/Either';
 import {
   bigIntContext3072,
   bigIntContext4096,
@@ -5,7 +6,6 @@ import {
   eitherRightOrFail,
   getCoreCodecsForContext,
 } from '../../../src/electionguard';
-import * as Either from 'fp-ts/lib/Either';
 
 // this string extracted from electionguard-python
 const expectedSerialization =

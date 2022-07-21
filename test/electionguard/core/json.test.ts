@@ -1,5 +1,14 @@
 import * as fc from 'fast-check';
 import {
+  getCoreCodecsForContext,
+  GroupContext,
+  bigIntContext3072,
+  HashedElGamalCiphertext,
+  HashedElGamalCiphertextCompat,
+} from '../../../src/electionguard';
+import {arraysEqual} from '../../../src/electionguard/core/utils';
+import {testCodecLaws} from './testCodecLaws';
+import {
   electionConstants,
   elementModP,
   elementModQ,
@@ -8,15 +17,6 @@ import {
   uInt256,
   uint8ArrayReasonable,
 } from './generators';
-import {getCoreCodecsForContext} from '../../../src/electionguard/core/json';
-import {GroupContext} from '../../../src/electionguard/core/group-common';
-import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
-import {
-  HashedElGamalCiphertext,
-  HashedElGamalCiphertextCompat,
-} from '../../../src/electionguard/core/hashed-elgamal';
-import {arraysEqual} from '../../../src/electionguard/core/utils';
-import {testCodecLaws} from './testCodecLaws';
 
 function testCodecsForContext(context: GroupContext) {
   const codecs = getCoreCodecsForContext(context);

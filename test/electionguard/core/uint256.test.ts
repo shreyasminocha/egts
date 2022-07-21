@@ -1,8 +1,10 @@
-import {GroupContext} from '../../../src/electionguard/core/group-common';
-import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
-import {elementModQ, uInt256} from './generators';
 import * as fc from 'fast-check';
-import {UInt256} from '../../../src/electionguard/core/uint256';
+import {
+  GroupContext,
+  bigIntContext3072,
+  UInt256,
+} from '../../../src/electionguard';
+import {elementModQ, uInt256} from './generators';
 
 function testUInt256(context: GroupContext) {
   describe(`${context.name}: UInt256 basics`, () => {

@@ -1,24 +1,26 @@
 import fc from 'fast-check';
+import seedrandom from 'seedrandom';
 import {
   ElectionContext,
   ElGamalKeypair,
   GroupContext,
-  numberRange,
   PlaintextBallot,
   PlaintextContest,
-  shuffleArray,
-  chunkArray,
-  zipMap4,
   EncryptionState,
 } from '../../../src/electionguard';
+import {selectionFrom} from '../../../src/electionguard/ballot/encrypt';
 import * as M from '../../../src/electionguard/ballot/manifest';
+import {
+  chunkArray,
+  numberRange,
+  shuffleArray,
+  zipMap4,
+} from '../../../src/electionguard/core/utils';
 import {
   arrayIndexedArbitrary,
   elementModQNoZero,
   elGamalKeypair,
 } from '../core/generators';
-import seedrandom from 'seedrandom';
-import {selectionFrom} from '../../../src/electionguard/ballot/encrypt';
 
 const _first_names = [
   'James',

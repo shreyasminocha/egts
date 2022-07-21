@@ -1,9 +1,11 @@
-import {GroupContext} from '../../../src/electionguard/core/group-common';
-import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
-import {getBallotCodecsForContext} from '../../../src/electionguard/ballot/json';
+import {
+  GroupContext,
+  bigIntContext3072,
+  getCoreCodecsForContext,
+  getBallotCodecsForContext,
+} from '../../../src/electionguard';
 import {testCodecLaws} from '../core/testCodecLaws';
 import * as G from './generators';
-import {getCoreCodecsForContext} from '../../../src/electionguard';
 
 function testBallotCodecsForContext(context: GroupContext) {
   const cCodecs = getCoreCodecsForContext(context);

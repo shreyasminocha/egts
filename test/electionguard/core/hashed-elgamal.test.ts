@@ -1,9 +1,11 @@
 import * as fc from 'fast-check';
-import {elementModQ, elGamalKeypair, fcFastConfig} from './generators';
-import {bigIntContext4096} from '../../../src/electionguard/core/group-bigint';
-import {GroupContext} from '../../../src/electionguard/core/group-common';
-import {HashedElGamalCiphertext} from '../../../src/electionguard/core/hashed-elgamal';
+import {
+  bigIntContext4096,
+  GroupContext,
+  HashedElGamalCiphertext,
+} from '../../../src/electionguard';
 import {arraysEqual} from '../../../src/electionguard/core/utils';
+import {elementModQ, elGamalKeypair, fcFastConfig} from './generators';
 
 function testHashedElGamalEncryption(context: GroupContext) {
   describe(`${context.name}: basics`, () => {

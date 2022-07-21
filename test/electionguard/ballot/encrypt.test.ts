@@ -4,17 +4,15 @@ import {
   bigIntContext3072,
   eitherRightOrFail,
   getBallotCodecsForContext,
-  matchingArraysOfAnyElectionObjects,
-  Nonces,
   PlaintextBallot,
   PlaintextContest,
-  shuffleArray,
-} from '../../../src/electionguard';
-import {decryptAndVerifyBallot} from '../../../src/electionguard/ballot/decrypt';
-import {
   encryptBallot,
   EncryptionState,
-} from '../../../src/electionguard/ballot/encrypt';
+} from '../../../src/electionguard';
+import {decryptAndVerifyBallot} from '../../../src/electionguard/ballot/decrypt';
+import {matchingArraysOfAnyElectionObjects} from '../../../src/electionguard/ballot/election-object-base';
+import {Nonces} from '../../../src/electionguard/core/nonces';
+import {shuffleArray} from '../../../src/electionguard/core/utils';
 import {elementModQ, fcFastConfig} from '../core/generators';
 import {electionAndBallots} from './generators';
 

@@ -1,7 +1,6 @@
 import * as fc from 'fast-check';
 import createHash from 'create-hash';
-import {UInt256} from '../../../src/electionguard/core/uint256';
-import {bigIntContext3072} from '../../../src/electionguard/core/group-bigint';
+import {UInt256, bigIntContext3072} from '../../../src/electionguard';
 import {hashElements} from '../../../src/electionguard/core/hash';
 
 const groupContext = bigIntContext3072();

@@ -1,10 +1,10 @@
 import fc from 'fast-check';
 import {
   bigIntContext3072,
-  shuffleArray,
   Manifest,
   ManifestContestDescription,
-} from '../../../src/electionguard/';
+} from '../../../src/electionguard';
+import {shuffleArray} from '../../../src/electionguard/core/utils';
 import {fcFastConfig} from '../core/generators';
 import {
   electionDescription,

@@ -1,11 +1,11 @@
 import fc from 'fast-check';
 import {
   bigIntContext3072,
-  Nonces,
   encryptBallot,
   EncryptionState,
   BallotState,
-} from '../../../src/electionguard/';
+} from '../../../src/electionguard';
+import {Nonces} from '../../../src/electionguard/core/nonces';
 import {fcFastConfig, elementModQ} from '../core/generators';
 import {electionAndBallots} from './generators';
 

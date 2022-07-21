@@ -1,10 +1,10 @@
 import fc from 'fast-check';
 import {
   bigIntContext3072,
-  shuffleArray,
   PlaintextBallot,
   PlaintextContest,
-} from '../../../src/electionguard/';
+} from '../../../src/electionguard';
+import {shuffleArray} from '../../../src/electionguard/core/utils';
 import {electionAndBallots} from './generators';
 
 const groupContext = bigIntContext3072();

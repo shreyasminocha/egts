@@ -1,22 +1,19 @@
+import * as fc from 'fast-check';
 import {
-  BIG_ZERO,
   ElementModP,
   ElementModQ,
   GroupContext,
-} from '../../../src/electionguard/core/group-common';
-import * as fc from 'fast-check';
-import {
   ElGamalCiphertext,
-  elGamalEncrypt,
   ElGamalKeypair,
-} from '../../../src/electionguard/core/elgamal';
-import {
   ConstantChaumPedersenProofKnownNonce,
   ConstantChaumPedersenProofKnownSecretKey,
   DisjunctiveChaumPedersenProofKnownNonce,
-} from '../../../src/electionguard/core/chaum-pedersen';
-import {UInt256} from '../../../src/electionguard/core/uint256';
-import {ElectionConstants, numberRange} from '../../../src/electionguard';
+  UInt256,
+  ElectionConstants,
+} from '../../../src/electionguard';
+import {BIG_ZERO} from '../../../src/electionguard/core/group-common';
+import {elGamalEncrypt} from '../../../src/electionguard/core/elgamal';
+import {numberRange} from '../../../src/electionguard/core/utils';
 
 /** Generates arbitrary UInt256 values. */
 export function uInt256(): fc.Arbitrary<UInt256> {
