@@ -459,21 +459,6 @@ export class ManifestCandidate
       this.isWriteIn === other.isWriteIn
     );
   }
-
-  /**
-   * Constructs a {@link ManifestCandidate} object for a simple candidate with a string ID and leaves the
-   * rest empty.
-   */
-  static simpleCandidate(
-    context: GroupContext,
-    candidateId: string
-  ): ManifestCandidate {
-    return new ManifestCandidate(
-      context,
-      candidateId,
-      ManifestInternationalizedText.emptyInternationalizedText(context)
-    );
-  }
 }
 
 /**
@@ -594,14 +579,7 @@ export class ManifestInternationalizedText
     ]);
   }
 
-  /** Constructs an empty {@link ManifestInternationalizedText} object. */
-  static emptyInternationalizedText(
-    context: GroupContext
-  ): ManifestInternationalizedText {
-    return new ManifestInternationalizedText(context, []);
-  }
-
-  /** Constructs an empty {@link ManifestInternationalizedTest} object with an "unknown" language. */
+  /** Constructs an empty {@link ManifestInternationalizedTest} object with an "unknown" value. */
   static internationalizedTextUnknown(
     context: GroupContext
   ): ManifestInternationalizedText {
@@ -680,18 +658,6 @@ export class ManifestParty
       other.abbreviation === this.abbreviation &&
       other.color === this.color &&
       other.logoUri === this.logoUri
-    );
-  }
-
-  /**
-   * Constructs a {@link ManifestParty} object for a single party identifier string and leaves the rest
-   * empty.
-   */
-  static simpleParty(context: GroupContext, partyId: string): ManifestParty {
-    return new ManifestParty(
-      context,
-      partyId,
-      ManifestInternationalizedText.emptyInternationalizedText(context)
     );
   }
 }
