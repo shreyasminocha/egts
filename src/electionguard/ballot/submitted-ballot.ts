@@ -123,9 +123,9 @@ export class SubmittedSelection
 
 export enum BallotState {
   /** A ballot that has been explicitly cast */
-  CAST,
+  CAST = 1,
   /** A ballot that has been explicitly spoiled */
-  SPOILED,
+  SPOILED = 2,
   /** A ballot whose state is unknown to ElectionGuard and will not be included in results. */
-  UNKNOWN,
+  UNKNOWN = 999,
 }

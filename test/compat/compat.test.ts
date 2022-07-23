@@ -187,7 +187,7 @@ describe('compatibility with electionguard-python', () => {
   });
 
   test('our submitted ballot matches that of the sample data', () => {
-    const ourSubmittedBallot = ourCiphertextBallot.submit(BallotState.UNKNOWN);
+    const ourSubmittedBallot = ourCiphertextBallot.submit(BallotState.SPOILED);
     expect(ourSubmittedBallot.equals(submittedBallot)).toBe(true);
   });
 });
