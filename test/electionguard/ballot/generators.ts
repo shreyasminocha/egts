@@ -205,10 +205,10 @@ export function contactInformation(
 ): fc.Arbitrary<M.ManifestContactInformation> {
   return fc
     .tuple(
-      fc.option(fc.array(fc.string()), {nil: undefined}),
-      fc.option(fc.array(emailAnnotatedString(context)), {nil: undefined}),
-      fc.option(fc.array(annotatedString(context)), {nil: undefined}),
-      humanName()
+      optional(fc.array(fc.string())),
+      optional(fc.array(emailAnnotatedString(context))),
+      optional(fc.array(annotatedString(context))),
+      optional(humanName())
     )
     .map(t => {
       const [address, email, phone, name] = t;
@@ -242,7 +242,7 @@ export function ballotStyle(
   const gpUnitIds = geoUnits.map(t => t.objectId);
   const partyIds = parties.map(t => t.objectId);
 
-  return fc.tuple(fc.webUrl(), fc.uuid()).map(t => {
+  return fc.tuple(optional(fc.webUrl()), fc.uuid()).map(t => {
     const [url, uuid] = t;
     return new M.ManifestBallotStyle(context, uuid, gpUnitIds, partyIds, url);
   });
@@ -306,7 +306,10 @@ export function partyLists(
   return fc
     .tuple(
       fc.uniqueArray(fc.uuid(), {minLength: numParties, maxLength: numParties}),
-      fc.array(fc.webUrl(), {minLength: numParties, maxLength: numParties})
+      fc.array(optional(fc.webUrl()), {
+        minLength: numParties,
+        maxLength: numParties,
+      })
     )
     .map(t => {
       const [uuids, urls] = t;
@@ -336,7 +339,7 @@ export function geopoliticalUnit(
       fc.uuid(),
       fc.string(),
       reportingUnitType(),
-      contactInformation(context)
+      optional(contactInformation(context))
     )
     .map(t => {
       const [uuid, name, reportingType, contactInfo] = t;
@@ -362,9 +365,9 @@ export function candidate(
   return fc
     .tuple(
       fc.uuid(),
-      internationalizedHumanName(context),
-      pidArb,
-      fc.option(fc.webUrl(), {nil: undefined})
+      optional(internationalizedHumanName(context)),
+      optional(pidArb),
+      optional(fc.webUrl())
     )
     .map(t => {
       const [uuid, name, partyId, url] = t;
@@ -428,8 +431,8 @@ export function candidateContestDescription(
               fc.uuid(),
               fc.constantFrom(...geoUnits).map(it => it.objectId),
               fc.string(),
-              fc.option(internationalizedText(context), {nil: undefined}),
-              fc.option(internationalizedText(context), {nil: undefined})
+              optional(internationalizedText(context)),
+              optional(internationalizedText(context))
             )
             .map(t => {
               const [
@@ -503,8 +506,8 @@ export function referendumContestDescription(
             fc.uuid(),
             fc.constantFrom(...geoUnits).map(it => it.objectId),
             fc.string(),
-            fc.option(internationalizedText(context), {nil: undefined}),
-            fc.option(internationalizedText(context), {nil: undefined})
+            optional(internationalizedText(context)),
+            optional(internationalizedText(context))
           )
           .map(t => {
             const [
@@ -586,8 +589,8 @@ export function electionDescription(
               electionType(),
               fc.date(),
               fc.emailAddress(),
-              fc.option(internationalizedText(context), {nil: undefined}),
-              fc.option(contactInformation(context), {nil: undefined}),
+              optional(internationalizedText(context)),
+              optional(contactInformation(context)),
               arrayIndexedArbitrary(
                 i => contestDescription(context, i + 1, parties, geoUnits),
                 numContests
@@ -759,4 +762,8 @@ export function electionAndBallots(
         };
       });
   });
+}
+
+function optional<T>(x: fc.Arbitrary<T>): fc.Arbitrary<T | undefined> {
+  return fc.option(x, {nil: undefined});
 }

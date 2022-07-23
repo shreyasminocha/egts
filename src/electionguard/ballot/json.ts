@@ -140,8 +140,12 @@ export class BallotCodecs {
       pipe(
         D.struct({
           value: D.string,
-          language: D.string,
         }),
+        D.intersect(
+          D.partial({
+            language: D.string,
+          })
+        ),
         D.map(s => new M.ManifestLanguage(context, s.value, s.language))
       );
 
@@ -161,7 +165,7 @@ export class BallotCodecs {
       unknown,
       M.ManifestInternationalizedText
     > = pipe(
-      D.struct({
+      D.partial({
         text: D.array(manifestLanguageDecoder),
       }),
       D.map(s => new M.ManifestInternationalizedText(context, s.text))
@@ -290,7 +294,7 @@ export class BallotCodecs {
       unknown,
       M.ManifestAnnotatedString
     > = pipe(
-      D.struct({
+      D.partial({
         annotation: D.string,
         value: D.string,
       }),
@@ -316,7 +320,7 @@ export class BallotCodecs {
       unknown,
       M.ManifestContactInformation
     > = pipe(
-      D.struct({
+      D.partial({
         address_line: D.nullable(D.array(D.string)),
         email: D.nullable(D.array(manifestAnnotatedStringDecoder)),
         phone: D.nullable(D.array(manifestAnnotatedStringDecoder)),
@@ -365,8 +369,12 @@ export class BallotCodecs {
         object_id: D.string,
         name: D.string,
         type: manifestReportingUnitTypeDecoder,
-        contact_information: D.nullable(manifestContactInformationDecoder),
       }),
+      D.intersect(
+        D.partial({
+          contact_information: D.nullable(manifestContactInformationDecoder),
+        })
+      ),
       D.map(
         s =>
           new M.ManifestGeopoliticalUnit(
@@ -403,11 +411,15 @@ export class BallotCodecs {
       pipe(
         D.struct({
           object_id: D.string,
-          name: manifestInternationalizedTextDecoder,
-          party_id: D.nullable(D.string),
-          image_uri: D.nullable(D.string),
-          is_write_in: D.nullable(D.boolean),
         }),
+        D.intersect(
+          D.partial({
+            name: manifestInternationalizedTextDecoder,
+            party_id: D.nullable(D.string),
+            image_uri: D.nullable(D.string),
+            is_write_in: D.nullable(D.boolean),
+          })
+        ),
         D.map(
           s =>
             new M.ManifestCandidate(
@@ -439,11 +451,15 @@ export class BallotCodecs {
     const manifestPartyDecoder: D.Decoder<unknown, M.ManifestParty> = pipe(
       D.struct({
         object_id: D.string,
-        name: manifestInternationalizedTextDecoder,
-        abbreviation: D.nullable(D.string),
-        color: D.nullable(D.string),
-        logo_uri: D.nullable(D.string),
       }),
+      D.intersect(
+        D.partial({
+          name: manifestInternationalizedTextDecoder,
+          abbreviation: D.nullable(D.string),
+          color: D.nullable(D.string),
+          logo_uri: D.nullable(D.string),
+        })
+      ),
       D.map(
         s =>
           new M.ManifestParty(
@@ -478,10 +494,14 @@ export class BallotCodecs {
     > = pipe(
       D.struct({
         object_id: D.string,
-        geopolitical_unit_ids: D.nullable(D.array(D.string)),
-        party_ids: D.nullable(D.array(D.string)),
-        image_uri: D.nullable(D.string),
       }),
+      D.intersect(
+        D.partial({
+          geopolitical_unit_ids: D.nullable(D.array(D.string)),
+          party_ids: D.nullable(D.array(D.string)),
+          image_uri: D.nullable(D.string),
+        })
+      ),
       D.map(
         s =>
           new M.ManifestBallotStyle(
@@ -521,15 +541,15 @@ export class BallotCodecs {
         electoral_district_id: D.string,
         vote_variation: D.string,
         number_elected: D.number,
-        votes_allowed: D.nullable(D.number),
         name: D.string,
-        ballot_selections: D.array(manifestSelectionDescriptionDecoder),
-        ballot_title: D.nullable(manifestInternationalizedTextDecoder),
-        ballot_subtitle: D.nullable(manifestInternationalizedTextDecoder),
       }),
       D.intersect(
         D.partial({
-          primary_party_ids: D.nullable(D.array(D.string)),
+          votes_allowed: D.nullable(D.number),
+          ballot_selections: D.array(manifestSelectionDescriptionDecoder),
+          ballot_title: D.nullable(manifestInternationalizedTextDecoder),
+          ballot_subtitle: D.nullable(manifestInternationalizedTextDecoder),
+          primary_party_ids: D.array(D.string),
         })
       ),
       D.map(s => {
@@ -550,7 +570,7 @@ export class BallotCodecs {
           return new M.ManifestCandidateContestDescription(
             context,
             ...props,
-            nullToUndefined(s.primary_party_ids)
+            s.primary_party_ids
           );
         }
 
@@ -599,13 +619,17 @@ export class BallotCodecs {
         electoral_district_id: D.string,
         vote_variation: manifestVoteVariationTypeDecoder,
         number_elected: D.number,
-        votes_allowed: D.nullable(D.number),
         name: D.string,
         ballot_selections: D.array(manifestSelectionDescriptionDecoder),
-        ballot_title: D.nullable(manifestInternationalizedTextDecoder),
-        ballot_subtitle: D.nullable(manifestInternationalizedTextDecoder),
-        primary_party_ids: D.nullable(D.array(D.string)),
       }),
+      D.intersect(
+        D.partial({
+          votes_allowed: D.nullable(D.number),
+          ballot_title: D.nullable(manifestInternationalizedTextDecoder),
+          ballot_subtitle: D.nullable(manifestInternationalizedTextDecoder),
+          primary_party_ids: D.array(D.string),
+        })
+      ),
       D.map(
         s =>
           new M.ManifestCandidateContestDescription(
@@ -620,7 +644,7 @@ export class BallotCodecs {
             s.ballot_selections,
             nullToUndefined(s.ballot_title),
             nullToUndefined(s.ballot_subtitle),
-            nullToUndefined(s.primary_party_ids)
+            s.primary_party_ids
           )
       )
     );
@@ -655,7 +679,7 @@ export class BallotCodecs {
       }),
       D.intersect(
         D.partial({
-          name: manifestInternationalizedTextDecoder,
+          name: D.nullable(manifestInternationalizedTextDecoder),
           contact_information: D.nullable(manifestContactInformationDecoder),
         })
       ),
@@ -673,7 +697,7 @@ export class BallotCodecs {
             s.candidates,
             s.contests,
             s.ballot_styles,
-            s.name,
+            nullToUndefined(s.name),
             nullToUndefined(s.contact_information)
           )
       )
@@ -700,7 +724,9 @@ export class BallotCodecs {
           manifestBallotStyleEncoder.encode
         ),
         name:
-          input.name && manifestInternationalizedTextEncoder.encode(input.name),
+          input.name !== undefined
+            ? manifestInternationalizedTextEncoder.encode(input.name)
+            : null,
         contact_information:
           input.contactInformation !== undefined
             ? manifestContactInformationEncoder.encode(input.contactInformation)
@@ -718,10 +744,16 @@ export class BallotCodecs {
           description_hash: this.coreCodecs.elementModQCodec,
           ciphertext: this.coreCodecs.elGamalCiphertextCodec,
           crypto_hash: this.coreCodecs.elementModQCodec,
-          nonce: D.nullable(D.string),
-          is_placeholder_selection: D.boolean,
+          // nullable and omittable in electionguard-python
           proof: this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec,
         }),
+        D.intersect(
+          D.partial({
+            is_placeholder_selection: D.boolean,
+            // supposed to be `null`, but we don't complain if it's missing or not null
+            nonce: D.nullable(D.string),
+          })
+        ),
         D.map(
           s =>
             new SubmittedSelection(
@@ -749,9 +781,11 @@ export class BallotCodecs {
         crypto_hash: this.coreCodecs.elementModQCodec.encode(input.cryptoHash),
         is_placeholder_selection: input.isPlaceholderSelection,
         proof:
-          this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec.encode(
-            input.proof
-          ),
+          input.proof !== undefined
+            ? this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec.encode(
+                input.proof
+              )
+            : null,
         nonce: null,
       }),
     };
@@ -769,6 +803,7 @@ export class BallotCodecs {
         ballot_selections: D.array(submittedSelectionDecoder),
         ciphertext_accumulation: this.coreCodecs.elGamalCiphertextCodec,
         crypto_hash: this.coreCodecs.elementModQCodec,
+        // nullable and omittable in electionguard-python
         proof: this.coreCodecs.constantChaumPedersenProofKnownNonceCodec,
       }),
       D.intersect(
@@ -811,10 +846,11 @@ export class BallotCodecs {
           input.proof
         ),
         extended_data:
-          input.extendedData &&
-          this.coreCodecs.hashedElGamalCiphertextCompatCodec.encode(
-            input.extendedData
-          ),
+          input.extendedData !== undefined
+            ? this.coreCodecs.hashedElGamalCiphertextCompatCodec.encode(
+                input.extendedData
+              )
+            : null,
         nonce: null,
       }),
     };
@@ -834,9 +870,13 @@ export class BallotCodecs {
         code: this.coreCodecs.elementModQCodec,
         timestamp: D.number,
         crypto_hash: this.coreCodecs.elementModQCodec,
-        nonce: D.nullable(D.string),
         state: D.number,
       }),
+      D.intersect(
+        D.partial({
+          nonce: D.nullable(D.string),
+        })
+      ),
       D.map(
         s =>
           new SubmittedBallot(
@@ -883,10 +923,15 @@ export class BallotCodecs {
           description_hash: this.coreCodecs.elementModQCodec,
           ciphertext: this.coreCodecs.elGamalCiphertextCodec,
           crypto_hash: this.coreCodecs.elementModQCodec,
-          nonce: D.nullable(this.coreCodecs.elementModQCodec),
-          is_placeholder_selection: D.boolean,
+          // nullable and omittable in electionguard-python
           proof: this.coreCodecs.disjunctiveChaumPedersenProofKnownNonceCodec,
         }),
+        D.intersect(
+          D.partial({
+            is_placeholder_selection: D.boolean,
+            nonce: D.nullable(this.coreCodecs.elementModQCodec),
+          })
+        ),
         D.map(
           s =>
             new CiphertextSelection(
@@ -942,8 +987,10 @@ export class BallotCodecs {
           ballot_selections: D.array(ciphertextSelectionDecoder),
           ciphertext_accumulation: this.coreCodecs.elGamalCiphertextCodec,
           crypto_hash: this.coreCodecs.elementModQCodec,
-          nonce: this.coreCodecs.elementModQCodec,
+          // nullable and omittable in electionguard-python
           proof: this.coreCodecs.constantChaumPedersenProofKnownNonceCodec,
+          // nullable and omittable in electionguard-python
+          nonce: this.coreCodecs.elementModQCodec,
         }),
         D.intersect(
           D.partial({
@@ -985,14 +1032,12 @@ export class BallotCodecs {
         proof: this.coreCodecs.constantChaumPedersenProofKnownNonceCodec.encode(
           input.proof
         ),
+        nonce: this.coreCodecs.elementModQCodec.encode(input.contestNonce),
         extended_data:
-          input.extendedData &&
-          this.coreCodecs.hashedElGamalCiphertextCompatCodec.encode(
-            input.extendedData
-          ),
-        nonce:
-          input.contestNonce !== undefined
-            ? this.coreCodecs.elementModQCodec.encode(input.contestNonce)
+          input.extendedData !== undefined
+            ? this.coreCodecs.hashedElGamalCiphertextCompatCodec.encode(
+                input.extendedData
+              )
             : null,
       }),
     };
@@ -1012,6 +1057,7 @@ export class BallotCodecs {
         code: this.coreCodecs.elementModQCodec,
         timestamp: D.number,
         crypto_hash: this.coreCodecs.elementModQCodec,
+        // nullable and omittable in electionguard-python
         nonce: this.coreCodecs.elementModQCodec,
       }),
       D.map(
@@ -1042,12 +1088,9 @@ export class BallotCodecs {
         contests: input.contests.map(ciphertextContestEncoder.encode),
         timestamp: input.timestamp,
         crypto_hash: this.coreCodecs.elementModQCodec.encode(input.cryptoHash),
-        nonce:
-          input.ballotEncryptionSeed !== undefined
-            ? this.coreCodecs.elementModQCodec.encode(
-                input.ballotEncryptionSeed
-              )
-            : null,
+        nonce: this.coreCodecs.elementModQCodec.encode(
+          input.ballotEncryptionSeed
+        ),
       }),
     };
 
@@ -1073,7 +1116,7 @@ export class BallotCodecs {
             new PlaintextSelection(
               s.object_id,
               s.vote,
-              !!s.is_placeholder_selection,
+              nullToUndefined(s.is_placeholder_selection),
               nullToUndefined(s.write_in)
             )
         )
@@ -1096,8 +1139,12 @@ export class BallotCodecs {
     const plaintextContestDecoder: D.Decoder<unknown, PlaintextContest> = pipe(
       D.struct({
         object_id: D.string,
-        ballot_selections: D.array(plaintextSelectionDecoder),
       }),
+      D.intersect(
+        D.partial({
+          ballot_selections: D.array(plaintextSelectionDecoder),
+        })
+      ),
       D.map(s => new PlaintextContest(s.object_id, s.ballot_selections))
     );
 

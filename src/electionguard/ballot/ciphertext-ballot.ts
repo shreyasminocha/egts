@@ -140,7 +140,7 @@ export class CiphertextSelection
     readonly selectionHash: ElementModQ, // matches SelectionDescription.cryptoHash
     readonly ciphertext: ElGamalCiphertext,
     readonly cryptoHash: ElementModQ,
-    readonly isPlaceholderSelection: boolean,
+    readonly isPlaceholderSelection: boolean = false,
     readonly proof: DisjunctiveChaumPedersenProofKnownNonce,
     readonly selectionNonce?: ElementModQ
   ) {}

@@ -33,8 +33,8 @@ export class Manifest implements CryptoHashableElement, Eq<Manifest> {
     readonly candidates: Array<ManifestCandidate>,
     readonly contests: Array<ManifestContestDescription>,
     readonly ballotStyles: Array<ManifestBallotStyle>,
-    readonly name: ManifestInternationalizedText | undefined,
-    readonly contactInformation: ManifestContactInformation | undefined
+    readonly name?: ManifestInternationalizedText,
+    readonly contactInformation?: ManifestContactInformation
   ) {
     this.cryptoHashElement = hashElements(
       context,
@@ -360,8 +360,8 @@ export class ManifestAnnotatedString
 
   constructor(
     context: GroupContext,
-    readonly annotation: string,
-    readonly value: string
+    readonly annotation: string = '',
+    readonly value: string = ''
   ) {
     this.cryptoHashElement = hashElements(context, annotation, value);
   }
@@ -384,9 +384,9 @@ export class ManifestBallotStyle
   constructor(
     context: GroupContext,
     readonly ballotStyleId: string,
-    readonly geopoliticalUnitIds: Array<string> | undefined,
-    readonly partyIds: Array<string> | undefined,
-    readonly imageUri: string | undefined
+    readonly geopoliticalUnitIds?: Array<string>,
+    readonly partyIds?: Array<string>,
+    readonly imageUri?: string
   ) {
     this.cryptoHashElement = hashElements(
       context,
@@ -429,7 +429,9 @@ export class ManifestCandidate
   constructor(
     context: GroupContext,
     readonly candidateId: string,
-    readonly name: ManifestInternationalizedText,
+    readonly name: ManifestInternationalizedText = new ManifestInternationalizedText(
+      context
+    ),
     readonly partyId?: string,
     readonly imageUri?: string,
     readonly isWriteIn?: boolean
@@ -451,7 +453,7 @@ export class ManifestCandidate
     return (
       other instanceof ManifestCandidate &&
       this.candidateId === other.candidateId &&
-      this.name.equals(other.name) &&
+      objEqualsOrUndefEquals(this.name, other.name) &&
       this.partyId === other.partyId &&
       this.imageUri === other.imageUri &&
       this.isWriteIn === other.isWriteIn
@@ -487,10 +489,10 @@ export class ManifestContactInformation
 
   constructor(
     context: GroupContext,
-    readonly addressLine: Array<string> | undefined,
-    readonly email: Array<ManifestAnnotatedString> | undefined,
-    readonly phone: Array<ManifestAnnotatedString> | undefined,
-    readonly name: string | undefined
+    readonly addressLine?: Array<string>,
+    readonly email?: Array<ManifestAnnotatedString>,
+    readonly phone?: Array<ManifestAnnotatedString>,
+    readonly name?: string
   ) {
     this.cryptoHashElement = hashElements(
       context,
@@ -530,7 +532,7 @@ export class ManifestGeopoliticalUnit
     readonly geopoliticalUnitId: string,
     readonly name: string,
     readonly type: ManifestReportingUnitType,
-    readonly contactInformation: ManifestContactInformation | undefined
+    readonly contactInformation?: ManifestContactInformation
   ) {
     this.cryptoHashElement = hashElements(
       context,
@@ -567,7 +569,10 @@ export class ManifestInternationalizedText
 {
   cryptoHashElement: ElementModQ;
 
-  constructor(context: GroupContext, readonly text: Array<ManifestLanguage>) {
+  constructor(
+    context: GroupContext,
+    readonly text: Array<ManifestLanguage> = []
+  ) {
     this.cryptoHashElement = hashElements(context, text);
   }
 
@@ -618,7 +623,7 @@ export class ManifestLanguage
   constructor(
     context: GroupContext,
     readonly value: string,
-    readonly language: string
+    readonly language: string = 'en'
   ) {
     this.cryptoHashElement = hashElements(context, value, language);
   }
@@ -646,7 +651,9 @@ export class ManifestParty
   constructor(
     context: GroupContext,
     readonly partyId: string,
-    readonly name: ManifestInternationalizedText,
+    readonly name: ManifestInternationalizedText = new ManifestInternationalizedText(
+      context
+    ),
     readonly abbreviation?: string,
     readonly color?: string,
     readonly logoUri?: string
@@ -669,7 +676,7 @@ export class ManifestParty
     return (
       other instanceof ManifestParty &&
       other.partyId === this.partyId &&
-      other.name.equals(this.name) &&
+      objEqualsOrUndefEquals(other.name, this.name) &&
       other.abbreviation === this.abbreviation &&
       other.color === this.color &&
       other.logoUri === this.logoUri
@@ -709,9 +716,9 @@ export class ManifestContestDescription
     readonly numberElected: number,
     readonly votesAllowed: number | undefined,
     readonly name: string,
-    readonly selections: Array<ManifestSelectionDescription>,
-    readonly ballotTitle: ManifestInternationalizedText | undefined,
-    readonly ballotSubtitle: ManifestInternationalizedText | undefined
+    readonly selections: Array<ManifestSelectionDescription> = [],
+    readonly ballotTitle?: ManifestInternationalizedText,
+    readonly ballotSubtitle?: ManifestInternationalizedText
   ) {
     this.cryptoHashElement = hashElements(
       context,
@@ -807,8 +814,8 @@ export class ManifestReferendumContestDescription extends ManifestContestDescrip
     votesAllowed: number | undefined,
     name: string,
     selections: Array<ManifestSelectionDescription>,
-    ballotTitle: ManifestInternationalizedText | undefined,
-    ballotSubtitle: ManifestInternationalizedText | undefined
+    ballotTitle?: ManifestInternationalizedText,
+    ballotSubtitle?: ManifestInternationalizedText
   ) {
     super(
       context,
@@ -846,10 +853,10 @@ export class ManifestCandidateContestDescription extends ManifestContestDescript
     numberElected: number,
     votesAllowed: number | undefined,
     name: string,
-    selections: Array<ManifestSelectionDescription>,
-    ballotTitle: ManifestInternationalizedText | undefined,
-    ballotSubtitle: ManifestInternationalizedText | undefined,
-    primaryPartyIds: Array<string> | undefined
+    selections: Array<ManifestSelectionDescription> = [],
+    ballotTitle?: ManifestInternationalizedText,
+    ballotSubtitle?: ManifestInternationalizedText,
+    primaryPartyIds: Array<string> = []
   ) {
     super(
       context,

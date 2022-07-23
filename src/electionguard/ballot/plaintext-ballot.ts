@@ -32,7 +32,7 @@ export class PlaintextBallot implements ElectionObjectBase {
 export class PlaintextContest implements ElectionObjectBase {
   constructor(
     readonly contestId: string, // matches ContestDescription.contestId
-    readonly selections: Array<PlaintextSelection>
+    readonly selections: Array<PlaintextSelection> = []
   ) {}
 
   get objectId(): string {
@@ -53,7 +53,7 @@ export class PlaintextSelection implements ElectionObjectBase {
   constructor(
     readonly selectionId: string, // matches SelectionDescription.selectionId
     readonly vote: number,
-    readonly isPlaceholderSelection: boolean,
+    readonly isPlaceholderSelection: boolean = false,
     readonly writeIn?: string
   ) {}
 
