@@ -31,7 +31,7 @@ describe('Async encryption wrapper', () => {
         elementModQ(groupContext),
         elementModQ(groupContext),
         async (eb, prev, seed) => {
-          const timestamp = Date.now() / 1000;
+          const timestamp = Math.floor(Date.now() / 1000);
           const encryptionState = new EncryptionState(
             groupContext,
             eb.manifest,

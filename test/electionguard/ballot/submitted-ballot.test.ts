@@ -19,7 +19,7 @@ describe('SubmittedBallot', () => {
         elementModQ(groupContext),
         elementModQ(groupContext),
         (eb, prev, seed) => {
-          const timestamp = Date.now() / 1000;
+          const timestamp = Math.floor(Date.now() / 1000);
           const nonces = new Nonces(seed);
           const encryptionState = new EncryptionState(
             groupContext,

@@ -83,8 +83,8 @@ export class AsyncBallotEncryptor {
    * @param seed The root of all randomness used for encrypting the ballot. If
    *  not provided, a new random number will be securely generated.
    * @param timestamp Optional timestamp for the ballot, in seconds since the Unix epoch.
-   *   If not provided, the current time will be used (Date.now() / 1000) when the
-   *   final ballot is completed and returned.
+   *   If not provided, the current time will be used (Math.floor(Date.now() / 1000))
+   *   when the final ballot is completed and returned.
    */
   static create(
     group: GroupContext,
@@ -144,8 +144,8 @@ export class AsyncBallotEncryptor {
    * @param ballotId Every ballot needs a string identifier which should be globally
    *   unique.
    * @param timestamp Optional timestamp for the ballot, in seconds since the Unix epoch.
-   *   If not provided, the current time will be used (Date.now() / 1000) when the
-   *   final ballot is completed and returned.
+   *   If not provided, the current time will be used (Math.floor(Date.now() / 1000))
+   *   when the final ballot is completed and returned.
    */
   constructor(
     manifest: Manifest,
@@ -339,7 +339,9 @@ export class AsyncBallotEncryptor {
     );
 
     const timestamp =
-      this.timestamp === undefined ? Date.now() / 1000 : this.timestamp;
+      this.timestamp === undefined
+        ? Math.floor(Date.now() / 1000)
+        : this.timestamp;
 
     const ballotCode = hashElements(
       this.encryptionState.group,

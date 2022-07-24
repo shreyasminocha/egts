@@ -64,7 +64,7 @@ export class EncryptionState {
  * selections that are marked `true`.
  *
  * The timestamp should be in the form of the number of seconds since
- * the Unix epoch, e.g., equivalent to calling Date.now() / 1000. If it's
+ * the Unix epoch, e.g., equivalent to calling Math.floor(Date.now() / 1000). If it's
  * left out, it will be set to the current time.
  */
 export function encryptBallot(
@@ -107,7 +107,7 @@ export function encryptBallot(
 
   // Ticks are defined here as number of seconds since the unix epoch (00:00:00 UTC on 1
   // January 1970)
-  if (timestamp === undefined) timestamp = Date.now() / 1000;
+  if (timestamp === undefined) timestamp = Math.floor(Date.now() / 1000);
 
   const ballotCode = hashElements(
     state.group,
