@@ -1,7 +1,7 @@
-import * as D from 'io-ts/Decoder';
-import * as E from 'io-ts/Encoder';
-import * as C from 'io-ts/Codec';
-import {pipe} from 'fp-ts/function';
+import * as D from 'io-ts/lib/Decoder.js';
+import * as E from 'io-ts/lib/Encoder.js';
+import * as C from 'io-ts/lib/Codec.js';
+import {pipe} from 'fp-ts/lib/function.js';
 import {GroupContext} from '../core/group-common';
 import * as M from './manifest';
 import {

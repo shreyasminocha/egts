@@ -1,7 +1,7 @@
-import * as D from 'io-ts/Decoder';
-import * as E from 'io-ts/Encoder';
-import * as C from 'io-ts/Codec';
-import {pipe} from 'fp-ts/function';
+import * as D from 'io-ts/lib/Decoder.js';
+import * as E from 'io-ts/lib/Encoder.js';
+import * as C from 'io-ts/lib/Codec.js';
+import {pipe} from 'fp-ts/lib/function.js';
 import {GroupContext, ElementModP, ElementModQ} from './group-common';
 import {
   ElGamalCiphertext,
@@ -36,7 +36,7 @@ import {
   HashedElGamalCiphertextCompat,
 } from './hashed-elgamal';
 import {UInt256} from './uint256';
-import * as Either from 'fp-ts/lib/Either';
+import * as Either from 'fp-ts/lib/Either.js';
 // import * as log from './logging';
 
 // These JSON importer/exporter things are using the io-ts package:

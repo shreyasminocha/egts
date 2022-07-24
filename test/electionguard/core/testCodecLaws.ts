@@ -1,6 +1,6 @@
 import * as fc from 'fast-check';
-import * as C from 'io-ts/Codec';
-import * as Either from 'fp-ts/lib/Either';
+import * as C from 'io-ts/lib/Codec.js';
+import * as Either from 'fp-ts/lib/Either.js';
 import {eitherRightOrFail} from '../../../src/electionguard';
 import * as log from '../../../src/electionguard/core/logging';
 import {fcFastConfig} from './generators';

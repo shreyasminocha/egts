@@ -1,4 +1,4 @@
-import * as Either from 'fp-ts/lib/Either';
+import * as Either from 'fp-ts/lib/Either.js';
 import {
   bigIntContext3072,
   bigIntContext4096,
