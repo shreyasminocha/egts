@@ -10,7 +10,7 @@
     "experimentalSpecifierResolution": "node"
   },
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2016",
     "module": "es2020",
     "esModuleInterop": true,
     "rootDir": ".",
