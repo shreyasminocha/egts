@@ -192,6 +192,11 @@ export class ElectionContext implements Eq<ElectionContext> {
   }
 }
 
+/**
+ * If we had multiple voting machines, each one would have a different
+ * deviceId. This data structure identifies all of the context, such
+ * as the deviceId, to specify the device computing the encrypted ballot.
+ */
 export class EncryptionDevice implements CryptoHashableElement {
   cryptoHashElement: ElementModQ;
 

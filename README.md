@@ -1,25 +1,31 @@
 # 🗳 ElectionGuard Typescript
 
-A typescript library that implements a subset of the [ElectionGuard](https://www.electionguard.vote/) spec to allow encryption of ballots in browsers.
+A TypeScript library that implements a subset of the [ElectionGuard](https://www.electionguard.vote/) spec, allowing encryption of ballots in browsers or other
+JavaScript engines.
 
 ## Features
 
-- Ballot encryption
+- Ballot encryption and JSON serialization. We support a synchronous API, where
+  we encrypt a `PlaintextBallot` object and return a `CiphertextBallot` object.
+  We also support an asynchronous API, where `PlaintextContest` objects are
+  encrypted asynchronously, and a `CiphertextBallot` can be fetched at the end.
+  This allows the ballot encryption process to be spread across a voting session,
+  minimizing user-visible lag.
 
-  **Note**: write-ins, overvotes, and undervotes are not supported in our implementation of ElectionGuard 1.0.
+  **Note**: write-ins and overvotes  are not supported in our implementation of ElectionGuard 1.0.
 
 - Compatibility with [electionguard-python](https://github.com/microsoft/electionguard-python/)
-- Support for [modern](https://caniuse.com/bigint) browsers
+- Support for modern browsers (roughly since 2018) including [bigint support](https://caniuse.com/bigint)
 - Support for NodeJS
 
 ## Non-features
 
 - Ballot decryption
-- Verification
+- Ballot or election verification
 
-## Installation
+# Installation
 
-### Node
+## Node
 
 **Note**: we haven't published a npm package yet.
 
@@ -29,7 +35,7 @@ npm install github:danwallach/electionguard
 yarn add electionguard@danwallach/electionguard
 ```
 
-### Browser
+## Browser
 
 As an **ES module**:
 
@@ -72,10 +78,14 @@ import {
   PlaintextSelection,
 } from 'electionguard';
 
+// computational context for subsequent encryptions
 const context = bigIntContext4096();
+
+// specification of the "device" computing the encryptions
 const device = new EncryptionDevice(context, 55890250559315, 12345, 45678, 'polling-place');
 let codeSeed = device.cryptoHashElement;
 
+// data structures that would normally be downloaded alongside an election definition
 const manifestObj = {
   election_scope_id: 'hamilton-county-general-election',
   spec_version: '1.0',
@@ -86,6 +96,8 @@ const electionContextObj = {
   quorum: 3,
   // ...
 };
+
+// data structures representing an unencrypted ballot
 const ballot = new PlaintextBallot(
   'ballot-8a27eaa6-f1c3-11ec-b605-aaf53b701db4',
   'congress-district-5-hamilton-county',
@@ -97,6 +109,7 @@ const ballot = new PlaintextBallot(
   ]
 );
 
+// asynchronous API for encrypting each contest as the user specifies it
 const encryptor = AsyncBallotEncryptor.create(
   context,
   manifestObj,
@@ -109,14 +122,20 @@ const encryptor = AsyncBallotEncryptor.create(
 ballot.contests.forEach(contest => encryptor.encrypt(contest));
 
 (async () => {
+  // collect the encrypted ballot, blocking until all encryption is complete
   const result = await encryptor.getSerializedEncryptedBallot();
-  const {serializedEncryptedBallot, ballotHash} = result;
 
-  const ballotHashModQ = context.createElementModQ(ballotHash);
-  if (ballotHashModQ === undefined) {
-    throw new Error('unable to create ElementModQ from ballotHash');
-  }
-  codeSeed = ballotHashModQ;
+  const {serializedEncryptedBallot, ballotHash, ballotSeed} = result;
+  // - serializedEncryptedBallot is a plain JavaScript object, suitable
+  //   for converting to JSON, with the encrypted ballot.
+
+  // - ballotHash is a bigint, representing the hash of the encrypted
+  //   ballot, which a voter could potentially keep as their "receipt"
+
+  // - ballotSeed is a bigint, representing the source of the randomness
+  //   used to encrypt the ballot. This is a sensitive value that
+  //   might be printed on the bottom of a human-readable paper ballot
+  //   to allow a remote system to exactly recompute the encrypted ballot.
 
   console.log(JSON.stringify(serializedEncryptedBallot, null, 2));
 })();
