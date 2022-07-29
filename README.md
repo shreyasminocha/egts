@@ -4,6 +4,8 @@ A TypeScript library that implements a subset of the
 [ElectionGuard](https://www.electionguard.vote/) spec, allowing encryption of
 ballots in browsers or other JavaScript engines.
 
+![electionguard npm package](https://img.shields.io/npm/v/electionguard)
+
 ## Features
 
 - Ballot encryption and JSON serialization
@@ -30,12 +32,10 @@ ballots in browsers or other JavaScript engines.
 
 ## Node
 
-**Note**: we haven't published a npm package yet.
-
 ```sh
-npm install github:danwallach/electionguard
+npm install electionguard
 # or
-yarn add electionguard@danwallach/electionguard
+yarn add electionguard
 ```
 
 ## Browser

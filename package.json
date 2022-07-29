@@ -1,6 +1,6 @@
 {
   "name": "electionguard",
-  "version": "0.6.0",
+  "version": "0.1.0",
   "description": "Client-side implementation of ElectionGuard for ballot encryption",
   "contributors": [
     "Han Guo <alexiland@outlook.com>",
