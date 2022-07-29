@@ -345,6 +345,6 @@ export function undefinedToNull<T>(x: T | undefined): T | null {
 }
 
 /** Converts a date to an ISO 8601-formatted string (without milliseconds). */
-export function dateToISOString(date: Date) {
+export function dateToISOString(date: Date): string {
   return `${date.toISOString().split('.')[0]}Z`;
 }

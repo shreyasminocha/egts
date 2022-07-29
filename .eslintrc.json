@@ -1,3 +1,11 @@
 {
-  "extends": "./node_modules/gts/"
+  "extends": "./node_modules/gts/",
+  "overrides": [
+    {
+      "files": "src/**/*.ts",
+      "rules": {
+        "@typescript-eslint/explicit-module-boundary-types": 1
+      }
+    }
+  ]
 }

@@ -21,17 +21,17 @@ type LogStringType = string | (() => string);
  * Sets which logs are ignored. INFO gives all logs. WARN
  * gives only WARN and ERROR. ERROR gives only ERROR logs.
  */
-export function verbosity(type: LogTypes) {
+export function verbosity(type: LogTypes): void {
   logLevel = type;
 }
 
 /** Logs some information. */
-export function info(module: string, contents: LogStringType) {
+export function info(module: string, contents: LogStringType): void {
   common('INFO', module, contents);
 }
 
 /** Logs a warning. */
-export function warn(module: string, contents: LogStringType) {
+export function warn(module: string, contents: LogStringType): void {
   common('WARN', module, contents);
 }
 
@@ -73,6 +73,6 @@ export function getAllLogs(): string[] {
 }
 
 /** Prints all the logs to the console. */
-export function consoleAllLogs() {
+export function consoleAllLogs(): void {
   console.log(allLogs.join('\n'));
 }

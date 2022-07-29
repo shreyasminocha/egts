@@ -43,7 +43,7 @@ export class Nonces implements Iterable<ElementModQ> {
   [Symbol.iterator](): Iterator<ElementModQ> {
     let counter = 0;
     return {
-      next: () => {
+      next: (): IteratorResult<ElementModQ> => {
         return {
           done: false,
           value: this.get(counter++),
