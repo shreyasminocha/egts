@@ -2,3 +2,9 @@ build/
 dist/
 docs/
 hacl-wasm/
+
+examples/browser/electionguard.js
+examples/browser/electionguard.umd.js
+
+# until eslint understands import assertions
+examples/node-esm/index.js

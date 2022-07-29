@@ -1,0 +1,23 @@
+{
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@stdlib/assert-has-arrow-function-support": "^0.0.2",
+    "@stdlib/assert-has-async-await-support": "^0.0.8",
+    "@stdlib/assert-has-bigint-support": "^0.0.8",
+    "@stdlib/assert-has-class-support": "^0.0.8",
+    "@stdlib/assert-has-map-support": "^0.0.8",
+    "@stdlib/assert-has-set-support": "^0.0.8",
+    "@stdlib/assert-has-uint8array-support": "^0.0.8",
+    "bigint-mod-arith": "^3.0.2",
+    "create-hash": "^1.2.0",
+    "create-hmac": "^1.1.7",
+    "electionguard": "file:../../package",
+    "fp-ts": "^2.12.2",
+    "io-ts": "^2.2.17",
+    "randombytes": "^2.1.0",
+    "seedrandom": "^3.0.5"
+  },
+  "type": "module"
+}

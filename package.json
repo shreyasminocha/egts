@@ -82,7 +82,7 @@
     "posttest": "npm run lint",
     "test": "jest",
     "coverage": "jest --coverage",
-    "elgamal-bench": "ts-node build/bench/elgamal-benchmark"
+    "elgamal-bench": "ts-node bench/elgamal-benchmark"
   },
   "engines": {
     "node": ">=14.0.0"

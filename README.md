@@ -1,16 +1,19 @@
 # 🗳 ElectionGuard Typescript
 
-A TypeScript library that implements a subset of the [ElectionGuard](https://www.electionguard.vote/) spec, allowing encryption of ballots in browsers or other
-JavaScript engines.
+A TypeScript library that implements a subset of the
+[ElectionGuard](https://www.electionguard.vote/) spec, allowing encryption of
+ballots in browsers or other JavaScript engines.
 
 ## Features
 
-- Ballot encryption and JSON serialization. We support a synchronous API, where
-  we encrypt a `PlaintextBallot` object and return a `CiphertextBallot` object.
-  We also support an asynchronous API, where `PlaintextContest` objects are
-  encrypted asynchronously, and a `CiphertextBallot` can be fetched at the end.
-  This allows the ballot encryption process to be spread across a voting session,
-  minimizing user-visible lag.
+- Ballot encryption and JSON serialization
+
+  We support a synchronous API, where we encrypt a `PlaintextBallot` object and
+  return a `CiphertextBallot` object. We also support an asynchronous API,
+  where `PlaintextContest` objects are encrypted asynchronously, and a
+  `CiphertextBallot` can be fetched at the end. This allows the ballot
+  encryption process to be spread across a voting session, minimizing
+  user-visible lag.
 
   **Note**: write-ins and overvotes  are not supported in our implementation of ElectionGuard 1.0.
 
@@ -141,7 +144,7 @@ ballot.contests.forEach(contest => encryptor.encrypt(contest));
 })();
 ```
 
-<!-- See `examples/` for more examples. -->
+See the [`examples`](examples/) directory for more examples.
 
 Check the [documentation](#documentation) for a full list of exports.
 
@@ -172,10 +175,13 @@ npm run elgamal-bench
 npm run fix
 ```
 
+To try the browser examples, run `npm run build` first.
+
+To run the node examples, first run `npm pack` in the root directory and uncompress the generated `.tgz` file.
+
 See also:
 
 - [`NOTES.md`](./NOTES.md)
-- [`PRECOMPUTE.md`](./PRECOMPUTE.md)
 
 ## License
 
