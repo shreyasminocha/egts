@@ -24,15 +24,15 @@
     "LICENSE"
   ],
   "type": "module",
-  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "browser": "dist/electionguard.js",
   "module": "dist/index.js",
   "exports": {
     "import": "./dist/index.js",
     "require": "./dist/index.cjs",
     "default": "./dist/electionguard.umd.js"
   },
-  "types": "dist/index.d.ts",
-  "browser": "dist/electionguard.js",
   "devDependencies": {
     "@babel/preset-typescript": "^7.17.12",
     "@rollup/plugin-commonjs": "^22.0.1",
@@ -85,6 +85,6 @@
     "elgamal-bench": "ts-node bench/elgamal-benchmark"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=10.4.0"
   }
 }
