@@ -65,7 +65,7 @@
     "@stdlib/assert-has-map-support": "^0.0.8",
     "@stdlib/assert-has-set-support": "^0.0.8",
     "@stdlib/assert-has-uint8array-support": "^0.0.8",
-    "bigint-mod-arith": "github:ukstv/bigint-mod-arith#17c8f51f48f2f84a5f52c0346930ac6082f2a306",
+    "bigint-mod-arith": "^3.1.0",
     "create-hash": "^1.2.0",
     "create-hmac": "^1.1.7",
     "fp-ts": "^2.12.1",
