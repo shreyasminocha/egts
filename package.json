@@ -79,6 +79,7 @@
     "clean": "gts clean && rimraf ./dist",
     "build": "rollup -c rollup.config.js",
     "fix": "gts fix",
+    "prepare": "npm run clean && npm run build",
     "posttest": "npm run lint",
     "test": "jest",
     "coverage": "jest --coverage",
