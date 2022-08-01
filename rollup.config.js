@@ -5,6 +5,7 @@ import typescript from 'rollup-plugin-ts';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import polyfill from 'rollup-plugin-polyfill-node';
+import externals from 'rollup-plugin-node-externals';
 import {terser} from 'rollup-plugin-terser';
 import deno from 'rollup-plugin-deno';
 import pkg from './package.json';
@@ -27,6 +28,7 @@ const builds = [
     plugins: [
       commonjs(),
       typescript({hook: suppressDuplicateDeclarations}),
+      externals(),
       terser({
         output: clean,
       }),
